@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lynx</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div>
+      <h1>Please login.</h1>
+      <div>
+      <span style="color: red">
+        {{.ErrorMessage}}
+      </span>
+      </div>
+      <div></div>
+      <div>
+        <form action="/feline/login" method="post" class="login">
+          <div>
+            <label for="username">Enter your username: </label>
+            <input type="text" name="username" id="username" required />
+          </div>
+          <div>
+            <label for="password">Enter your password: </label>
+            <input type="password" name="password" id="password" required />
+          </div>
+          <div>
+            <button>Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+Session.vim
+feline
+lynx
+build/
+.idea
+cmake-build-debug

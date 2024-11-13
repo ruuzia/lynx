@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lynx</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <h1>Welcome to Lynx, {{.Name}}!</h1>
+  <div>
+    {{if .ActiveSession}}
+    <form action="/session">
+      <button>Continue session</button>
+    </form>
+    {{end}}
+    <form action="/feline/startsession">
+      <button>Start new session</button>
+    </form>
+    <form action="/builder">
+      <button>Add new line set</button>
+    </form>
+    <form action="/feline/logout">
+      <button>Logout</button>
+    </form>
+  </div>
+</body>
+</html>

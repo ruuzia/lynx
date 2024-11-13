@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lynx</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <h1>Select your line set</h1>
+  <div>
+    <form action="/feline/fileselect" method="post">
+        {{range $index, $file := .Files}}
+        <div>
+          <button name="file" value="{{$index}}" onclick>{{$file}}</button>
+        </div>
+        {{end}}
+    </form>
+    <form action="/builder" method="post">
+      <button style="background-color: hsl(267 100% 10%)">Create new line set</button>
+    </form>
+  </div>
+</body>
+</html>
