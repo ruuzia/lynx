@@ -1,6 +1,6 @@
 # Lynx
 
-Lynx is a tool with robust features for memorizing lines. I originally built it with a simple terminal interface to help me review my lines for a theatre production. Interested in its potential, I rewrote a functional web prototype for a course project.
+Lynx is a tool with robust features for memorizing lines. I originally built it with a simple terminal interface to help me review my lines for a theatre production. Interested in its potential, I rewrote a functional web prototype for a course project. Users are able to type up their lines and cues for play productions in a simple text format. They can then review, flag, and manage their lines from a desktop or mobile device.
 
 ## Running
 
@@ -18,7 +18,7 @@ The project is made of three parts:
 - Feline: the Go web server
 - WebLynx: the front-end in HTML, CSS, and JavaScript
 
-## TODO
+## Future plans
 
 - [x] Web prototype
 - [ ] Support different settings and strategies for reviewing lines
