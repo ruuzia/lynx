@@ -14,12 +14,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
-)
 
-var users = map[string]string {
-    "rustum": "ruu",
-    "calcifer": "cal",
-}
+    "context"
+    "database/sql"
+    _ "github.com/go-sql-driver/mysql"
+)
 
 type Session struct {
     username string;
@@ -34,7 +33,7 @@ type UserId string
 
 var loginSessions = map[SessionToken] UserId {}
 var lynxSessions = map[UserId]*Session {}
-
+var db *sql.DB
 var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 
 type IndexPage struct {
@@ -50,9 +49,17 @@ type BuilderPage struct {
     Text string `json:"text"`
     ErrorMsg string
 }
-    
+
+type Credentials struct {
+    Host string `json:"host"`
+    User string `json:"user"`
+    Passsword string `json:"password"`
+    Database string `json:"database"`
+}
+
 func main() {
-    buildLynx();
+    openDatabase()
+    buildLynx()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, _ *http.Request) {
@@ -233,14 +240,33 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Missing user authentication", http.StatusBadRequest)
         return
     }
-    pass, exists := users[username]
-    if !exists {
+
+    q := `
+    select id, name, password_hash
+    from users
+    where name = ?;
+    `
+    if err := db.PingContext(context.Background()); err != nil {
+        log.Fatal(err)
+    }
+    row := db.QueryRow(q, username)
+    if row.Err() != nil {
         serveLogin(w, LoginPage{
-            ErrorMessage: "Sorry, username not found.",
+            ErrorMessage: "Sorry, username not found in database.",
         })
         return
     }
-    if pass != password {
+    var userId int;
+    var name string;
+    var password_hash string;
+    err := row.Scan(&userId, &name, &password_hash)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("userId=%d, name=%s, password_hash=%s\n", userId, name, password_hash)
+
+    // TODO: hash password
+    if password != password_hash {
         serveLogin(w, LoginPage{
             ErrorMessage: "Sorry, password incorrect.",
         })
@@ -579,4 +605,34 @@ func runLynxCommand(user string, args... string) ([]byte, error) {
         fmt.Printf("Error: Code: %d Stderr: %s\n", err.(*exec.ExitError).ExitCode(), string(err.(*exec.ExitError).Stderr))
     }
     return out, err
+}
+
+/**
+ * Opens and configures SQL database using credentials stored in
+ * credentials.json. The credentials.json file must be created manually
+ * on each machine.
+ */
+func openDatabase() {
+    var err error
+    credententialsFile, err := os.Open("credentials.json");
+    if err != nil {
+        log.Fatal(err)
+    }
+    var credentials Credentials
+    err = json.NewDecoder(credententialsFile).Decode(&credentials);
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", credentials.User, credentials.Passsword, credentials.Database))
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    if err := db.PingContext(context.Background()); err != nil {
+        log.Fatal(err)
+    }
+    db.SetConnMaxLifetime(time.Minute * 3)
+    db.SetMaxOpenConns(10)
+    db.SetMaxIdleConns(10)
 }
