@@ -18,6 +18,7 @@ import (
     "context"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
+    // "golang.org/x/crypto/bcrypt"
 )
 
 type Session struct {
@@ -44,6 +45,10 @@ type LoginPage struct {
     ErrorMessage string
 }
 
+type SignupPage struct {
+    ErrorMessage string
+}
+
 type BuilderPage struct {
     Title string `json:"title"`
     Text string `json:"text"`
@@ -62,14 +67,24 @@ func main() {
     buildLynx()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
-    http.HandleFunc("/login", func(w http.ResponseWriter, _ *http.Request) {
-        serveLogin(w, LoginPage{})
+    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == "GET" {
+            serveLogin(w, LoginPage{})
+        } else {
+            handleLogin(w, r)
+        }
+    })
+    http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method == "GET" {
+            serveSignup(w, SignupPage{})
+        } else {
+            handleSignup(w, r)
+        }
     })
     fs := http.FileServer(http.Dir("./web/static/"))
     http.Handle("/static/", http.StripPrefix("/static/", fs))
     http.HandleFunc("/session", sessionPage)
 
-    http.HandleFunc("/feline/login", handleLogin)
     http.HandleFunc("/feline/logout", handleLogout)
     http.HandleFunc("/feline/fileselect", handleFileSelect)
     http.HandleFunc("/feline/reviewselect", handleReviewSelect)
@@ -85,6 +100,15 @@ func main() {
 
 func serveLogin(w http.ResponseWriter, data LoginPage) {
     t, err := template.ParseFiles("./web/templates/login.html")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    t.Execute(w, data)
+}
+
+func serveSignup(w http.ResponseWriter, data SignupPage) {
+    t, err := template.ParseFiles("./web/templates/signup.html")
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -232,6 +256,7 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
+    debug.Printf("handleLogin\n")
     r.ParseForm()
     fmt.Print(r.Form)
     username := r.Form.Get("username")
@@ -241,54 +266,58 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    q := `
-    select id, name, password_hash
-    from users
-    where name = ?;
-    `
-    if err := db.PingContext(context.Background()); err != nil {
-        log.Fatal(err)
-    }
-    row := db.QueryRow(q, username)
-    if row.Err() != nil {
+    user, err := GetUser(username)
+    if err == sql.ErrNoRows {
         serveLogin(w, LoginPage{
-            ErrorMessage: "Sorry, username not found in database.",
+            ErrorMessage: "Hmmm, this username was not found in the database.",
         })
         return
-    }
-    var userId int;
-    var name string;
-    var password_hash string;
-    err := row.Scan(&userId, &name, &password_hash)
-    if err != nil {
+    } else if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("userId=%d, name=%s, password_hash=%s\n", userId, name, password_hash)
 
-    // TODO: hash password
-    if password != password_hash {
+    if !verifyPassword(password, user.passwordHash) {
         serveLogin(w, LoginPage{
             ErrorMessage: "Sorry, password incorrect.",
         })
         return
     }
 
-    token := generateSessionToken()
-    http.SetCookie(w, &http.Cookie{
-        Name: "session_token",
-        Value: string(token),
-        Path: "/",
-    })
-    // TODO: userId will be different from username
-    id := UserId(username)
-    loginSessions[SessionToken(token)] = id
-    if _, exists := lynxSessions[id]; !exists {
-        lynxSessions[id] = &Session{
-            username: username,
-        }
+    startSession(w, r, UserId(username), username)
+}
+
+func handleSignup(w http.ResponseWriter, r *http.Request) {
+    debug.Printf("handleSignup\n")
+    r.ParseForm()
+    username := r.Form.Get("username")
+    password := r.Form.Get("password")
+
+    if len(username) < 3 {
+        http.Error(w, "Username must be at least 3 characters long!", http.StatusBadRequest)
+        return
     }
 
-    http.Redirect(w, r, "/", http.StatusFound)
+    if _, err := GetUser(username); err == nil {
+        serveSignup(w, SignupPage{
+            ErrorMessage: "This user already exists!",
+        })
+        return
+    }
+
+    debug.Printf("[handleSignup] Adding new password: (%s, %s)\n", username, password)
+    q := `INSERT INTO users (name, password_hash) VALUES (?, ?);`
+    hashed, err := hashPassword(password);
+    if err != nil {
+        http.Error(w, "Error hashing password: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    _, err = db.Exec(q, username, hashed)
+    if err != nil {
+        http.Error(w, "Error accessing database: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    startSession(w, r, UserId(username), username)
 }
 
 /**********************************
@@ -635,4 +664,55 @@ func openDatabase() {
     db.SetConnMaxLifetime(time.Minute * 3)
     db.SetMaxOpenConns(10)
     db.SetMaxIdleConns(10)
+}
+
+func hashPassword(password string) (string, error) {
+    // TODO: hash password
+    return password, nil
+}
+
+func verifyPassword(password string, hashed string) bool {
+    // TODO: hash password
+    return password == hashed
+}
+
+func startSession(w http.ResponseWriter, r *http.Request, userId UserId, username string) {
+    debug.Printf("Starting session %s\n", username)
+    token := generateSessionToken()
+    http.SetCookie(w, &http.Cookie{
+        Name: "session_token",
+        Value: string(token),
+        Path: "/",
+    })
+    // TODO: userId will be different from username
+    id := userId
+    loginSessions[SessionToken(token)] = id
+    if _, exists := lynxSessions[id]; !exists {
+        lynxSessions[id] = &Session{
+            username: username,
+        }
+    }
+
+    http.Redirect(w, r, "/", http.StatusFound)
+    
+}
+
+type User struct {
+    userId int;
+    name string;
+    passwordHash string;
+}
+
+func GetUser(username string) (User, error) {
+    q := `
+    SELECT id, name, password_hash
+    FROM users
+    WHERE name = ?;
+    `
+    row := db.QueryRow(q, username)
+    debug.Println("db.QueryRow")
+
+    var user User;
+    err := row.Scan(&user.userId, &user.name, &user.passwordHash)
+    return user, err;
 }

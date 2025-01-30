@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lynx</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div>
+      <h1>Create account.</h1>
+      <div>
+      <span style="color: red">
+        {{.ErrorMessage}}
+      </span>
+      </div>
+      <div></div>
+      <form method="POST" action="/signup">
+        <div>
+          <label for="username">Enter username: </label>
+          <input type="text" name="username" id="username" required />
+        </div>
+        <div>
+          <label for="password">Enter password: </label>
+          <input type="password" name="password" id="password"
+            autocomplete="new-password" />
+        </div>
+        <div>
+          <label for="password">Confirm password: </label>
+          <input type="password" name="password" id="confirm-password" autocomplete="new-password" />
+        </div>
+        <div>
+          <button id="create-account">Create</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      const submitButton = document.getElementById("create-account");
+      const usernameField = document.getElementById("username");
+      const passwordField = document.getElementById("password");
+      const confirmField = document.getElementById("confirm-password");
+
+      usernameField.addEventListener('focusout', (e) => {
+        if (e.target.value.length < 3) {
+          e.target.setCustomValidity("Sorry, usernames should be at least 3 characters long.");
+        } else {
+          e.target.setCustomValidity("");
+        }
+        e.target.reportValidity()
+      });
+
+      confirmField.addEventListener('focusout', (e) => {
+        if (confirmField.value != passwordField.value) {
+          confirmField.setCustomValidity("Passwords do not match!");
+        } else {
+          e.target.setCustomValidity("");
+        }
+        e.target.reportValidity()
+      });
+
+    </script>
+  </body>
+</html>
