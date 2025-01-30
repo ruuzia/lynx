@@ -18,7 +18,7 @@ import (
     "context"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
-    // "golang.org/x/crypto/bcrypt"
+    "golang.org/x/crypto/bcrypt"
 )
 
 type Session struct {
@@ -666,14 +666,12 @@ func openDatabase() {
     db.SetMaxIdleConns(10)
 }
 
-func hashPassword(password string) (string, error) {
-    // TODO: hash password
-    return password, nil
+func hashPassword(password string) ([]byte, error) {
+    return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
 
-func verifyPassword(password string, hashed string) bool {
-    // TODO: hash password
-    return password == hashed
+func verifyPassword(password string, hashed []byte) bool {
+    return bcrypt.CompareHashAndPassword(hashed, []byte(password)) == nil
 }
 
 func startSession(w http.ResponseWriter, r *http.Request, userId UserId, username string) {
@@ -700,7 +698,7 @@ func startSession(w http.ResponseWriter, r *http.Request, userId UserId, usernam
 type User struct {
     userId int;
     name string;
-    passwordHash string;
+    passwordHash []byte;
 }
 
 func GetUser(username string) (User, error) {
