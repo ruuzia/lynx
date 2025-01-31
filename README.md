@@ -4,9 +4,13 @@ Lynx is a tool with robust features for memorizing lines. I originally built it 
 
 ## Running
 
-The project requires Go to be installed on your system. The Go program starts up the HTTP server and calls the C++ back-end. It also compiles the C++ automatically, but you will need CMake and Ninja installed. There are no third party dependencies.
+The project requires Go to be installed on your system. The Go program starts up the HTTP server and calls the C++ back-end. It also compiles the C++ automatically, but you will need CMake and Ninja installed.
 
-`go run feline.go`
+Dependencies: go mysql driver and go std crypto extension
+
+To install dependencies: Change to the repository directory and run `go get github.com/ruuzia/lynx`.
+
+To run program: `go run feline.go`
 
 Then go to http://localhost:2323 for the demo website.
 
