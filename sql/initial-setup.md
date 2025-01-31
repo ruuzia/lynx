@@ -27,9 +27,31 @@ Replace <PASSWORD> with a strong password.
 {
     "host": "localhost",
     "user": "feline_user",
-    "password": "<PASSWORD>"
-    "database": "lynx",
+    "password": "<PASSWORD>",
+    "database": "lynx"
 }
 
 Replace <PASSWORD> with the password from step 2.
 ```
+
+### 3. Grant privileges
+
+Grant privileges for the back-end to execute SQL command.
+
+```sql
+GRANT SELECT, INSERT ON lynx.* TO 'feline_user'@'localhost';
+```
+
+### 4. Create tables
+
+First, open the database in MariaDB:
+```sql
+USE lynx;
+```
+
+Then run the scripts in the sql/ directory.
+```sql
+source sql/create_user_table.sql;
+```
+
+
