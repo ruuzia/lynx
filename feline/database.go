@@ -1,3 +1,5 @@
+/// 
+
 package feline
 
 import (
@@ -8,6 +10,7 @@ import (
     "log"
     "os"
     "time"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
@@ -29,7 +32,7 @@ func OpenDatabase() {
     if err != nil {
         log.Fatal(err)
     }
-    var credentials Credentials
+    var credentials credentials
     err = json.NewDecoder(credententialsFile).Decode(&credentials);
     if err != nil {
         log.Fatal(err)
@@ -69,3 +72,11 @@ func AddUser(username string, passwordHash []byte) (User, error) {
     }
     return GetUser(username)
 }
+
+type credentials struct {
+    Host string `json:"host"`
+    User string `json:"user"`
+    Passsword string `json:"password"`
+    Database string `json:"database"`
+}
+
