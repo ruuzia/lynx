@@ -1,4 +1,4 @@
-package main
+package feline
 
 import (
 	"crypto/rand"
@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-    "context"
     "database/sql"
     _ "github.com/go-sql-driver/mysql"
     "golang.org/x/crypto/bcrypt"
@@ -23,6 +22,7 @@ import (
 
 type Session struct {
     username string;
+    id UserId;
     location string;
     file string;
     page interface{};
@@ -30,11 +30,10 @@ type Session struct {
 }
 
 type SessionToken string
-type UserId string
+type UserId int
 
 var loginSessions = map[SessionToken] UserId {}
 var lynxSessions = map[UserId]*Session {}
-var db *sql.DB
 var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 
 type IndexPage struct {
@@ -62,8 +61,8 @@ type Credentials struct {
     Database string `json:"database"`
 }
 
-func main() {
-    openDatabase()
+func OpenServer(address string) {
+    OpenDatabase()
     buildLynx()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
@@ -95,7 +94,7 @@ func main() {
     http.HandleFunc("/feline/finishbuilder", handleFinishBuilder)
 
     fmt.Println("Listening to localhost:2323")
-    log.Fatal(http.ListenAndServe(":2323", nil))
+    log.Fatal(http.ListenAndServe(address, nil))
 }
 
 func serveLogin(w http.ResponseWriter, data LoginPage) {
@@ -165,7 +164,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) (UserId, error) {
     if err != nil {
         if err == http.ErrNoCookie {
             debug.Println("No session_token cookie. Redirecting to /login")
-            return "", err
+            return -1, err
         }
         log.Fatal(err)
     }
@@ -175,7 +174,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) (UserId, error) {
     userId, is_authenticated := loginSessions[token]
     if !is_authenticated {
         debug.Println("Invalid session_token cookie. Redirecting to /login")
-        return "", errors.New("Invalid token")
+        return -1, errors.New("Invalid token")
     }
 
     return userId, nil
@@ -276,14 +275,14 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
         log.Fatal(err)
     }
 
-    if !verifyPassword(password, user.passwordHash) {
+    if !verifyPassword(password, user.PasswordHash) {
         serveLogin(w, LoginPage{
             ErrorMessage: "Sorry, password incorrect.",
         })
         return
     }
 
-    startSession(w, r, UserId(username), username)
+    startSession(w, r, user)
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
@@ -305,19 +304,19 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
     }
 
     debug.Printf("[handleSignup] Adding new password: (%s, %s)\n", username, password)
-    q := `INSERT INTO users (name, password_hash) VALUES (?, ?);`
     hashed, err := hashPassword(password);
     if err != nil {
         http.Error(w, "Error hashing password: " + err.Error(), http.StatusInternalServerError)
         return
     }
-    _, err = db.Exec(q, username, hashed)
+
+    user, err := AddUser(username, hashed)
     if err != nil {
         http.Error(w, "Error accessing database: " + err.Error(), http.StatusInternalServerError)
         return
     }
 
-    startSession(w, r, UserId(username), username)
+    startSession(w, r, user)
 }
 
 /**********************************
@@ -636,36 +635,6 @@ func runLynxCommand(user string, args... string) ([]byte, error) {
     return out, err
 }
 
-/**
- * Opens and configures SQL database using credentials stored in
- * credentials.json. The credentials.json file must be created manually
- * on each machine.
- */
-func openDatabase() {
-    var err error
-    credententialsFile, err := os.Open("credentials.json");
-    if err != nil {
-        log.Fatal(err)
-    }
-    var credentials Credentials
-    err = json.NewDecoder(credententialsFile).Decode(&credentials);
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", credentials.User, credentials.Passsword, credentials.Database))
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    if err := db.PingContext(context.Background()); err != nil {
-        log.Fatal(err)
-    }
-    db.SetConnMaxLifetime(time.Minute * 3)
-    db.SetMaxOpenConns(10)
-    db.SetMaxIdleConns(10)
-}
-
 func hashPassword(password string) ([]byte, error) {
     return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
@@ -674,8 +643,8 @@ func verifyPassword(password string, hashed []byte) bool {
     return bcrypt.CompareHashAndPassword(hashed, []byte(password)) == nil
 }
 
-func startSession(w http.ResponseWriter, r *http.Request, userId UserId, username string) {
-    debug.Printf("Starting session %s\n", username)
+func startSession(w http.ResponseWriter, r *http.Request, user User) {
+    debug.Printf("Starting session %s\n", user.Name)
     token := generateSessionToken()
     http.SetCookie(w, &http.Cookie{
         Name: "session_token",
@@ -683,34 +652,14 @@ func startSession(w http.ResponseWriter, r *http.Request, userId UserId, usernam
         Path: "/",
     })
     // TODO: userId will be different from username
-    id := userId
-    loginSessions[SessionToken(token)] = id
-    if _, exists := lynxSessions[id]; !exists {
-        lynxSessions[id] = &Session{
-            username: username,
+    loginSessions[SessionToken(token)] = user.Id
+    if _, exists := lynxSessions[user.Id]; !exists {
+        lynxSessions[user.Id] = &Session{
+            username: user.Name,
+            id: user.Id,
         }
     }
 
     http.Redirect(w, r, "/", http.StatusFound)
     
-}
-
-type User struct {
-    userId int;
-    name string;
-    passwordHash []byte;
-}
-
-func GetUser(username string) (User, error) {
-    q := `
-    SELECT id, name, password_hash
-    FROM users
-    WHERE name = ?;
-    `
-    row := db.QueryRow(q, username)
-    debug.Println("db.QueryRow")
-
-    var user User;
-    err := row.Scan(&user.userId, &user.name, &user.passwordHash)
-    return user, err;
 }
