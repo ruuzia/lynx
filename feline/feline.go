@@ -174,8 +174,8 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
     StartSession(w, r, user)
 }
 
-func get_file_list(session *Session) ([]string, error) {
-    debug.Println("get_file_list")
+func getFileList(session *Session) ([]string, error) {
+    debug.Println("getFileList")
     var files []string
     out, err := runLynxCommand(session.username, "list-files")
     debug.Println(string(out))

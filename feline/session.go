@@ -99,7 +99,7 @@ type FileSelectPage struct {
 func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session) {
     debug.Println("dispatchFileSelect")
 
-    files, err := get_file_list(session)
+    files, err := getFileList(session)
     if err != nil {
         log.Fatal(err)
     }
