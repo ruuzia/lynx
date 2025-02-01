@@ -2,6 +2,7 @@ Session.vim
 feline
 lynx
 build/
+data/
 .idea
 cmake-build-debug
 credentials.json
