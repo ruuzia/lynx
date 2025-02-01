@@ -35,7 +35,6 @@ func Login(w http.ResponseWriter, user *User) {
         Value: string(token),
         Path: "/",
     })
-    // TODO: userId will be different from username
     loginSessions[SessionToken(token)] = user.Id
 }
 

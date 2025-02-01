@@ -12,17 +12,7 @@ import (
 	"strings"
 )
 
-type UserId int
-
 var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
-
-type LoginPage struct {
-    ErrorMessage string
-}
-
-type SignupPage struct {
-    ErrorMessage string
-}
 
 func OpenServer(address string) {
     OpenDatabase()
@@ -215,4 +205,12 @@ func runLynxCommand(user string, args... string) ([]byte, error) {
         fmt.Printf("Error: Code: %d Stderr: %s\n", err.(*exec.ExitError).ExitCode(), string(err.(*exec.ExitError).Stderr))
     }
     return out, err
+}
+
+type LoginPage struct {
+    ErrorMessage string
+}
+
+type SignupPage struct {
+    ErrorMessage string
 }

@@ -11,6 +11,8 @@ import (
 	"html/template"
 )
 
+var lynxSessions = map[UserId]*Session {}
+
 type Session struct {
     username string;
     id UserId;
@@ -19,10 +21,9 @@ type Session struct {
     page interface{};
     builderPage BuilderPage;
 }
-
 type SessionToken string
+type UserId int
 
-var lynxSessions = map[UserId]*Session {}
 
 type IndexPage struct {
     Name string
