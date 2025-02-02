@@ -53,19 +53,19 @@ func StartSession(w http.ResponseWriter, r *http.Request, user User) {
  *** SESSION PAGE DISPATCHERS *****
  **********************************/
 
-func dispatchReviewSelect(w http.ResponseWriter, r *http.Request, session *Session) {
+func dispatchSettings(w http.ResponseWriter, r *http.Request, session *Session) {
     type ReviewTypeDesc struct {
         Code string
         Title string
         Description string
     }
 
-    type ReviewSelectPage struct {
+    type SettingsPage struct {
         Options []ReviewTypeDesc
     }
 
-    session.location = "reviewselect"
-    session.page = ReviewSelectPage{
+    session.location = "settings"
+    session.page = SettingsPage{
         []ReviewTypeDesc{
             {
                 Code: "in_order",
@@ -113,7 +113,7 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
     sessionUpdatePage(w, r)
 }
 
-func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session) {
+func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
     out, err := runLynxCommand(session.username, "lines", "--file", session.file)
     if err != nil {
         debug.Fatal(err)
@@ -126,11 +126,13 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
 
     type LineReviewerPage struct {
         Lines []LineData
+        ReviewMethod string
     }
 
     session.location = "linereviewer"
     session.page = LineReviewerPage {
         Lines: lines,
+        ReviewMethod: reviewMethod,
     }
     sessionUpdatePage(w, r)
 
@@ -256,9 +258,7 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
 
     if session.builderPage.ReturnTo == "/session" && session.location == "fileselect" {
         session.file = session.builderPage.Title
-        dispatchLineReviewer(w, r, session)
-        // TODO: implement review select
-        // dispatchReviewSelect(w, r, session)
+        dispatchSettings(w, r, session)
     }
 
     http.Redirect(w, r, session.builderPage.ReturnTo, http.StatusFound)
@@ -295,13 +295,13 @@ func handleStartSession(w http.ResponseWriter, r *http.Request) {
     dispatchFileSelect(w, r, lynxSessions[userId])
 }
 
-func handleReviewSelect(w http.ResponseWriter, r *http.Request) {
+func handleSettings(w http.ResponseWriter, r *http.Request) {
     session, err := ActiveSession(w, r)
     if err != nil {
         redirectLogin(w, r)
         return
     }
-    if session.location != "reviewselect" {
+    if session.location != "settings" {
         sendPage(w, session)
         return
     }
@@ -314,7 +314,7 @@ func handleReviewSelect(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    dispatchLineReviewer(w, r, session)
+    dispatchLineReviewer(w, r, session, reviewType)
 }
 
 func handleFileSelect(w http.ResponseWriter, r *http.Request) {
@@ -344,9 +344,7 @@ func handleFileSelect(w http.ResponseWriter, r *http.Request) {
     data := session.page.(FileSelectPage)
 
     session.file = data.Files[index]
-    dispatchLineReviewer(w, r, session)
-    // TODO: implement review select
-    // dispatchReviewSelect(w, r, session)
+    dispatchSettings(w, r, session)
 }
 
 /******************************

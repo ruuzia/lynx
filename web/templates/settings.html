@@ -9,7 +9,7 @@
 <body>
   <h1>Select a review strategy</h1>
   <div>
-    <form action="/feline/reviewselect" method="post">
+    <form action="/feline/settings" method="post">
         {{ range $item := .Options }}
         <div>
           <button name="reviewtype" value="{{$item.Code}}" onclick>{{$item.Title}}</button>

@@ -38,7 +38,7 @@ func OpenServer(address string) {
 
     http.HandleFunc("/feline/logout", handleLogout)
     http.HandleFunc("/feline/fileselect", handleFileSelect)
-    http.HandleFunc("/feline/reviewselect", handleReviewSelect)
+    http.HandleFunc("/feline/settings", handleSettings)
     http.HandleFunc("/feline/startsession", handleStartSession)
     http.HandleFunc("/feline/starline", handleStarLine)
     http.HandleFunc("/feline/linenotes", handleLineNotes)
