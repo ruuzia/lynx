@@ -2,7 +2,6 @@ package feline
 
 import (
     "database/sql"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -45,6 +44,7 @@ func OpenServer(address string) {
     http.HandleFunc("/feline/linenotes", handleLineNotes)
     http.HandleFunc("/feline/updatebuilder", handleUpdateBuilder)
     http.HandleFunc("/feline/finishbuilder", handleFinishBuilder)
+    http.HandleFunc("/feline/list-line-sets", handleListLineSets)
 
     fmt.Println("Listening to localhost:2323")
     log.Fatal(http.ListenAndServe(address, nil))

@@ -32,6 +32,7 @@ type IndexPage struct {
 type BuilderPage struct {
     Title string `json:"title"`
     Text string `json:"text"`
+    ReturnTo string
     ErrorMsg string
 }
 
@@ -188,6 +189,20 @@ func handleStarLine(w http.ResponseWriter, r *http.Request) {
     debug.Println(string(out))
 }
 
+func handleListLineSets(w http.ResponseWriter, r *http.Request) {
+    session, err := ActiveSession(w, r)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    names, err := GetLineSets(session.id)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    json.NewEncoder(w).Encode(&names)
+}
+
 func handleUpdateBuilder(w http.ResponseWriter, r *http.Request) {
     session, err := ActiveSession(w, r)
     if err != nil {
@@ -232,14 +247,21 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    AddLineSet(session.id, session.builderPage.Text)
+    AddLineSet(session.id, session.builderPage.Title)
 
     err = os.Remove(tempFile)
     if err != nil {
         debug.Println(err)
     }
 
-    http.Redirect(w, r, "/", http.StatusFound)
+    if session.builderPage.ReturnTo == "/session" && session.location == "fileselect" {
+        session.file = session.builderPage.Title
+        dispatchLineReviewer(w, r, session)
+        // TODO: implement review select
+        // dispatchReviewSelect(w, r, session)
+    }
+
+    http.Redirect(w, r, session.builderPage.ReturnTo, http.StatusFound)
 }
 
 func handleLineNotes(w http.ResponseWriter, r *http.Request) {
@@ -359,6 +381,11 @@ func serveBuilder(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         redirectLogin(w, r)
         return
+    }
+
+    r.ParseForm()
+    if r.Form.Get("returnTo") != "" {
+        session.builderPage.ReturnTo = "/" + r.Form.Get("returnTo")
     }
 
     t, err := template.ParseFiles("./web/templates/builder.html")
