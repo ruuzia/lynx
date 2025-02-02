@@ -176,17 +176,10 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 
 func getFileList(session *Session) ([]string, error) {
     debug.Println("getFileList")
-    var files []string
-    out, err := runLynxCommand(session.username, "list-files")
-    debug.Println(string(out))
+    files, err := GetLineSets(session.id)
     if err != nil {
         return nil, err
     }
-    err = json.Unmarshal(out, &files)
-    if err != nil {
-        return nil, err
-    }
-    debug.Println(files)
     return files, nil
 }
 

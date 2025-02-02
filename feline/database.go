@@ -51,6 +51,34 @@ func OpenDatabase() {
     db.SetMaxIdleConns(10)
 }
 
+func GetLineSets(user_id UserId) ([]string, error) {
+    var files []string
+    q := `
+    SELECT title FROM line_sets WHERE user_id = ?
+    `
+    rows, err := db.Query(q, int(user_id))
+    if err != nil {
+        return nil, err
+    }
+    for rows.Next() {
+        var name string
+        if err = rows.Scan(&name); err != nil {
+            return nil, err
+        }
+
+        files = append(files, name)
+    }
+    return files, nil
+}
+
+func AddLineSet(user_id UserId, title string) error {
+    q := `
+    INSERT INTO line_sets (user_id, title) VALUES (?, ?)
+    `
+    _, err := db.Exec(q, user_id, title)
+    return err
+}
+
 func GetUser(username string) (User, error) {
     q := `
     SELECT id, name, password_hash

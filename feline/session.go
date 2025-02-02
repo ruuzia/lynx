@@ -232,6 +232,8 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    AddLineSet(session.id, session.builderPage.Text)
+
     err = os.Remove(tempFile)
     if err != nil {
         debug.Println(err)
