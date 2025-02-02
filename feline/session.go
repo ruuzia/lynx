@@ -364,7 +364,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
         Name string
     }
     data := HomePage {
-        ActiveSession: session.location != "",
+        ActiveSession: session.location == "linereviewer",
         Name: session.username,
     }
 
