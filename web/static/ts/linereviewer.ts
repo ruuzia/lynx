@@ -38,7 +38,7 @@ function previousLine() {
 
 function display() {
     const notesText = document.getElementById("linenotes");
-    if (!(notesText instanceof HTMLInputElement)) {
+    if (!(notesText instanceof HTMLTextAreaElement)) {
         throw new Error("Missing linenotes");
     }
     const starredCheck = document.getElementById("starred");
