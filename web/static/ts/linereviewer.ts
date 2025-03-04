@@ -9,12 +9,13 @@ interface Card {
 declare var lineData: Card[];
 declare var reviewMethod: string;
 
-let i = 0;
-let show_back = false;
-let is_starred = false;
 const default_front_fn = (item: Card) => item.cue;
 const default_back_fn = (item: Card) => item.line;
 const default_header_fn = (item: Card) => "Line " + (item.id + 1);
+
+let i = 0;
+let show_back = false;
+let is_starred = false;
 let header_fn = default_header_fn
 let front_fn = default_front_fn
 let back_fn = default_back_fn
@@ -100,9 +101,9 @@ function display() {
 
 function init() {
     console.log("init() " + reviewMethod);
-    front_fn = item => item.cue;
-    back_fn = item => item.line;
-    header_fn = item => "Line " + (item.id + 1);
+    front_fn = default_front_fn;
+    back_fn = default_back_fn;
+    header_fn = default_header_fn;
     switch (reviewMethod) {
     case "in_order":
         break;
