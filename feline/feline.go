@@ -16,6 +16,7 @@ var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 func OpenServer(address string) {
     OpenDatabase()
     buildLynx()
+    runTscWatch()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +91,19 @@ func buildLynx() {
     execute("", "mkdir", "-p", "build")
     execute("./build/", "cmake", "..", "-G", "Ninja")
     execute("./build/", "ninja")
+}
+
+func runTscWatch() {
+    fmt.Printf("Starting TS development server...\n")
+    fmt.Printf("npx tsc --watch\n")
+    cmd := exec.Command("npx", "tsc", "--watch");
+    cmd.Dir = "./web/static/"
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    err := cmd.Start();
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 func handleLogout(w http.ResponseWriter, r *http.Request) {
