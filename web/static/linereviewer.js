@@ -15,6 +15,9 @@ revealButton.addEventListener("click", () => {
 let i = 0;
 let show_back = false;
 let is_starred = false;
+let header_fn
+let front_fn
+let back_fn
 
 function nextLine() {
     if (i < lineData.length) {
@@ -33,9 +36,9 @@ function previousLine() {
 }
 
 function display() {
-    frontText.innerText = lineData[i].cue
-    revealText.innerText = lineData[i].line
-    headerText.innerText = "Line " + (lineData[i].id + 1)
+    frontText.innerText = front_fn(lineData[i]);
+    revealText.innerText = back_fn(lineData[i]);
+    headerText.innerText = header_fn(lineData[i]);
     notesText.value = lineData[i].notes
     starred.checked = lineData[i].starred;
 
@@ -72,4 +75,32 @@ function display() {
     }
 }
 
-display()
+function init() {
+    console.log("init() " + reviewMethod);
+    front_fn = item => item.cue;
+    back_fn = item => item.line;
+    header_fn = item => "Line " + (item.id + 1);
+    switch (reviewMethod) {
+    case "in_order":
+        break;
+    case "random":
+        // Quick and dirty shuffle... improve me?
+        for (let i = 0; i < lineData.length; i++) {
+            const n = Math.floor(Math.random() * lineData.length);
+            lineData[i] = lineData[n];
+        }
+        break;
+    case "cues":
+        front_fn = item => item.line;
+        back_fn = item => item.cue;
+        break;
+    case "no_cues":
+        front_fn = item => "";
+        back_fn = item => item.line;
+        break;
+    }
+}
+
+init();
+
+display();
