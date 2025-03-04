@@ -1,36 +1,23 @@
-const headerText = document.getElementById("header")!;
-const frontText = document.getElementById("front")!;
-const revealButton = document.getElementById("revealbtn")!;
-const revealText = document.getElementById("back")!;
-const frontInputs = document.getElementById("front_inputs")!;
-const backInputs = document.getElementById("back_inputs")!;
-const starredCheck = document.getElementById("starred")!;
-const notesText = document.getElementById("linenotes")! as HTMLInputElement;
-
-revealButton.addEventListener("click", () => {
-    show_back = true;
-    display()
-});
-
 interface Card {
     cue: string;
     line: string;
     notes: string;
     id: number;
+    starred: boolean;
 }
+
+declare var lineData: Card[];
+declare var reviewMethod: string;
 
 let i = 0;
 let show_back = false;
 let is_starred = false;
-let default_front_fn = (item: Card) => item.cue;
-let default_back_fn = (item: Card) => item.line;
-let default_header_fn = (item: Card) => "Line " + (item.id + 1);
+const default_front_fn = (item: Card) => item.cue;
+const default_back_fn = (item: Card) => item.line;
+const default_header_fn = (item: Card) => "Line " + (item.id + 1);
 let header_fn = default_header_fn
 let front_fn = default_front_fn
 let back_fn = default_back_fn
-
-declare var lineData: Card[];
-declare var reviewMethod: string;
 
 function nextLine() {
     if (i < lineData.length) {
@@ -49,6 +36,24 @@ function previousLine() {
 }
 
 function display() {
+    const notesText = document.getElementById("linenotes");
+    if (!(notesText instanceof HTMLInputElement)) {
+        throw new Error("Missing linenotes");
+    }
+    const starredCheck = document.getElementById("starred");
+    if (!(starredCheck instanceof HTMLInputElement)) {
+        throw new Error("Missing starredCheck");
+    }
+    const revealButton = document.getElementById("revealbtn");
+    if (!(revealButton instanceof HTMLButtonElement)) {
+        throw new Error("Missing revealbtn");
+    }
+    const headerText = document.getElementById("header")!;
+    const frontText = document.getElementById("front")!;
+    const revealText = document.getElementById("back")!;
+    const frontInputs = document.getElementById("front_inputs")!;
+    const backInputs = document.getElementById("back_inputs")!;
+
     frontText.innerText = front_fn(lineData[i]);
     revealText.innerText = back_fn(lineData[i]);
     headerText.innerText = header_fn(lineData[i]);
@@ -59,13 +64,13 @@ function display() {
     revealButton.hidden = show_back;
     frontInputs.hidden = show_back;
     backInputs.hidden = !show_back;
-    frontText.style.setProperty("opacity", show_back ? 0.5 : 1.0);
+    frontText.style.setProperty("opacity", show_back ? "0.5" : "1.0");
 
-    starredCheck.onchange = async (e) => {
+    starredCheck.onchange = async () => {
         console.log("starred.onchange");
         const payload = {
             "line": i,
-            "starred": e.target.checked,
+            "starred": starredCheck.checked,
         };
         const result = await fetch("/feline/starline", {
             method: "POST",
@@ -74,18 +79,23 @@ function display() {
         console.log(result);
     };
 
-    notesText.oninput = async (e) => {
+    notesText.oninput = async () => {
         console.log("notesText.oninput")
         const payload = {
             "line": i,
-            "text": e.target.value,
+            "text": notesText.value,
         }
         await fetch("/feline/linenotes", {
             method: "POST",
             body: JSON.stringify(payload)
         })
-        
     }
+
+    revealButton.addEventListener("click", () => {
+        show_back = true;
+        display()
+    });
+
 }
 
 function init() {
@@ -108,7 +118,7 @@ function init() {
         back_fn = item => item.cue;
         break;
     case "no_cues":
-        front_fn = item => "";
+        front_fn = _ => "";
         back_fn = item => item.line;
         break;
     }
