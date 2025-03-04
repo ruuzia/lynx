@@ -14,5 +14,8 @@
   "description": "",
   "dependencies": {
     "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
   }
 }

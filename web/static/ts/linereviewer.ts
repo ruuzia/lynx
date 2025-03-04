@@ -1,23 +1,36 @@
-const headerText = document.getElementById("header")
-const frontText = document.getElementById("front")
-const revealButton = document.getElementById("revealbtn");
-const revealText = document.getElementById("back");
-const frontInputs = document.getElementById("front_inputs");
-const backInputs = document.getElementById("back_inputs");
-const starredCheck = document.getElementById("starred");
-const notesText = document.getElementById("linenotes");
+const headerText = document.getElementById("header")!;
+const frontText = document.getElementById("front")!;
+const revealButton = document.getElementById("revealbtn")!;
+const revealText = document.getElementById("back")!;
+const frontInputs = document.getElementById("front_inputs")!;
+const backInputs = document.getElementById("back_inputs")!;
+const starredCheck = document.getElementById("starred")!;
+const notesText = document.getElementById("linenotes")! as HTMLInputElement;
 
 revealButton.addEventListener("click", () => {
     show_back = true;
     display()
 });
 
+interface Card {
+    cue: string;
+    line: string;
+    notes: string;
+    id: number;
+}
+
 let i = 0;
 let show_back = false;
 let is_starred = false;
-let header_fn
-let front_fn
-let back_fn
+let default_front_fn = (item: Card) => item.cue;
+let default_back_fn = (item: Card) => item.line;
+let default_header_fn = (item: Card) => "Line " + (item.id + 1);
+let header_fn = default_header_fn
+let front_fn = default_front_fn
+let back_fn = default_back_fn
+
+declare var lineData: Card[];
+declare var reviewMethod: string;
 
 function nextLine() {
     if (i < lineData.length) {
@@ -40,7 +53,7 @@ function display() {
     revealText.innerText = back_fn(lineData[i]);
     headerText.innerText = header_fn(lineData[i]);
     notesText.value = lineData[i].notes
-    starred.checked = lineData[i].starred;
+    starredCheck.checked = lineData[i].starred;
 
     revealText.hidden = !show_back;
     revealButton.hidden = show_back;
@@ -48,7 +61,7 @@ function display() {
     backInputs.hidden = !show_back;
     frontText.style.setProperty("opacity", show_back ? 0.5 : 1.0);
 
-    starred.onchange = async (e) => {
+    starredCheck.onchange = async (e) => {
         console.log("starred.onchange");
         const payload = {
             "line": i,
