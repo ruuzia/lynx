@@ -45,44 +45,6 @@
       <button>Start new review session</button>
     </form>
     <style>
-#line-set-listing-container {
-  border: var(--fg) 2px solid;
-  width: 500px;
-  max-width: calc(100vw - 4px);
-  margin-left: auto;
-  margin-right: auto;
-  padding-bottom: 20px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-#line-set-listing-container {
-  animation: 1s ease 0s 1 reveal;
-}
-
-#line-set-listing {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
-}
-
-.lineset-name {
-  margin: auto;
-  font-size: 20px;
-}
-
-.lineset-review {
-  padding: 0;
-}
-
-@keyframes reveal{
-  from {
-    max-height: 0;
-  }
-  to {
-    max-height: 1000px;
-  }
-}
   </style>
 
     <div id="line-set-listing-container" hidden=true>
