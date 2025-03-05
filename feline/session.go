@@ -189,6 +189,13 @@ func handleStarLine(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
+    //-------------------------------------
+    // New: mysql
+    err = LineSetFlagged(session.id, session.file, payload.Starred)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
+    //-------------------------------------
     debug.Println(string(out))
 }
 
