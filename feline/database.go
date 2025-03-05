@@ -79,6 +79,27 @@ func AddLineSet(user_id UserId, title string) error {
     return err
 }
 
+func GetLineSetId(user_id UserId, title string) (id int, err error) {
+    row := db.QueryRow(`
+        SELECT id FROM line_sets WHERE user_id = ? AND title = ?
+    `, user_id, title)
+    err = row.Scan(&id)
+    return id, err
+}
+
+func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
+    line_set_id, err := GetLineSetId(user_id, line_set);
+    if err != nil {
+        return err
+    }
+    q := `
+    INSERT INTO line_data (user_id, line_set_id, line_number, location, cue, line, notes, starred)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `
+    _, err = db.Exec(q, user_id, line_set_id, item.Id, "1", item.Cue, item.Line, item.Notes, item.Starred)
+    return err
+}
+
 func GetUser(username string) (User, error) {
     q := `
     SELECT id, name, password_hash
