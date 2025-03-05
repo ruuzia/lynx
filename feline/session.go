@@ -138,15 +138,6 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
 
 }
 
-type LineData struct {
-    Id int `json:"id"`
-    Cue string `json:"cue"`
-    Line string `json:"line"`
-    Starred bool `json:"starred"`
-    Notes string `json:"notes"`
-};
-
-
 type SessionFinishedPage struct {
 }
 

@@ -21,6 +21,14 @@ type User struct {
     PasswordHash []byte;
 }
 
+type LineData struct {
+    Id int `json:"id"`
+    Cue string `json:"cue"`
+    Line string `json:"line"`
+    Starred bool `json:"starred"`
+    Notes string `json:"notes"`
+};
+
 /**
  * Opens and configures SQL database using credentials stored in
  * credentials.json. The credentials.json file must be created manually
