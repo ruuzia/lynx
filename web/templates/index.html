@@ -10,8 +10,9 @@
   <h1>Welcome to Lynx, {{.Name}}!</h1>
   <div>
     {{if .ActiveSession}}
+    <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
     <form action="/session">
-      <button>Continue review</button>
+      <button>Continue reviewing</button>
     </form>
     {{end}}
     <form action="/feline/startsession">
@@ -20,9 +21,7 @@
     <form action="/builder">
       <button>Add new line set</button>
     </form>
-    <form action="/feline/logout">
-      <button>Logout</button>
-    </form>
+    <p>You can also <a href="/feline/logout">logout here!</a></p>
   </div>
 </body>
 </html>

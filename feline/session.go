@@ -16,6 +16,8 @@ import (
 
 var lynxSessions = map[database.UserId]*Session {}
 
+//--------------------------------------------------------
+
 type Session struct {
     username string;
     id database.UserId;
@@ -38,6 +40,18 @@ type BuilderPage struct {
     ReturnTo string
     ErrorMsg string
 }
+
+type LineReviewerPage struct {
+    Lines []database.LineData
+    ReviewMethod string
+}
+
+type HomePage struct {
+    ActiveSession string;
+    Name string
+}
+
+//---------------------------------------------------------
 
 func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
     debug.Printf("Starting session %s\n", user.Name)
@@ -122,11 +136,6 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
         debug.Println(err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
-    }
-
-    type LineReviewerPage struct {
-        Lines []database.LineData
-        ReviewMethod string
     }
 
     session.location = "linereviewer"
@@ -388,14 +397,11 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
         redirectLogin(w, r)
         return
     }
-
-    type HomePage struct {
-        ActiveSession bool
-        Name string
-    }
     data := HomePage {
-        ActiveSession: session.location == "linereviewer",
         Name: session.username,
+    }
+    if session.location == "linereviewer" {
+        data.ActiveSession = session.file;
     }
 
     t, err := template.ParseFiles("./web/templates/index.html")
