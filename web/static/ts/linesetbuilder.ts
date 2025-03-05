@@ -1,6 +1,6 @@
-const title = document.getElementById("title");
-const data = document.getElementById("data");
-const submit = document.getElementById("submit")
+const title = document.getElementById("title")! as HTMLInputElement;
+const data = document.getElementById("data")! as HTMLTextAreaElement;
+const submit = document.getElementById("submit")! as HTMLButtonElement;
 
 const update = async () => {
     const payload = {
