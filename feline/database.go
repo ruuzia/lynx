@@ -134,31 +134,23 @@ func GetLineData(user_id UserId, title string) (lineData []LineData, err error) 
     return lineData, err
 }
 
-func LineSetFlagged(user_id UserId, title string, flagged bool) (err error) {
-    line_set_id, err := GetLineSetId(user_id, title);
-    if err != nil {
-        return err
-    }
+func LineSetFlagged(user_id UserId, line_id int, flagged bool) (err error) {
     q := `
     UPDATE line_data
     SET starred = ?
-    WHERE user_id = ? AND line_set_id = ?
+    WHERE user_id = ? AND line_number = ?
     `
-    _, err = db.Exec(q, flagged, user_id, line_set_id)
+    _, err = db.Exec(q, flagged, user_id, line_id)
     return err
 }
 
-func LineSetNotes(user_id UserId, title string, notes string) (err error) {
-    line_set_id, err := GetLineSetId(user_id, title);
-    if err != nil {
-        return err
-    }
+func LineSetNotes(user_id UserId, line_id int, notes string) (err error) {
     q := `
     UPDATE line_data
     SET notes = ?
-    WHERE user_id = ? AND line_set_id = ?
+    WHERE user_id = ? AND line_number = ?
     `
-    _, err = db.Exec(q, notes, user_id, line_set_id)
+    _, err = db.Exec(q, notes, user_id, line_id)
     return err
 }
 

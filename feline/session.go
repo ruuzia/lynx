@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -116,26 +115,11 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
 }
 
 func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
-    out, err := runLynxCommand(session.username, "lines", "--file", session.file)
+    lines, err := GetLineData(session.id, session.file)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
-    var lines []LineData
-    err = json.Unmarshal(out, &lines)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    //------------------------
-    // new: mysql
-    lines2, err := GetLineData(session.id, session.file)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    //------------------------
 
     type LineReviewerPage struct {
         Lines []LineData
@@ -144,7 +128,7 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
 
     session.location = "linereviewer"
     session.page = LineReviewerPage {
-        Lines: lines2,
+        Lines: lines,
         ReviewMethod: reviewMethod,
     }
     sessionUpdatePage(w, r)
@@ -184,22 +168,14 @@ func handleStarLine(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
+    debug.Println("handleStarLine")
     debug.Println("starred: ", payload.Starred)
-    debug.Println("line: ", strconv.Itoa(payload.Line))
+    debug.Println("line: ", payload.Line)
 
-    out, err := runLynxCommand(session.username, "set-flagged", session.file, strconv.Itoa(payload.Line), strconv.FormatBool(payload.Starred))
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    //-------------------------------------
-    // New: mysql
-    err = LineSetFlagged(session.id, session.file, payload.Starred)
+    err = LineSetFlagged(session.id, payload.Line, payload.Starred)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
-    //-------------------------------------
-    debug.Println(string(out))
 }
 
 func handleListLineSets(w http.ResponseWriter, r *http.Request) {
@@ -299,7 +275,7 @@ func parseLineData(data string) (lineData []LineData, err error) {
         cue := lines[0]
         text := strings.Join(lines[1:], "\n")
         item := LineData {
-            Id: 0,
+            Id: len(lineData),
             Cue: cue,
             Line: text,
             Starred: false,
@@ -332,15 +308,11 @@ func handleLineNotes(w http.ResponseWriter, r *http.Request) {
     }
     debug.Println("line: ", payload.Line)
     debug.Println("notes: ", payload.Notes)
-    runLynxCommand(session.username, "set-notes", session.file, strconv.Itoa(payload.Line), payload.Notes)
-    //-------------------------------------------------------
-    // NEW: mysql
-    err = LineSetNotes(session.id, session.file, payload.Notes);
+    err = LineSetNotes(session.id, payload.Line, payload.Notes);
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
-    //-------------------------------------------------------
 }
 
 func handleStartSession(w http.ResponseWriter, r *http.Request) {
