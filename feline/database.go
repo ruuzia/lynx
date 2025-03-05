@@ -95,6 +95,8 @@ func GetLineSetId(user_id UserId, title string) (id int, err error) {
     return id, err
 }
 
+//-----------------------------------------------------------
+
 func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
     line_set_id, err := GetLineSetId(user_id, line_set);
     if err != nil {

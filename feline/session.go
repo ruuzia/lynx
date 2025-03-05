@@ -126,6 +126,14 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
         debug.Fatal(err)
     }
 
+    //------------------------
+    // new: mysql
+    lines2, err := GetLineData(session.id, session.file)
+    if err != nil {
+        debug.Fatal(err)
+    }
+    //------------------------
+
     type LineReviewerPage struct {
         Lines []LineData
         ReviewMethod string
@@ -133,7 +141,7 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
 
     session.location = "linereviewer"
     session.page = LineReviewerPage {
-        Lines: lines,
+        Lines: lines2,
         ReviewMethod: reviewMethod,
     }
     sessionUpdatePage(w, r)
