@@ -263,7 +263,11 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    AddLineSet(session.id, session.builderPage.Title)
+    err = AddLineSet(session.id, session.builderPage.Title)
+    if err != nil {
+        http.Error(w, "Error adding set " + err.Error(), http.StatusInternalServerError)
+        return
+    }
 
     lines, err := parseLineData(session.builderPage.Text)
     for _, line := range lines {
