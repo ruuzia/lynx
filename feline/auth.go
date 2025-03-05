@@ -3,13 +3,15 @@ package feline
 import (
 	"crypto/rand"
 	"encoding/base32"
-    "errors"
-    "log"
-    "net/http"
-    "golang.org/x/crypto/bcrypt"
+	"errors"
+	"log"
+	"net/http"
+
+	"github.com/ruuzia/lynx/feline/database"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var loginSessions = map[SessionToken] UserId {}
+var loginSessions = map[SessionToken] database.UserId {}
 
 func HashPassword(password string) ([]byte, error) {
     return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -27,7 +29,7 @@ func ActiveSession(w http.ResponseWriter, r *http.Request) (*Session, error) {
     return lynxSessions[userId], nil
 }
 
-func Login(w http.ResponseWriter, user *User) {
+func Login(w http.ResponseWriter, user *database.User) {
     debug.Println("[auth] Login: Creating session token cookie")
     token := generateSessionToken()
     http.SetCookie(w, &http.Cookie{
@@ -38,7 +40,7 @@ func Login(w http.ResponseWriter, user *User) {
     loginSessions[SessionToken(token)] = user.Id
 }
 
-func CheckAuth(_ http.ResponseWriter, r *http.Request) (UserId, error) {
+func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) {
     cookie, err := r.Cookie("session_token")
     if err != nil {
         if err == http.ErrNoCookie {

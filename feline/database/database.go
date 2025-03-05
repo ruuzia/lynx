@@ -1,6 +1,4 @@
-/// 
-
-package feline
+package database
 
 import (
     "context"
@@ -14,6 +12,9 @@ import (
 )
 
 var db *sql.DB
+var debug = log.New(os.Stdout, "database: ", log.Lshortfile)
+
+type UserId int
 
 type User struct {
     Id UserId;
@@ -111,7 +112,7 @@ func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
 }
 
 func GetLineData(user_id UserId, title string) (lineData []LineData, err error) {
-    debug.Printf("GetLineData %d %f\n", user_id, title)
+    debug.Printf("GetLineData %d %s\n", user_id, title)
     line_set_id, err := GetLineSetId(user_id, title);
     if err != nil {
         return nil, err

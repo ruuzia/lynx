@@ -1,7 +1,7 @@
 package feline
 
 import (
-    "database/sql"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -9,12 +9,14 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/ruuzia/lynx/feline/database"
 )
 
 var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 
 func OpenServer(address string) {
-    OpenDatabase()
+    database.OpenDatabase()
     buildLynx()
     runTscWatch()
     http.HandleFunc("/", serveHome)
@@ -134,7 +136,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    user, err := GetUser(username)
+    user, err := database.GetUser(username)
     if err == sql.ErrNoRows {
         serveLogin(w, LoginPage{
             ErrorMessage: "Hmmm, this username was not found in the database.",
@@ -165,7 +167,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if _, err := GetUser(username); err == nil {
+    if _, err := database.GetUser(username); err == nil {
         serveSignup(w, SignupPage{
             ErrorMessage: "This user already exists!",
         })
@@ -179,7 +181,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    user, err := AddUser(username, hashed)
+    user, err := database.AddUser(username, hashed)
     if err != nil {
         http.Error(w, "Error accessing database: " + err.Error(), http.StatusInternalServerError)
         return
@@ -190,7 +192,7 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 
 func getFileList(session *Session) ([]string, error) {
     debug.Println("getFileList")
-    files, err := GetLineSets(session.id)
+    files, err := database.GetLineSets(session.id)
     if err != nil {
         return nil, err
     }

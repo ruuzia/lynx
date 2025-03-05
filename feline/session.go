@@ -10,13 +10,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ruuzia/lynx/feline/database"
 )
 
-var lynxSessions = map[UserId]*Session {}
+var lynxSessions = map[database.UserId]*Session {}
 
 type Session struct {
     username string;
-    id UserId;
+    id database.UserId;
     location string;
     file string;
     page interface{};
@@ -37,7 +39,7 @@ type BuilderPage struct {
     ErrorMsg string
 }
 
-func StartSession(w http.ResponseWriter, r *http.Request, user User) {
+func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
     debug.Printf("Starting session %s\n", user.Name)
     Login(w, &user)
     if _, exists := lynxSessions[user.Id]; !exists {
@@ -115,7 +117,7 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
 }
 
 func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
-    lines, err := GetLineData(session.id, session.file)
+    lines, err := database.GetLineData(session.id, session.file)
     if err != nil {
         debug.Println(err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -123,7 +125,7 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
     }
 
     type LineReviewerPage struct {
-        Lines []LineData
+        Lines []database.LineData
         ReviewMethod string
     }
 
@@ -173,7 +175,7 @@ func handleStarLine(w http.ResponseWriter, r *http.Request) {
     debug.Println("starred: ", payload.Starred)
     debug.Println("line: ", payload.Line)
 
-    err = LineSetFlagged(session.id, payload.Line, payload.Starred)
+    err = database.LineSetFlagged(session.id, payload.Line, payload.Starred)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
@@ -185,7 +187,7 @@ func handleListLineSets(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
-    names, err := GetLineSets(session.id)
+    names, err := database.GetLineSets(session.id)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -240,7 +242,7 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    err = AddLineSet(session.id, session.builderPage.Title)
+    err = database.AddLineSet(session.id, session.builderPage.Title)
     if err != nil {
         http.Error(w, "Error adding set " + err.Error(), http.StatusInternalServerError)
         return
@@ -248,7 +250,7 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
 
     lines, err := parseLineData(session.builderPage.Text)
     for _, line := range lines {
-        AddLine(session.id, session.builderPage.Title, &line)
+        database.AddLine(session.id, session.builderPage.Title, &line)
     }
 
     err = os.Remove(tempFile)
@@ -264,7 +266,7 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, session.builderPage.ReturnTo, http.StatusFound)
 }
 
-func parseLineData(data string) (lineData []LineData, err error) {
+func parseLineData(data string) (lineData []database.LineData, err error) {
     chunks := strings.Split(data, "\n\n")
     for _,chunk := range chunks {
         lines := strings.Split(chunk, "\n")
@@ -275,7 +277,7 @@ func parseLineData(data string) (lineData []LineData, err error) {
         }
         cue := lines[0]
         text := strings.Join(lines[1:], "\n")
-        item := LineData {
+        item := database.LineData {
             Id: len(lineData),
             Cue: cue,
             Line: text,
@@ -309,7 +311,7 @@ func handleLineNotes(w http.ResponseWriter, r *http.Request) {
     }
     debug.Println("line: ", payload.Line)
     debug.Println("notes: ", payload.Notes)
-    err = LineSetNotes(session.id, payload.Line, payload.Notes);
+    err = database.LineSetNotes(session.id, payload.Line, payload.Notes);
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
