@@ -148,6 +148,20 @@ func LineSetFlagged(user_id UserId, title string, flagged bool) (err error) {
     return err
 }
 
+func LineSetNotes(user_id UserId, title string, notes string) (err error) {
+    line_set_id, err := GetLineSetId(user_id, title);
+    if err != nil {
+        return err
+    }
+    q := `
+    UPDATE line_data
+    SET notes = ?
+    WHERE user_id = ? AND line_set_id = ?
+    `
+    _, err = db.Exec(q, notes, user_id, line_set_id)
+    return err
+}
+
 //-----------------------------------------------------------
 
 func GetUser(username string) (User, error) {

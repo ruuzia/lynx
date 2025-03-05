@@ -326,6 +326,14 @@ func handleLineNotes(w http.ResponseWriter, r *http.Request) {
     debug.Println("line: ", payload.Line)
     debug.Println("notes: ", payload.Notes)
     runLynxCommand(session.username, "set-notes", session.file, strconv.Itoa(payload.Line), payload.Notes)
+    //-------------------------------------------------------
+    // NEW: mysql
+    err = LineSetNotes(session.id, session.file, payload.Notes);
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    //-------------------------------------------------------
 }
 
 func handleStartSession(w http.ResponseWriter, r *http.Request) {
