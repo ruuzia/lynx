@@ -1,9 +1,11 @@
 body {
-    --bg: hsl(0 0% 10%);
-    --fg: hsl(0 0% 90%);
-    --color-button: hsl(0 0% 5%);
-    --color-active-1: hsl(267 33% 5%);
-    --color-active-2: hsl(267 25% 10%);
+    --bg: hsl(267 50% 93%);
+    --fg: hsl(0 0% 0%);
+    --button-bg: hsl(267 15% 60%);
+    --button-fg: hsl(267 20% 100%);
+    --color-active-1: hsl(267 30% 60%);
+    --color-active-2: hsl(267 30% 80%);
+    --margin: 12px;
     --margin: 12px;
 
     background-color: var(--bg);
@@ -12,6 +14,17 @@ body {
 	font-size: 20px;
     height: 100%;
     margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+    --bg: hsl(0 0% 10%);
+    --fg: hsl(0 0% 90%);
+    --button-bg: hsl(0 0% 5%);
+    --button-fg: hsl(0 0% 90%);
+    --color-active-1: hsl(267 33% 5%);
+    --color-active-2: hsl(267 25% 10%);
+    }
 }
 
 html { height: 100%; }
@@ -29,11 +42,11 @@ input, textarea {
 button {
 	padding: 20px;
 	margin: var(--margin);
-	color: var(--fg);
+	color: var(--button-fg);
     border-color: var(--fg);
     border-width: 0px;
 	border-radius: 10px;
-	background-color: var(--color-button);
+	background-color: var(--button-bg);
 	font-size: 20px;
 }
 
