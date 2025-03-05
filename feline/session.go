@@ -104,7 +104,7 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
 
     files, err := getFileList(session)
     if err != nil {
-        log.Fatal(err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
     }
     debug.Print(files)
 
@@ -118,19 +118,19 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
 func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
     out, err := runLynxCommand(session.username, "lines", "--file", session.file)
     if err != nil {
-        debug.Fatal(err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
     }
     var lines []LineData
     err = json.Unmarshal(out, &lines)
     if err != nil {
-        debug.Fatal(err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
     }
 
     //------------------------
     // new: mysql
     lines2, err := GetLineData(session.id, session.file)
     if err != nil {
-        debug.Fatal(err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
     }
     //------------------------
 
