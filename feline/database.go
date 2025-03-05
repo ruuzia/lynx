@@ -111,6 +111,7 @@ func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
 }
 
 func GetLineData(user_id UserId, title string) (lineData []LineData, err error) {
+    debug.Printf("GetLineData %d %f\n", user_id, title)
     line_set_id, err := GetLineSetId(user_id, title);
     if err != nil {
         return nil, err

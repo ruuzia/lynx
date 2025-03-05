@@ -117,6 +117,7 @@ func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session
 func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
     lines, err := GetLineData(session.id, session.file)
     if err != nil {
+        debug.Println(err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
