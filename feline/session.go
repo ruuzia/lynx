@@ -119,11 +119,13 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
     out, err := runLynxCommand(session.username, "lines", "--file", session.file)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
     }
     var lines []LineData
     err = json.Unmarshal(out, &lines)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
     }
 
     //------------------------
@@ -131,6 +133,7 @@ func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Sessi
     lines2, err := GetLineData(session.id, session.file)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
     }
     //------------------------
 
