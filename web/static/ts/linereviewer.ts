@@ -77,7 +77,10 @@ function display() {
             method: "POST",
             body: JSON.stringify(payload)
         });
-        console.log(result);
+        if (result.status != 200) {
+            const body = await result.text();
+            console.log("Failed to setting note ", result.statusText, body)
+        }
     };
 
     notesText.oninput = async () => {
@@ -86,10 +89,14 @@ function display() {
             "line": i,
             "text": notesText.value,
         }
-        await fetch("/feline/linenotes", {
+        const result = await fetch("/feline/linenotes", {
             method: "POST",
             body: JSON.stringify(payload)
         })
+        if (result.status != 200) {
+            const body = await result.text();
+            console.log("Failed to setting note ", result.statusText, body)
+        }
     }
 
     revealButton.addEventListener("click", () => {
