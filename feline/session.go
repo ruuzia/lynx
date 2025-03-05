@@ -1,14 +1,16 @@
 package feline
 
 import (
-    "encoding/json"
-    "log"
-    "net/http"
-    "os"
-    "os/exec"
-    "strconv"
-    "time"
+	"encoding/json"
+	"errors"
 	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var lynxSessions = map[UserId]*Session {}
@@ -196,6 +198,9 @@ func handleListLineSets(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(&names)
 }
 
+//----------------------------------------------------------------
+// BUILDER {{{
+
 func handleUpdateBuilder(w http.ResponseWriter, r *http.Request) {
     session, err := ActiveSession(w, r)
     if err != nil {
@@ -242,6 +247,11 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
 
     AddLineSet(session.id, session.builderPage.Title)
 
+    lines, err := parseLineData(session.builderPage.Text)
+    for _, line := range lines {
+        AddLine(session.id, session.builderPage.Title, &line)
+    }
+
     err = os.Remove(tempFile)
     if err != nil {
         debug.Println(err)
@@ -254,6 +264,32 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
 
     http.Redirect(w, r, session.builderPage.ReturnTo, http.StatusFound)
 }
+
+func parseLineData(data string) (lineData []LineData, err error) {
+    chunks := strings.Split(data, "\n\n")
+    for _,chunk := range chunks {
+        lines := strings.Split(chunk, "\n")
+        if len(lines) == 0 {
+            continue;
+        } else if len(lines) < 2 {
+            return nil, errors.New("Invalid line file!")
+        }
+        cue := lines[0]
+        text := strings.Join(lines[1:], "\n")
+        item := LineData {
+            Id: 0,
+            Cue: cue,
+            Line: text,
+            Starred: false,
+            Notes: "",
+        }
+        lineData = append(lineData, item)
+    }
+    return lineData, err
+}
+
+// END BUILDER
+// }}} ----------------------------------------------------------------
 
 func handleLineNotes(w http.ResponseWriter, r *http.Request) {
     session, err := ActiveSession(w, r) 
