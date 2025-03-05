@@ -1,13 +1,5 @@
 body {
-    --bg: hsl(267 50% 93%);
-    --fg: hsl(0 0% 0%);
-    --button-bg: hsl(267 15% 60%);
-    --button-fg: hsl(267 20% 100%);
-    --color-active-1: hsl(267 30% 60%);
-    --color-active-2: hsl(267 30% 80%);
     --margin: 12px;
-    --margin: 12px;
-
     background-color: var(--bg);
     color: var(--fg);
     text-align: center;
@@ -16,15 +8,22 @@ body {
     margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-    body {
+.dark {
     --bg: hsl(0 0% 10%);
     --fg: hsl(0 0% 90%);
     --button-bg: hsl(0 0% 5%);
     --button-fg: hsl(0 0% 90%);
     --color-active-1: hsl(267 33% 5%);
     --color-active-2: hsl(267 25% 10%);
-    }
+}
+
+.light {
+    --bg: hsl(267 50% 93%);
+    --fg: hsl(0 0% 0%);
+    --button-bg: hsl(267 15% 60%);
+    --button-fg: hsl(267 20% 100%);
+    --color-active-1: hsl(267 30% 60%);
+    --color-active-2: hsl(267 30% 80%);
 }
 
 html { height: 100%; }
@@ -66,4 +65,18 @@ select {
 	/* background-color: hsl(267 33% 0%); */
 	background-color: var(--bg);
 	font-size: 20px;
+}
+
+.navbar {
+	width: 100%;
+	background-color: var(--color-active-2);
+    color: var(--fg);
+	padding-bottom: 5px;
+	display: grid;
+    grid-template-columns: 20px 1fr 20px;
+}
+
+.navbar > div {
+    padding-left: 10px;
+    padding-right: 10px;
 }

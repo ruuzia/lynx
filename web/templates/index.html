@@ -8,7 +8,32 @@
   <script src="/static/js/home.js" defer></script>
 </head>
 <body>
-  <h1>Welcome to Lynx, {{.Name}}!</h1>
+  <!-- Colorscheme setting -->
+  <script>
+    if (localStorage.getItem("colorscheme")) {
+      document.body.classList.add(localStorage.getItem("colorscheme"));
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.add("light");
+    }
+    function toggleTheme() {
+      if (document.body.classList.contains("dark")) {
+        document.body.classList.remove("dark");
+        document.body.classList.add("light");
+        localStorage.setItem("colorscheme", "light");
+      } else {
+        document.body.classList.remove("light");
+        document.body.classList.add("dark");
+        localStorage.setItem("colorscheme", "dark");
+      }
+    }
+  </script>
+
+  <div class="navbar">
+    <div>Lynx</div>
+    <div onclick="toggleTheme()" style="justify-self: right; user-select: none;">Toggle theme</div>
+  </div>
   <div>
     {{if .ActiveSession}}
     <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
@@ -23,10 +48,9 @@
 #line-set-listing-container {
   border: var(--fg) 2px solid;
   width: 500px;
+  max-width: calc(100vw - 4px);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 20px;
-  padding-right: 20px;
   padding-bottom: 20px;
   margin-top: 20px;
   margin-bottom: 20px;
@@ -44,6 +68,11 @@
 
 .lineset-name {
   margin: auto;
+  font-size: 20px;
+}
+
+.lineset-review {
+  padding: 0;
 }
 
 @keyframes reveal{
