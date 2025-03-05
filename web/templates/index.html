@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lynx</title>
   <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/js/home.js" defer></script>
 </head>
 <body>
   <h1>Welcome to Lynx, {{.Name}}!</h1>
@@ -18,10 +19,41 @@
     <form action="/feline/startsession">
       <button>Start new review session</button>
     </form>
+    <style>
+#line-set-listing-container {
+  border: var(--fg) 2px solid;
+  width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+#line-set-listing {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+}
+
+.lineset-name {
+  margin: auto;
+}
+
+  </style>
+
+    <div id="line-set-listing-container" hidden=true>
+      <h3>Line sets</h3>
+      <div id="line-set-listing"></div>
+    </div>
+
     <form action="/builder">
       <button>Add new line set</button>
     </form>
+
     <p>You can also <a href="/feline/logout">logout here!</a></p>
   </div>
+
 </body>
 </html>
