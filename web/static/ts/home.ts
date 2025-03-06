@@ -19,3 +19,21 @@ fetch("/feline/list-line-sets").then(resp => resp.json()).then(lineSets => {
     }
     lineSetListing.innerHTML = s;
 })
+
+let builderDoc: any | Document = null;
+fetch('/builder').then(resp => resp.text()).then(content => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+    builderDoc = doc;
+});
+
+function openBuilder(e: Event) {
+    const mainBody = document.getElementById("main-content");
+    if (mainBody == null) {
+        throw new Error("Failed to find #main-content");
+    }
+    if (builderDoc !== null) {
+        mainBody.innerHTML = builderDoc.body.innerHTML;
+    }
+    //e.preventDefault();
+}

@@ -10,12 +10,15 @@
 <body>
   <script src="/static/js/colorscheme.js"></script>
 
+  <!---------------------------------------------->
+  <!--------  navigation bar     ----------------->
+
   <script src="/static/js/navbar.js" defer></script>
   <div class="nav-container docked">
     <div class="sidebar-container">
       <div class="sidebar-items">
-        <div class="sidebar-item"><a href="/">Home</a></div>
-        <div class="sidebar-item"><a href="/builder">Builder</a></div>
+        <div class="sidebar-item"><a href="/#home">Home</a></div>
+        <div class="sidebar-item"><a href="/#builder">Builder</a></div>
         <div class="sidebar-item"><a href="/session">Reviewer</a></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
@@ -28,35 +31,71 @@
       <div></div>
     </div>
   </div>
-  <div class="post-nav-container"></div>
 
+  <!------------------------------------------->
+  <!-------   #home          ------------------>
 
-  <div>
-    {{if .ActiveSession}}
-    <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
-    <div class="center-content">
-      <div class="button-wrap">
-        <a href="/session">Continue reviewing</a>
-      </div>
-    </div>
-    {{end}}
+  <div id="home" class="page">
     <div>
-    <div class="center-content">
-        <a class="buttonify" href="/feline/startsession">Start new review session</a>
-    </div>
-    </div>
+      {{if .ActiveSession}}
+        <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
+        <div class="center-content">
+          <div class="button-wrap">
+            <a href="/session">Continue reviewing</a>
+          </div>
+        </div>
+      {{end}}
+      <div>
+        <div class="center-content">
+          <a class="buttonify" href="/feline/startsession">Start new review session</a>
+        </div>
+      </div>
 
-    <div id="line-set-listing-container" hidden=true>
-      <h3>Line sets</h3>
-      <div id="line-set-listing"></div>
-    </div>
-    <div class="center-content">
-      <a class="buttonify" href="/builder">Add new line set</a>
-    </div>
+      <div id="line-set-listing-container" hidden=true>
+        <h3>Line sets</h3>
+        <div id="line-set-listing"></div>
+      </div>
+      <div class="center-content">
+        <a class="buttonify" href="#builder" onclick="openBuilder(event)">Add new line set</a>
+      </div>
 
 
-    <p>You can also <a href="/feline/logout">logout here!</a></p>
+      <p>You can also <a href="/feline/logout">logout here!</a></p>
+    </div>
   </div>
+
+  <!------------------------------------------->
+  <!-------   #builder       ------------------>
+  <div id="builder" class="page">
+    <script src="/static/js/linesetbuilder.js" defer></script>
+
+    <h1>Add your lines</h1>
+    <div style="width: min(100%, 650px); text-align: left; margin-left: auto; margin-right: auto;">
+      <div>
+        <label for="title">Please provide a title:</label>
+        <input name="title" id="title" type="text" value=""/>
+      </div>
+      <div style="color: red;">
+      </div>
+      <div>
+        Type up or paste your character's lines with their cues in the simple format shown.
+      </div>
+      <textarea id="data" rows="20" cols="40" placeholder="RUFUS: This is Poco's cue
+                    POCO: My line
+
+RUFUS: Lines are separated by a blank space
+POCO: Another line
+"></textarea>
+      <div>
+        Status: <span>saving</span>
+      </div>
+      <form action="/feline/finishbuilder">
+        <button id="submit" style="width: 20em;">Create line set</button>
+      </form>
+      <form action=""> <button style="width: 20em;">Go back</button> </form>
+    </div>
+  </div>
+
 
 </body>
 </html>

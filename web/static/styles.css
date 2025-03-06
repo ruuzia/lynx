@@ -171,16 +171,15 @@ select {
 
 /*-----------------------------------------------------*/
 
+body { --header-height: 60px; }
+
 .nav-container {
 	position: absolute;
 	display: flex;
 	top: 0px;
     left: 0px;
     right: 0px;
-}
-
-.nav-container, .post-nav-container {
-	height: 60px;
+    height: var(--header-height);
 }
 
 /*-----------------------------------------------------*/
@@ -274,3 +273,10 @@ select {
 
 /*-----------------------------------------------------*/
 
+.page {
+    padding-top: var(--header-height);
+}
+
+.page:not(:target) {
+    display: none;
+}
