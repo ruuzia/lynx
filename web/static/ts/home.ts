@@ -11,6 +11,9 @@ let lineSets: null | string[] = null
 
 fetch("/feline/list-line-sets").then(resp => resp.json()).then(_lineSets => {
     lineSets = _lineSets
+    if (lineSets == null) {
+        throw new Error("missing lineSets!");
+    }
     container.hidden = false;
     let s = ``;
     for (const lineSet of lineSets) {
@@ -64,5 +67,8 @@ function linesetSelectPage() {
 
 function linesetSelected(title: string) {
     console.log("linesetSelected() " + title);
+
     
 }
+
+//--------------------------

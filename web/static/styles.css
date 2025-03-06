@@ -208,8 +208,18 @@ select {
 
 /*-----------------------------------------------------*/
 
-body { --header-height: 60px; }
+/*-----------------------------------------------------*/
+/* settings page */
 
+#settings-strategy-list {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/*-----------------------------------------------------*/
+
+body { --header-height: 60px; }
 .nav-container {
 	position: absolute;
 	display: flex;

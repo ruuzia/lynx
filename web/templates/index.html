@@ -140,14 +140,12 @@ POCO: Another line
   <!--   #lineset-select  -->
   <div class="page" id="lineset-select">
     <h1>Select your line set</h1>
-    <div>
-      <div id="lineset-page-list">
-      </div>
-      <form action="/#builder" method="get">
-        <button style="background-color: hsl(267 100% 10%)">Create new line set</button>
-        <input type="hidden" name="returnTo" value="session" />
-      </form>
+    <div id="lineset-page-list">
     </div>
+    <form action="/#builder" method="get">
+      <button style="background-color: hsl(267 100% 10%)">Create new line set</button>
+      <input type="hidden" name="returnTo" value="session" />
+    </form>
   </div>
 
   <!--   #lineset-select  -->
@@ -156,7 +154,9 @@ POCO: Another line
   <!------------------------------------------->
   <!--   #settings  -->
   <div class="page" id="settings">
-    <h1>This is the settings page!</h1>
+    <script src="/static/js/settings.js" type="module"></script>
+    <h1>Select a review strategy</h1>
+    <div id="settings-strategy-list"></div>
   </div>
 
   <!--   #settings  -->
