@@ -20,7 +20,11 @@ let header_fn = default_header_fn
 let front_fn = default_front_fn
 let back_fn = default_back_fn
 
-function nextLine() {
+declare global {
+    interface Window { nextLine: Function, previousLine: Function }
+}
+
+window.nextLine = () => {
     if (lineData !== null && i < lineData.length) {
         ++i;
         show_back = false;
@@ -28,7 +32,7 @@ function nextLine() {
     }
 }
 
-function previousLine() {
+window.previousLine = () => {
     if (i > 0) {
         --i;
         show_back = false;
@@ -102,10 +106,10 @@ function display() {
         }
     }
 
-    revealButton.addEventListener("click", () => {
+    revealButton.onclick = () => {
         show_back = true;
         display()
-    });
+    };
 
 }
 
