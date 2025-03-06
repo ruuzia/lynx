@@ -204,6 +204,23 @@ func handleListLineSets(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(&names)
 }
 
+func handleGetLineData(w http.ResponseWriter, r *http.Request) {
+    session, err := ActiveSession(w, r)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    lines, err := database.GetLineData(session.id, session.file)
+    if err != nil {
+        debug.Println(err.Error())
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+
+    json.NewEncoder(w).Encode(&lines)
+}
+
 //----------------------------------------------------------------
 // BUILDER {{{
 
