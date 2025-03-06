@@ -8,32 +8,34 @@
   <script src="/static/js/home.js" defer></script>
 </head>
 <body>
-  <!-- Colorscheme setting -->
-  <script>
-    if (localStorage.getItem("colorscheme")) {
-      document.body.classList.add(localStorage.getItem("colorscheme"));
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.body.classList.add("dark");
-    } else {
-      document.body.classList.add("light");
-    }
-    function toggleTheme() {
-      if (document.body.classList.contains("dark")) {
-        document.body.classList.remove("dark");
-        document.body.classList.add("light");
-        localStorage.setItem("colorscheme", "light");
-      } else {
-        document.body.classList.remove("light");
-        document.body.classList.add("dark");
-        localStorage.setItem("colorscheme", "dark");
-      }
-    }
-  </script>
-
+  <script src="/static/js/colorscheme.js"></script>
   <div class="navbar">
     <div>Lynx</div>
     <div onclick="toggleTheme()" style="justify-self: right; user-select: none;">Toggle theme</div>
   </div>
+
+  <script defer>
+    function sidebarToggle() {
+      const sidebar = document.querySelector(".sidebar-container");
+      sidebar.classList.toggle("docked")
+    }
+  </script>
+
+  <div class="sidebar-container">
+    <div class="sidebar-header" style="display: flex;">
+      <div>Lynx</div>
+      <div style="flex-grow: 1;"></div>
+      <button style="padding: 10px; margin: 0px; font-size: 30px; transform: translateX(40px); width: 40px;" onclick="sidebarToggle()">≡</button>
+    </div>
+    <div class="sidebar-items">
+      <div class="sidebar-item">Builder</div>
+      <div class="sidebar-item">Reviewer</div>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-item">Log out</div>
+      <div class="sidebar-item" onclick="toggleTheme()">Toggle theme</div>
+    </div>
+  </div>
+
   <div>
     {{if .ActiveSession}}
     <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
