@@ -1,3 +1,13 @@
+@font-face {
+    font-family: Quintessential;
+    src: url(/static/fonts/Quintessential-Regular.ttf)
+}
+
+@font-face {
+    font-family: Lora;
+    src: url(/static/fonts/Lora-VariableFont_wght.ttf)
+}
+
 body {
     --margin: 12px;
     background-color: var(--bg);
@@ -8,12 +18,20 @@ body {
     margin: 0;
 }
 
+button, body {
+    font-family: Lora;
+}
+
+h1, h2, h3 {
+    font-family: Quintessential;
+}
+
 .dark {
     --bg: hsl(0 0% 10%);
     --fg: hsl(0 0% 90%);
     --button-bg: hsl(0 0% 5%);
     --button-fg: hsl(0 0% 90%);
-    --color-active-1: hsl(267 33% 5%);
+    --color-active-1: hsl(267 50% 20%);
     --color-active-2: hsl(267 25% 10%);
 }
 
@@ -42,8 +60,7 @@ button {
 	padding: 20px;
 	margin: var(--margin);
 	color: var(--button-fg);
-    border-color: var(--fg);
-    border-width: 0px;
+    border-width: 0;
 	border-radius: 10px;
 	background-color: var(--button-bg);
 	font-size: 20px;
@@ -72,7 +89,8 @@ select {
 /*  home page line-sets display */
 
 #line-set-listing-container {
-  border: var(--fg) 2px solid;
+  border: var(--fg) 1px solid;
+  /*background-color: var(--color-active-2);*/
   width: 500px;
   max-width: calc(100vw - 4px);
   margin-left: auto;
@@ -81,6 +99,8 @@ select {
   margin-top: 20px;
   margin-bottom: 20px;
   overflow: hidden;
+  border-radius: 5px;
+  font-size: 15px;
 }
 
 #line-set-listing-container {
@@ -123,6 +143,7 @@ select {
 	padding-bottom: 5px;
 	display: grid;
     grid-template-columns: 20px 1fr 20px;
+    visibility: hidden
 }
 
 .navbar > div {
@@ -131,3 +152,69 @@ select {
 }
 
 /*-----------------------------------------------------*/
+/* sidebar */
+
+.sidebar-container {
+    position: absolute;
+    left: 10px;
+    width: 200px;
+    top: auto;
+    bottom: auto;
+    height: 500px;
+    border-radius: 10px;
+    text-align: left;
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-active-2);
+}
+
+.sidebar-container.docked {
+    left: -210px;
+    animation: 0.1s ease 0s 1 dock-sidebar;
+}
+
+.sidebar-container:not(.docked) {
+    animation: 0.1s ease 0s 1 undock-sidebar;
+}
+
+@keyframes undock-sidebar {
+    from {
+        left: -210px;
+    }
+    to {
+        left: 0px;
+    }
+}
+
+@keyframes dock-sidebar {
+    from {
+        left: 0px;
+    }
+    to {
+        left: -210px;
+    }
+}
+
+.sidebar-header {
+    width: auto;
+}
+
+.sidebar-items {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-spacer {
+    flex-grow: 1;
+}
+
+.sidebar-item {
+    /*border: 1px solid var(--fg);*/
+    padding: 10px;
+    flex-grow: 0;
+}
+
+/*-----------------------------------------------------*/
+
