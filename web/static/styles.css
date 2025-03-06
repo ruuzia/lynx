@@ -26,6 +26,10 @@ h1, h2, h3 {
     font-family: Quintessential;
 }
 
+a {
+    color: var(--fg);
+}
+
 .dark {
     --bg: hsl(0 0% 10%);
     --fg: hsl(0 0% 90%);
@@ -132,18 +136,35 @@ select {
 
 /*-----------------------------------------------------*/
 
+.nav-container {
+	position: absolute;
+	display: flex;
+	top: 0px;
+    left: 0px;
+    right: 0px;
+	height: 60px;
+}
 
 /*-----------------------------------------------------*/
 /* navbar */
 
 .navbar {
 	width: 100%;
+    font-size: 30px;
+    /*transform: translateX(200px);*/
+    /*height: 50px;*/
 	background-color: var(--color-active-2);
     color: var(--fg);
 	padding-bottom: 5px;
 	display: grid;
-    grid-template-columns: 20px 1fr 20px;
-    visibility: hidden
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+}
+
+.sidebar-toggle {
+	font-size: 45px;
+	padding: 0;
+	margin: 0;
 }
 
 .navbar > div {
@@ -155,13 +176,10 @@ select {
 /* sidebar */
 
 .sidebar-container {
-    position: absolute;
-    left: 10px;
     width: 200px;
-    top: auto;
-    bottom: auto;
+    flex-shrink: 0;
     height: 500px;
-    border-radius: 10px;
+    /*border-radius: 10px;*/
     text-align: left;
     padding-left: 10px;
     display: flex;
@@ -169,12 +187,12 @@ select {
     background-color: var(--color-active-2);
 }
 
-.sidebar-container.docked {
+.nav-container.docked {
     left: -210px;
     animation: 0.1s ease 0s 1 dock-sidebar;
 }
 
-.sidebar-container:not(.docked) {
+.nav-container:not(.docked) {
     animation: 0.1s ease 0s 1 undock-sidebar;
 }
 

@@ -9,32 +9,35 @@
 </head>
 <body>
   <script src="/static/js/colorscheme.js"></script>
-  <div class="navbar">
-    <div>Lynx</div>
-    <div onclick="toggleTheme()" style="justify-self: right; user-select: none;">Toggle theme</div>
+
+  <div class="nav-container docked">
+    <div class="sidebar-container">
+      <div class="sidebar-items">
+        <div class="sidebar-item"><a href="/">Home</a></div>
+        <div class="sidebar-item"><a href="/builder">Builder</a></div>
+        <div class="sidebar-item"><a href="/session">Reviewer</a></div>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
+        <div class="sidebar-item" onclick="toggleTheme()">Toggle theme</div>
+      </div>
+    </div>
+    <div class="navbar">
+      <button class="sidebar-toggle" onclick="sidebarToggle()">≡</button>
+      <div>Lynx</div>
+      <div></div>
+    </div>
   </div>
 
-  <script defer>
+  <script>
+    const sidebar = document.querySelector(".nav-container");
     function sidebarToggle() {
-      const sidebar = document.querySelector(".sidebar-container");
       sidebar.classList.toggle("docked")
+    }
+    if (screen.width > 500) {
+      sidebar.classList.remove("docked")
     }
   </script>
 
-  <div class="sidebar-container">
-    <div class="sidebar-header" style="display: flex;">
-      <div>Lynx</div>
-      <div style="flex-grow: 1;"></div>
-      <button style="padding: 10px; margin: 0px; font-size: 30px; transform: translateX(40px); width: 40px;" onclick="sidebarToggle()">≡</button>
-    </div>
-    <div class="sidebar-items">
-      <div class="sidebar-item">Builder</div>
-      <div class="sidebar-item">Reviewer</div>
-      <div class="sidebar-spacer"></div>
-      <div class="sidebar-item">Log out</div>
-      <div class="sidebar-item" onclick="toggleTheme()">Toggle theme</div>
-    </div>
-  </div>
 
   <div>
     {{if .ActiveSession}}
