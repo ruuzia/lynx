@@ -109,9 +109,18 @@ function display() {
 
 }
 
-function init(_reviewMethod: string, _lineData: Card[]) {
+let fetchTask: null|Promise<any> = null
+
+export function SetReviewMethod(_reviewMethod: string) {
     reviewMethod = _reviewMethod;
-    lineData = _lineData;
+    if (lineData == null) {
+        if (fetchTask === null) {
+            throw new Error("called SetReviewMethod without line data");
+        }
+        fetchTask.then(() => SetReviewMethod(_reviewMethod));
+        return;
+    }
+
     console.log("init() " + reviewMethod);
     front_fn = default_front_fn;
     back_fn = default_back_fn;
@@ -136,4 +145,26 @@ function init(_reviewMethod: string, _lineData: Card[]) {
         break;
     }
     display();
+}
+
+export function SetLineSet(title: string) {
+    console.log("SetLineSet " + title)
+    if (fetchTask !== null) {
+        // Wait for current fetch to complete
+        fetchTask.then(() => {
+            fetchTask = null;
+            SetLineSet(title);
+        });
+        return;
+    }
+
+    fetchTask = fetch("/feline/get-line-data", {
+        method: "POST",
+        body: new URLSearchParams({
+            title: title,
+        }),
+    }).then(resp => resp.json()).then(_lineData => {
+        lineData = _lineData;
+        fetchTask = null;
+    });
 }

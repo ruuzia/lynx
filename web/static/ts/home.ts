@@ -44,9 +44,14 @@ function openBuilder(e: Event) {
     //e.preventDefault();
 }
 
-//--------------------------
+//---------------------------------------------------------------
+// lineset select page
 
-function linesetSelectPage() {
+declare global {
+    interface Window { linesetSelectPage: Function, linesetSelected: Function }
+}
+
+window.linesetSelectPage = () => {
     if (lineSets === null) {
         // TODO: wait for fetch to complete
         throw new Error("Did not fetch lineSets");
@@ -62,13 +67,16 @@ function linesetSelectPage() {
         `
     }
     container.innerHTML = s;
-    
 }
 
-function linesetSelected(title: string) {
-    console.log("linesetSelected() " + title);
+//---------------------------------------------------------------
 
-    
+import * as lineReviewer from "./linereviewer.js";
+
+window.linesetSelected = (title: string) => {
+    console.log("linesetSelected() " + title);
+    lineReviewer.SetLineSet(title);
+
 }
 
 //--------------------------

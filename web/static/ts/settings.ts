@@ -35,12 +35,23 @@ function init() {
     for (const { id, title, description } of reviewStrategies) {
         s += `
 <a class="button-thick"
-   href="/#reviewer">
+   href="/#reviewer"
+   onclick="selectReviewType('${id}')">
 ${title}
 </a>
         `;
     }
     settingsList.innerHTML = s;
+}
+
+declare global {
+    interface Window { selectReviewType : Function }
+}
+
+import { SetReviewMethod } from "./linereviewer.js"
+
+window.selectReviewType = (type: string) => {
+    SetReviewMethod(type);
 }
 
 init();
