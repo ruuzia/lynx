@@ -10,6 +10,7 @@
 <body>
   <script src="/static/js/colorscheme.js"></script>
 
+  <script src="/static/js/navbar.js" defer></script>
   <div class="nav-container docked">
     <div class="sidebar-container">
       <div class="sidebar-items">
@@ -18,47 +19,40 @@
         <div class="sidebar-item"><a href="/session">Reviewer</a></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
-        <div class="sidebar-item" onclick="toggleTheme()">Toggle theme</div>
+        <div class="sidebar-item"><span class="clickable" onclick="toggleTheme();">Toggle theme</span></div>
       </div>
     </div>
     <div class="navbar">
-      <button class="sidebar-toggle" onclick="sidebarToggle()">≡</button>
-      <div>Lynx</div>
+      <a class="sidebar-toggle clickable" onclick="sidebarToggle()">≡</a>
+      <div style="font-family: Quintessential;">Lynx</div>
       <div></div>
     </div>
   </div>
-
-  <script>
-    const sidebar = document.querySelector(".nav-container");
-    function sidebarToggle() {
-      sidebar.classList.toggle("docked")
-    }
-    if (screen.width > 500) {
-      sidebar.classList.remove("docked")
-    }
-  </script>
+  <div class="post-nav-container"></div>
 
 
   <div>
     {{if .ActiveSession}}
     <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
-    <form action="/session">
-      <button>Continue reviewing</button>
-    </form>
+    <div class="center-content">
+      <div class="button-wrap">
+        <a href="/session">Continue reviewing</a>
+      </div>
+    </div>
     {{end}}
-    <form action="/feline/startsession">
-      <button>Start new review session</button>
-    </form>
-    <style>
-  </style>
+    <div>
+    <div class="center-content">
+        <a class="buttonify" href="/feline/startsession">Start new review session</a>
+    </div>
+    </div>
 
     <div id="line-set-listing-container" hidden=true>
       <h3>Line sets</h3>
       <div id="line-set-listing"></div>
     </div>
-    <form action="/builder">
-      <button>Add new line set</button>
-    </form>
+    <div class="center-content">
+      <a class="buttonify" href="/builder">Add new line set</a>
+    </div>
 
 
     <p>You can also <a href="/feline/logout">logout here!</a></p>

@@ -11,11 +11,11 @@ fetch("/feline/list-line-sets").then(resp => resp.json()).then(lineSets => {
     container.hidden = false;
     let s = ``;
     for (const lineSet of lineSets) {
-        s += `
+        s += `<div class="line-set-row">
     <span class="lineset-name">${lineSet}</span>
-    <button class="lineset-review">Review</button>
-    <button lineset-edit>Explore</button>
-        `
+    <a href="/session" class="lineset-review">Review</a>
+    <a href="" class="lineset-edit">Explore</a>
+        </div>`
     }
     lineSetListing.innerHTML = s;
 })

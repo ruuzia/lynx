@@ -9,6 +9,27 @@
   </head>
   <body>
     <script src="/static/js/colorscheme.js"></script>
+
+  <script src="/static/js/navbar.js" defer></script>
+  <div class="nav-container docked">
+    <div class="sidebar-container">
+      <div class="sidebar-items">
+        <div class="sidebar-item"><a href="/">Home</a></div>
+        <div class="sidebar-item"><a href="/builder">Builder</a></div>
+        <div class="sidebar-item"><a href="/session">Reviewer</a></div>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
+        <div class="sidebar-item"><span class="clickable" onclick="toggleTheme();">Toggle theme</span></div>
+      </div>
+    </div>
+    <div class="navbar">
+      <a class="sidebar-toggle clickable" onclick="sidebarToggle()">≡</a>
+      <div style="font-family: Quintessential;">Lynx</div>
+      <div></div>
+    </div>
+  </div>
+  <div class="post-nav-container"></div>
+
     <div id="card">
       <div class="content">
         <h2 id="header"></h2>

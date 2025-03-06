@@ -35,15 +35,17 @@ a {
     --fg: hsl(0 0% 90%);
     --button-bg: hsl(0 0% 5%);
     --button-fg: hsl(0 0% 90%);
+    --color-subtle: hsl(267 50% 5%);
     --color-active-1: hsl(267 50% 20%);
     --color-active-2: hsl(267 25% 10%);
 }
 
 .light {
-    --bg: hsl(267 50% 93%);
+    --bg: hsl(267 50% 92%);
     --fg: hsl(0 0% 0%);
     --button-bg: hsl(267 15% 60%);
     --button-fg: hsl(267 20% 100%);
+    --color-subtle: hsl(267 50% 88%);
     --color-active-1: hsl(267 30% 60%);
     --color-active-2: hsl(267 30% 80%);
 }
@@ -77,6 +79,26 @@ button:active {
     background-color: var(--color-active-2);
 }
 
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.buttonify {
+    margin: 10px;
+    padding: 10px;
+    background-color: var(--color-subtle);
+    border-radius: 5px;
+    width: fit-content;
+    text-decoration: none;
+}
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
 select {
 	padding: 10px;
 	margin: var(--margin);
@@ -94,6 +116,8 @@ select {
 
 #line-set-listing-container {
   border: var(--fg) 1px solid;
+  border-left: none;
+  border-right: none;
   /*background-color: var(--color-active-2);*/
   width: 500px;
   max-width: calc(100vw - 4px);
@@ -104,7 +128,7 @@ select {
   margin-bottom: 20px;
   overflow: hidden;
   border-radius: 5px;
-  font-size: 15px;
+  /*font-size: 15px;*/
 }
 
 #line-set-listing-container {
@@ -112,17 +136,28 @@ select {
 }
 
 #line-set-listing {
-	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
+	/*display: grid;*/
+	/*grid-template-columns: auto auto auto;*/
+    /*text-align: left;*/
+}
+
+.line-set-row {
+    display: flex;
+    padding: 12px;
 }
 
 .lineset-name {
-  margin: auto;
+    text-align: left;
   font-size: 20px;
+  flex: 1;
 }
 
 .lineset-review {
   padding: 0;
+  flex: 1;
+}
+.lineset-edit {
+  flex: 1;
 }
 
 @keyframes reveal{
@@ -142,6 +177,9 @@ select {
 	top: 0px;
     left: 0px;
     right: 0px;
+}
+
+.nav-container, .post-nav-container {
 	height: 60px;
 }
 
