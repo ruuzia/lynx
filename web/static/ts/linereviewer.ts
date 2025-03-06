@@ -6,8 +6,8 @@ interface Card {
     starred: boolean;
 }
 
-declare var lineData: Card[];
-declare var reviewMethod: string;
+var lineData: Card[] | null;
+var reviewMethod: string | null;
 
 const default_front_fn = (item: Card) => item.cue;
 const default_back_fn = (item: Card) => item.line;
@@ -21,7 +21,7 @@ let front_fn = default_front_fn
 let back_fn = default_back_fn
 
 function nextLine() {
-    if (i < lineData.length) {
+    if (lineData !== null && i < lineData.length) {
         ++i;
         show_back = false;
         display()
@@ -37,6 +37,9 @@ function previousLine() {
 }
 
 function display() {
+    if (lineData == null) {
+        throw new Error("Missing line data");
+    }
     const notesText = document.getElementById("linenotes");
     if (!(notesText instanceof HTMLTextAreaElement)) {
         throw new Error("Missing linenotes");
@@ -106,7 +109,9 @@ function display() {
 
 }
 
-function init() {
+function init(_reviewMethod: string, _lineData: Card[]) {
+    reviewMethod = _reviewMethod;
+    lineData = _lineData;
     console.log("init() " + reviewMethod);
     front_fn = default_front_fn;
     back_fn = default_back_fn;
@@ -130,8 +135,5 @@ function init() {
         back_fn = item => item.line;
         break;
     }
+    display();
 }
-
-init();
-
-display();

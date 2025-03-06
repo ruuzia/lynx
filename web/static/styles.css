@@ -62,7 +62,7 @@ input, textarea {
 	background-color: var(--bg);
 }
 
-button {
+button, .button-thick {
 	padding: 20px;
 	margin: var(--margin);
 	color: var(--button-fg);
@@ -70,6 +70,7 @@ button {
 	border-radius: 10px;
 	background-color: var(--button-bg);
 	font-size: 20px;
+    text-decoration: none;
 }
 
 button:hover {
@@ -167,6 +168,42 @@ select {
   to {
     max-height: 500px;
   }
+}
+
+/*-----------------------------------------------------*/
+/*  review page */
+
+#reviewer {
+  font-size: 20px;
+  --card-width: min(600px, 100%)
+}
+
+#back { margin-top: 1em; }
+#revealbtn { margin-top: 2em; }
+#submitform { margin-top: 2em; }
+#reviewer button { width: 13em; }
+#card {
+    width: var(--card-width);
+    min-height: 550px;
+    height: fit-content;
+    margin: 5px auto;
+    background-color: var(--color-active-2);
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+#front_inputs {
+    /*margin-top: auto;*/
+}
+
+/*-----------------------------------------------------*/
+/* lineset-page */
+
+#lineset-page-list {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 /*-----------------------------------------------------*/

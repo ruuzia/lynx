@@ -7,7 +7,10 @@ if (container === null) {
     throw new Error("Could not find lineSetListing container");
 }
 
-fetch("/feline/list-line-sets").then(resp => resp.json()).then(lineSets => {
+let lineSets: null | string[] = null
+
+fetch("/feline/list-line-sets").then(resp => resp.json()).then(_lineSets => {
+    lineSets = _lineSets
     container.hidden = false;
     let s = ``;
     for (const lineSet of lineSets) {
@@ -36,4 +39,30 @@ function openBuilder(e: Event) {
         mainBody.innerHTML = builderDoc.body.innerHTML;
     }
     //e.preventDefault();
+}
+
+//--------------------------
+
+function linesetSelectPage() {
+    if (lineSets === null) {
+        // TODO: wait for fetch to complete
+        throw new Error("Did not fetch lineSets");
+    }
+    const container = document.getElementById("lineset-page-list");
+    if (container === null) {
+        throw new Error("Did not find #lineset-page-list");
+    }
+    let s = ``;
+    for (const name of lineSets) {
+        s += `
+          <a class="button-thick" href="/#settings" onclick="linesetSelected('${name}')">${name}</a>
+        `
+    }
+    container.innerHTML = s;
+    
+}
+
+function linesetSelected(title: string) {
+    console.log("linesetSelected() " + title);
+    
 }

@@ -19,7 +19,7 @@
       <div class="sidebar-items">
         <div class="sidebar-item"><a href="/#home">Home</a></div>
         <div class="sidebar-item"><a href="/#builder">Builder</a></div>
-        <div class="sidebar-item"><a href="/session">Reviewer</a></div>
+        <div class="sidebar-item"><a href="/#reviewer">Reviewer</a></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
         <div class="sidebar-item"><span class="clickable" onclick="toggleTheme();">Toggle theme</span></div>
@@ -47,7 +47,7 @@
       {{end}}
       <div>
         <div class="center-content">
-          <a class="buttonify" href="/feline/startsession">Start new review session</a>
+          <a class="buttonify" onclick="linesetSelectPage()" href="/#lineset-select">Start new review session</a>
         </div>
       </div>
 
@@ -96,6 +96,70 @@ POCO: Another line
     </div>
   </div>
 
+  <!------------------------------------------->
+  <!-------   #reviewer       ------------------>
+  <div id="reviewer" class="page">
+    <script type="module" src="/static/js/linereviewer.js"></script>
+    <div id="card">
+      <div class="content">
+        <h2 id="header"></h2>
+        <div id="front"></div>
+        <div id="back" hidden></div>
+      </div>
 
+      <div id="front_inputs">
+        <div><button type="button" id="revealbtn">Reveal</button></div>
+        <div id="submitform" hidden>
+          <div><button type="button" name="action" value="back" id="backbtn" onclick="previousLine()">Back</button></div>
+        </div>
+      </div>
+
+      <div id="back_inputs">
+        <div><button type="button" name="action" value="continue" id="continuebtn" onclick="nextLine()">Continue</button></div>
+
+        <div style="text-align: left;">
+          <input type="checkbox" name="starred" id="starred"></input>
+          <label for="starred">Starred</label>
+        </div>
+
+        <textarea rows="5" cols="30" name="linenotes" id="linenotes" placeholder="Add line notes"></textarea>
+
+      </div>
+    </div>
+
+    <form action="/">
+      <button style="width: var(--card-width); border-color: var(--fg); border-width: 1px;">Home</button>
+    </form>
+  </div>
+
+  <!--   #reviewer     -->
+  <!------------------------------------------->
+
+
+  <!------------------------------------------->
+  <!--   #lineset-select  -->
+  <div class="page" id="lineset-select">
+    <h1>Select your line set</h1>
+    <div>
+      <div id="lineset-page-list">
+      </div>
+      <form action="/#builder" method="get">
+        <button style="background-color: hsl(267 100% 10%)">Create new line set</button>
+        <input type="hidden" name="returnTo" value="session" />
+      </form>
+    </div>
+  </div>
+
+  <!--   #lineset-select  -->
+  <!------------------------------------------->
+
+  <!------------------------------------------->
+  <!--   #settings  -->
+  <div class="page" id="settings">
+    <h1>This is the settings page!</h1>
+  </div>
+
+  <!--   #settings  -->
+  <!------------------------------------------->
 </body>
 </html>
