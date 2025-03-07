@@ -43,7 +43,9 @@ fetch("/feline/list-line-sets").then(resp => resp.json()).then((_lineSets: strin
             s += `
 <div class="line-set-row">
     <span class="lineset-name">${lineSet}</span>
-    <a href="/session" class="lineset-review">Review</a>
+    <a href="#settings"
+       onclick="linesetSelected('${lineSet}')"
+       class="lineset-review">Review</a>
     <a href="" class="lineset-edit">Explore</a>
 </div>`
         }
