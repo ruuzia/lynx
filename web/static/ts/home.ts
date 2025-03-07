@@ -1,75 +1,77 @@
-const lineSetListing : HTMLElement | null = document.getElementById("line-set-listing");
-if (lineSetListing === null) {
-    throw new Error("Could not find lineSetListing");
-}
-const container = document.getElementById("line-set-listing-container");
-if (container === null) {
-    throw new Error("Could not find lineSetListing container");
-}
+//-------------------------------------------
+// Callbacks for when we switch to a sub-pages
+
+addEventListener("hashchange", (e) => {
+    switch (location.hash) {
+        case "#home":
+            break;
+        case "#builder":
+            break;
+        case "#lineset-select":
+            break;
+        case "#settings":
+            break;
+    }
+})
+
+//-------------------------------------------
+// Update line set selection menus on page load
 
 let lineSets: null | string[] = null
 
-fetch("/feline/list-line-sets").then(resp => resp.json()).then(_lineSets => {
+fetch("/feline/list-line-sets").then(resp => resp.json()).then((_lineSets: string[]) => {
     lineSets = _lineSets
-    if (lineSets == null) {
-        throw new Error("missing lineSets!");
-    }
-    container.hidden = false;
-    let s = ``;
-    for (const lineSet of lineSets) {
-        s += `<div class="line-set-row">
+
+    { /*** Home page listing ****/
+        const container = document.getElementById("line-set-listing-container");
+        if (container === null) {
+            throw new Error("Could not find lineSetListing container");
+        }
+        const lineSetListing = document.getElementById("line-set-listing");
+        if (lineSetListing === null) {
+            throw new Error("Could not find lineSetListing");
+        }
+
+        container.hidden = false;
+        let s = ``;
+        for (const lineSet of lineSets) {
+            s += `
+<div class="line-set-row">
     <span class="lineset-name">${lineSet}</span>
     <a href="/session" class="lineset-review">Review</a>
     <a href="" class="lineset-edit">Explore</a>
-        </div>`
+</div>`
+        }
+        lineSetListing.innerHTML = s;
     }
-    lineSetListing.innerHTML = s;
+
+    { /*** Lineset selection ***/
+        const container = document.getElementById("lineset-page-list");
+        if (container === null) {
+            throw new Error("Did not find #lineset-page-list");
+        }
+        let s = ``;
+        for (const name of lineSets) {
+            s += `
+<a class="button-thick"
+   href="/#settings"
+   onclick="linesetSelected('${name}')">
+${name}</a>
+`
+        }
+        container.innerHTML = s;
+        
+    }
 })
+//-------
 
-let builderDoc: any | Document = null;
-fetch('/builder').then(resp => resp.text()).then(content => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, "text/html");
-    builderDoc = doc;
-});
-
-function openBuilder(e: Event) {
-    const mainBody = document.getElementById("main-content");
-    if (mainBody == null) {
-        throw new Error("Failed to find #main-content");
-    }
-    if (builderDoc !== null) {
-        mainBody.innerHTML = builderDoc.body.innerHTML;
-    }
-    //e.preventDefault();
-}
 
 //---------------------------------------------------------------
 // lineset select page
 
 declare global {
-    interface Window { linesetSelectPage: Function, linesetSelected: Function }
+    interface Window { linesetSelected: Function }
 }
-
-window.linesetSelectPage = () => {
-    if (lineSets === null) {
-        // TODO: wait for fetch to complete
-        throw new Error("Did not fetch lineSets");
-    }
-    const container = document.getElementById("lineset-page-list");
-    if (container === null) {
-        throw new Error("Did not find #lineset-page-list");
-    }
-    let s = ``;
-    for (const name of lineSets) {
-        s += `
-          <a class="button-thick" href="/#settings" onclick="linesetSelected('${name}')">${name}</a>
-        `
-    }
-    container.innerHTML = s;
-}
-
-//---------------------------------------------------------------
 
 import * as lineReviewer from "./linereviewer.js";
 
@@ -78,5 +80,4 @@ window.linesetSelected = (title: string) => {
     lineReviewer.SetLineSet(title);
 
 }
-
 //--------------------------
