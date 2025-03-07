@@ -45,14 +45,7 @@
 
   <div id="home" class="page">
     <div>
-      {{if .ActiveSession}}
-        <p>You're in the middle of reviewing <b>{{.ActiveSession}}</b>.</p>
-        <div class="center-content">
-          <div class="button-wrap">
-            <a href="/session">Continue reviewing</a>
-          </div>
-        </div>
-      {{end}}
+      <div id="home-message"></div>
       <div>
         <div class="center-content">
           <a class="buttonify" href="/#lineset-select">Start new review session</a>

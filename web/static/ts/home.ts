@@ -1,4 +1,4 @@
-import * as State from "./save.js"
+import * as Save from "./save.js"
 
 //-------------------------------------------
 // Callbacks for when we switch to a sub-pages
@@ -6,9 +6,7 @@ import * as State from "./save.js"
 addEventListener("hashchange", (e) => {
     switch (location.hash) {
         case "#home":
-            State.PullState().then((data) => {
-                console.log(data);
-            })
+            homePageUpdate();
             break;
         case "#builder":
             break;
@@ -72,6 +70,25 @@ ${name}</a>
 })
 //-------
 
+//---------------------------------------------------------------
+function homePageUpdate() {
+    const content = document.getElementById("home-message");
+    if (content == null) {
+        throw new Error("Did not find #home-message");
+    }
+    if (Save.state.lineSet != "") {
+        let s = `
+<p>You're in the middle of reviewing <b>${Save.state.lineSet}</b>.</p>
+<div class="center-content">
+  <div class="button-wrap">
+    <a href="#reviewer">Continue reviewing</a>
+  </div>
+</div>
+`;
+        content.innerHTML = s;
+    }
+}
+homePageUpdate();
 
 //---------------------------------------------------------------
 // lineset select page

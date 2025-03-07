@@ -23,9 +23,6 @@ type Session struct {
     id database.UserId;
     save SessionData;
     builderPage BuilderPage;
-
-    // DEPRECATE
-    page interface{};
 }
 type SessionToken string
 type UserId int
@@ -43,7 +40,6 @@ type BuilderPage struct {
 }
 
 type HomePage struct {
-    ActiveSession string
     Name string
     State SessionData
 }
@@ -303,7 +299,6 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
     }
     data := HomePage {
         Name: session.username,
-        ActiveSession: session.save.LineFile,
         State: session.save,
     }
     debug.Println("serveHome", data, session.save.LineFile);
