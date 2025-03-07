@@ -3,6 +3,7 @@ package feline
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -33,8 +34,8 @@ type SessionToken string
 type UserId int
 
 type SessionData struct {
-    lineFile string `json:"lineSet"`;
-    reviewMethod string `json:"reviewMethod"`;
+    LineFile string `json:"lineSet"`
+    ReviewMethod string `json:"reviewMethod"`
 }
 
 type IndexPage struct {
@@ -67,6 +68,10 @@ func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
         lynxSessions[user.Id] = &Session{
             username: user.Name,
             id: user.Id,
+            save: SessionData{
+                LineFile: "",
+                ReviewMethod: "",
+            },
         }
     }
 
@@ -229,8 +234,8 @@ func handleGetLineData(w http.ResponseWriter, r *http.Request) {
     }
 
     if (r.Form.Get("setCurrent") == "true") {
-        session.save.lineFile = title;
-        debug.Println("Saving line set as current", session.save.lineFile);
+        session.save.LineFile = title;
+        debug.Println("Saving line set as current", session.save.LineFile);
     }
 
     json.NewEncoder(w).Encode(&lines)
@@ -245,11 +250,16 @@ func handlePullSessionState(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
-
-    json.NewEncoder(w).Encode(&session.save)
+    err = json.NewEncoder(w).Encode(&session.save)
+    if err != nil {
+        debug.Println(err.Error())
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 }
 
 func handlePushSessionState(w http.ResponseWriter, r *http.Request) {
+    debug.Println("handlePushSessionState");
     session, err := ActiveSession(w, r)
     if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -257,6 +267,7 @@ func handlePushSessionState(w http.ResponseWriter, r *http.Request) {
     }
     var data SessionData
     err = json.NewDecoder(r.Body).Decode(&data)
+    debug.Println("PushSessionState", data)
     if err != nil {
         debug.Println(err.Error())
         http.Error(w, err.Error(), http.StatusBadRequest)
@@ -461,9 +472,9 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
     }
     data := HomePage {
         Name: session.username,
-        ActiveSession: session.save.lineFile,
+        ActiveSession: session.save.LineFile,
     }
-    debug.Println("serveHome", data, session.save.lineFile);
+    debug.Println("serveHome", data, session.save.LineFile);
 
     t, err := template.ParseFiles("./web/templates/index.html")
     if err != nil {

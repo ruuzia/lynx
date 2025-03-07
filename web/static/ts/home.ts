@@ -1,9 +1,14 @@
+import * as State from "./save.js"
+
 //-------------------------------------------
 // Callbacks for when we switch to a sub-pages
 
 addEventListener("hashchange", (e) => {
     switch (location.hash) {
         case "#home":
+            State.PullState().then((data) => {
+                console.log(data);
+            })
             break;
         case "#builder":
             break;

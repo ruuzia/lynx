@@ -1,3 +1,5 @@
+import * as Save from "./save.js"
+
 interface Card {
     cue: string;
     line: string;
@@ -124,6 +126,8 @@ export function SetReviewMethod(_reviewMethod: string) {
         fetchTask.then(() => SetReviewMethod(_reviewMethod));
         return;
     }
+    Save.state.reviewMethod = reviewMethod;
+    Save.PushState();
 
     console.log("init() " + reviewMethod);
     front_fn = default_front_fn;
@@ -161,12 +165,13 @@ export function SetLineSet(title: string) {
         });
         return;
     }
+    Save.state.lineSet = title;
+    Save.PushState();
 
     fetchTask = fetch("/feline/get-line-data", {
         method: "POST",
         body: new URLSearchParams({
             title: title,
-            setCurrent: "true",
         }),
     }).then(resp => resp.json()).then(_lineData => {
         lineData = _lineData;
