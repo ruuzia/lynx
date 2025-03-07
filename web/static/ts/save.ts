@@ -7,10 +7,11 @@ interface SessionState {
     reviewMethod: string,
 };
 
-export const state: SessionState = {
-    lineSet: "",
-    reviewMethod: "",
-};
+declare var initialSessionState: SessionState
+export const state: SessionState = initialSessionState;
+
+
+console.log("[state.ts] load state: ", state);
 
 let pullRequest: null|Promise<any> = null;
 export function PullState() {

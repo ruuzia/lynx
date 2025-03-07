@@ -3,7 +3,6 @@ package feline
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -55,8 +54,9 @@ type LineReviewerPage struct {
 }
 
 type HomePage struct {
-    ActiveSession string;
+    ActiveSession string
     Name string
+    State SessionData
 }
 
 //---------------------------------------------------------
@@ -473,6 +473,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
     data := HomePage {
         Name: session.username,
         ActiveSession: session.save.LineFile,
+        State: session.save,
     }
     debug.Println("serveHome", data, session.save.LineFile);
 

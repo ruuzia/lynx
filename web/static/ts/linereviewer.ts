@@ -178,3 +178,13 @@ export function SetLineSet(title: string) {
         fetchTask = null;
     });
 }
+
+function onload() {
+    if (Save.state.lineSet != "") {
+        SetLineSet(Save.state.lineSet)
+        if (Save.state.reviewMethod != "") {
+            SetReviewMethod(Save.state.reviewMethod);
+        }
+    }
+}
+onload();
