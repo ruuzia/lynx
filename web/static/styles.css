@@ -1,3 +1,6 @@
+/*-------------------------------------------------*/
+/* Fonts */
+
 @font-face {
     font-family: Quintessential;
     src: url(/static/fonts/Quintessential-Regular.ttf)
@@ -7,6 +10,32 @@
     font-family: Lora;
     src: url(/static/fonts/Lora-VariableFont_wght.ttf)
 }
+
+/*------------------------------------------------*/
+/* Colorscheme */
+
+.dark {
+    --bg: hsl(0 0% 10%);
+    --fg: hsl(0 0% 90%);
+    --button-bg: hsl(0 0% 5%);
+    --button-fg: hsl(0 0% 90%);
+    --color-subtle: hsl(267 50% 5%);
+    --color-active-1: hsl(267 50% 20%);
+    --color-active-2: hsl(267 25% 10%);
+}
+
+.light {
+    --bg: hsl(267 50% 92%);
+    --fg: hsl(0 0% 0%);
+    --button-bg: hsl(267 15% 60%);
+    --button-fg: hsl(267 20% 100%);
+    --color-subtle: hsl(267 50% 88%);
+    --color-active-1: hsl(267 30% 60%);
+    --color-active-2: hsl(267 30% 80%);
+}
+
+/*---------------------------------------*/
+/* Component defaults */
 
 body {
     --margin: 12px;
@@ -30,25 +59,6 @@ a {
     color: var(--fg);
 }
 
-.dark {
-    --bg: hsl(0 0% 10%);
-    --fg: hsl(0 0% 90%);
-    --button-bg: hsl(0 0% 5%);
-    --button-fg: hsl(0 0% 90%);
-    --color-subtle: hsl(267 50% 5%);
-    --color-active-1: hsl(267 50% 20%);
-    --color-active-2: hsl(267 25% 10%);
-}
-
-.light {
-    --bg: hsl(267 50% 92%);
-    --fg: hsl(0 0% 0%);
-    --button-bg: hsl(267 15% 60%);
-    --button-fg: hsl(267 20% 100%);
-    --color-subtle: hsl(267 50% 88%);
-    --color-active-1: hsl(267 30% 60%);
-    --color-active-2: hsl(267 30% 80%);
-}
 
 html { height: 100%; }
 
@@ -80,6 +90,11 @@ button:active {
     background-color: var(--color-active-2);
 }
 
+
+/*-----------------------------------------------------*/
+/* util */
+
+
 .center-content {
     display: flex;
     justify-content: center;
@@ -110,7 +125,6 @@ select {
 	background-color: var(--bg);
 	font-size: 20px;
 }
-
 
 /*-----------------------------------------------------*/
 /*  home page line-sets display */
