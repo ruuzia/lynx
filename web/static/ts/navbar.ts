@@ -6,6 +6,7 @@ function sidebarToggle() {
 }
 if (sidebar !== null) {
     if (screen.width > 500) {
-        sidebar.classList.remove("docked")
+        // Disabling automatic showing animation for now
+        //sidebar.classList.remove("docked")
     }
 }
