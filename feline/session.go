@@ -21,6 +21,9 @@ var lynxSessions = map[database.UserId]*Session {}
 type Session struct {
     username string;
     id database.UserId;
+    save SessionData;
+
+    // DEPRECATE
     location string;
     file string;
     page interface{};
@@ -29,6 +32,10 @@ type Session struct {
 type SessionToken string
 type UserId int
 
+type SessionData struct {
+    lineFile string `json:"lineSet"`;
+    reviewMethod string `json:"reviewMethod"`;
+}
 
 type IndexPage struct {
     Name string
@@ -212,7 +219,7 @@ func handleGetLineData(w http.ResponseWriter, r *http.Request) {
     }
     r.ParseForm()
     title := r.Form.Get("title")
-    debug.Println("handleGetLineData", title)
+    debug.Println("handleGetLineData", title, r.Form)
 
     lines, err := database.GetLineData(session.id, title)
     if err != nil {
@@ -221,7 +228,25 @@ func handleGetLineData(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    if (r.Form.Get("setCurrent") == "true") {
+        session.save.lineFile = title;
+        debug.Println("Saving line set as current", session.save.lineFile);
+    }
+
     json.NewEncoder(w).Encode(&lines)
+}
+
+//-------------------
+// State load/save
+
+func handlePullSessionState(w http.ResponseWriter, r *http.Request) {
+    session, err := ActiveSession(w, r)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    json.NewEncoder(w).Encode(&session.save)
 }
 
 //----------------------------------------------------------------
@@ -419,10 +444,9 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
     }
     data := HomePage {
         Name: session.username,
+        ActiveSession: session.save.lineFile,
     }
-    if session.location == "linereviewer" {
-        data.ActiveSession = session.file;
-    }
+    debug.Println("serveHome", data, session.save.lineFile);
 
     t, err := template.ParseFiles("./web/templates/index.html")
     if err != nil {

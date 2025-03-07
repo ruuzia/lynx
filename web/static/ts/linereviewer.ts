@@ -166,6 +166,7 @@ export function SetLineSet(title: string) {
         method: "POST",
         body: new URLSearchParams({
             title: title,
+            setCurrent: "true",
         }),
     }).then(resp => resp.json()).then(_lineData => {
         lineData = _lineData;

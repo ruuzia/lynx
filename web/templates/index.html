@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lynx</title>
+
+  <!-- Default location to #home -->
+  <script>
+    if (location.hash == "") location.hash = "#home";
+  </script>
   <link rel="stylesheet" href="/static/styles.css" />
   <script src="/static/js/home.js" type="module"></script>
 </head>

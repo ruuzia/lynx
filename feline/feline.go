@@ -49,6 +49,7 @@ func OpenServer(address string) {
     http.HandleFunc("/feline/finishbuilder", handleFinishBuilder)
     http.HandleFunc("/feline/list-line-sets", handleListLineSets)
     http.HandleFunc("/feline/get-line-data", handleGetLineData)
+    http.HandleFunc("/feline/pull-session-state", handlePullSessionState)
 
     fmt.Println("Listening to localhost:2323")
     log.Fatal(http.ListenAndServe(address, nil))
