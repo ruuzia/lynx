@@ -37,12 +37,7 @@ func OpenServer(address string) {
     })
     fs := http.FileServer(http.Dir("./web/static/"))
     http.Handle("/static/", http.StripPrefix("/static/", fs))
-    http.HandleFunc("/session", sessionPage)
-
     http.HandleFunc("/feline/logout", handleLogout)
-    http.HandleFunc("/feline/fileselect", handleFileSelect)
-    http.HandleFunc("/feline/settings", handleSettings)
-    http.HandleFunc("/feline/startsession", handleStartSession)
     http.HandleFunc("/feline/starline", handleStarLine)
     http.HandleFunc("/feline/linenotes", handleLineNotes)
     http.HandleFunc("/feline/updatebuilder", handleUpdateBuilder)
@@ -191,15 +186,6 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
     }
 
     StartSession(w, r, user)
-}
-
-func getFileList(session *Session) ([]string, error) {
-    debug.Println("getFileList")
-    files, err := database.GetLineSets(session.id)
-    if err != nil {
-        return nil, err
-    }
-    return files, nil
 }
 
 func runLynxCommand(user string, args... string) ([]byte, error) {

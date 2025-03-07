@@ -22,12 +22,10 @@ type Session struct {
     username string;
     id database.UserId;
     save SessionData;
+    builderPage BuilderPage;
 
     // DEPRECATE
-    location string;
-    file string;
     page interface{};
-    builderPage BuilderPage;
 }
 type SessionToken string
 type UserId int
@@ -37,20 +35,11 @@ type SessionData struct {
     ReviewMethod string `json:"reviewMethod"`
 }
 
-type IndexPage struct {
-    Name string
-}
-
 type BuilderPage struct {
     Title string `json:"title"`
     Text string `json:"text"`
     ReturnTo string
     ErrorMsg string
-}
-
-type LineReviewerPage struct {
-    Lines []database.LineData
-    ReviewMethod string
 }
 
 type HomePage struct {
@@ -78,98 +67,6 @@ func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
     http.Redirect(w, r, "/", http.StatusFound)
 }
 
-/**********************************
- *** SESSION PAGE DISPATCHERS *****
- **********************************/
-
-func dispatchSettings(w http.ResponseWriter, r *http.Request, session *Session) {
-    type ReviewTypeDesc struct {
-        Code string
-        Title string
-        Description string
-    }
-
-    type SettingsPage struct {
-        Options []ReviewTypeDesc
-    }
-
-    session.location = "settings"
-    session.page = SettingsPage{
-        []ReviewTypeDesc{
-            {
-                Code: "in_order",
-                Title: "In order",
-                Description: "Review lines in order",
-            },
-            {
-                Code: "random",
-                Title: "Random order",
-                Description: "Review lines from cues in a random order",
-            },
-            {
-                Code: "cues",
-                Title: "Cues from lines",
-                Description: "Advanced: recall cues from lines",
-            },
-            {
-                Code: "no_cues",
-                Title: "No cues",
-                Description: "Advanced: recall lines only based on order",
-            },
-        },
-    }
-    
-    sessionUpdatePage(w, r)
-}
-
-type FileSelectPage struct {
-    Files []string
-}
-
-func dispatchFileSelect(w http.ResponseWriter, r *http.Request, session *Session) {
-    debug.Println("dispatchFileSelect")
-
-    files, err := getFileList(session)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
-    debug.Print(files)
-
-    session.location = "fileselect"
-    session.page = FileSelectPage {
-        Files: files,
-    }
-    sessionUpdatePage(w, r)
-}
-
-func dispatchLineReviewer(w http.ResponseWriter, r *http.Request, session *Session, reviewMethod string) {
-    lines, err := database.GetLineData(session.id, session.file)
-    if err != nil {
-        debug.Println(err.Error())
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    session.location = "linereviewer"
-    session.page = LineReviewerPage {
-        Lines: lines,
-        ReviewMethod: reviewMethod,
-    }
-    sessionUpdatePage(w, r)
-
-}
-
-type SessionFinishedPage struct {
-}
-
-func dispatchSessionFinished(w http.ResponseWriter, r *http.Request, session *Session) {
-    session.location = "sessionfinished"
-    session.page = SessionFinishedPage { }
-    sessionUpdatePage(w, r)
-}
-
-/******************************
- *******************************/
 
 /******************************
  *** SESSION API HANDLERS *****
@@ -340,12 +237,7 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
         debug.Println(err)
     }
 
-    if session.builderPage.ReturnTo == "/session" && session.location == "fileselect" {
-        session.file = session.builderPage.Title
-        dispatchSettings(w, r, session)
-    }
-
-    http.Redirect(w, r, session.builderPage.ReturnTo, http.StatusFound)
+    http.Redirect(w, r, "/#home", http.StatusFound)
 }
 
 func parseLineData(data string) (lineData []database.LineData, err error) {
@@ -400,67 +292,6 @@ func handleLineNotes(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func handleStartSession(w http.ResponseWriter, r *http.Request) {
-    userId, err := CheckAuth(w, r)
-    if err != nil {
-        redirectLogin(w, r)
-        return
-    }
-    dispatchFileSelect(w, r, lynxSessions[userId])
-}
-
-func handleSettings(w http.ResponseWriter, r *http.Request) {
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        redirectLogin(w, r)
-        return
-    }
-    if session.location != "settings" {
-        sendPage(w, session)
-        return
-    }
-
-    r.ParseForm()
-    debug.Println(r.Form)
-    reviewType := r.Form.Get("reviewtype")
-    if reviewType == "" {
-        http.Error(w, "Expected reviewtype", http.StatusInternalServerError)
-        return
-    }
-
-    dispatchLineReviewer(w, r, session, reviewType)
-}
-
-func handleFileSelect(w http.ResponseWriter, r *http.Request) {
-    debug.Println("handleFileSelect")
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        redirectLogin(w, r)
-        return
-    }
-    if session.location != "fileselect" {
-        sendPage(w, session)
-        return
-    }
-
-    r.ParseForm();
-    file := r.Form.Get("file")
-    if file == "" {
-        http.Error(w, "Missing file", http.StatusBadRequest)
-        return
-    }
-    index, err := strconv.Atoi(file);
-    if err != nil {
-        http.Error(w, "Invalid index", http.StatusBadRequest)
-        return
-    }
-
-    data := session.page.(FileSelectPage)
-
-    session.file = data.Files[index]
-    dispatchSettings(w, r, session)
-}
-
 /******************************
 ******************************/
 
@@ -504,34 +335,4 @@ func serveBuilder(w http.ResponseWriter, r *http.Request) {
     }
     debug.Println(session.builderPage)
     t.Execute(w, &session.builderPage)
-}
-
-func sessionUpdatePage(w http.ResponseWriter, r *http.Request) {
-    // We redirect because the requests made through html forms
-    // require it
-    http.Redirect(w, r, "/session", http.StatusFound)
-}
-
-
-// Serves the current page in our session
-// or redirects to login if not authenticated
-func sessionPage(w http.ResponseWriter, r *http.Request) {
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        redirectLogin(w, r)
-        return
-    }
-    
-    sendPage(w, session)
-    return
-}
-
-func sendPage(w http.ResponseWriter, session *Session) {
-    t, err := template.ParseFiles("web/templates/" + session.location + ".html")
-    if err != nil {
-        debug.Println("Error parsing template file")
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    t.Execute(w, session.page)
 }
