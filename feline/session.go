@@ -249,6 +249,23 @@ func handlePullSessionState(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(&session.save)
 }
 
+func handlePushSessionState(w http.ResponseWriter, r *http.Request) {
+    session, err := ActiveSession(w, r)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    var data SessionData
+    err = json.NewDecoder(r.Body).Decode(&data)
+    if err != nil {
+        debug.Println(err.Error())
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+    session.save = data
+    w.WriteHeader(http.StatusOK)
+}
+
 //----------------------------------------------------------------
 // BUILDER {{{
 
