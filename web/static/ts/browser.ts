@@ -36,6 +36,11 @@ function load(title: string) {
         });
 }
 
+function sepLine(line: string): [string, string] {
+    const sepIndex = line.indexOf(":");
+    return [line.slice(0, sepIndex), line.slice(sepIndex+1, line.length)];
+}
+
 function render(lines: Card[]) {
     const container = document.getElementById("browser-container");
     if (container === null) {
@@ -43,13 +48,22 @@ function render(lines: Card[]) {
     }
     let code = '';
     for (const item of lines) {
+        const [linePre, linePost] = sepLine(item.line)
+        const [cuePre, cuePost] = sepLine(item.cue)
+        console.log(linePre, linePost);
         code += html`
 <div class="browser-card">
-  <div class="line-container">
-    <div class="line">${item.line}</div>
+  <div class="cue-container">
+    <label for="cue">${cuePre}:</label>
+    <div name="cue" class="browser-cue" contenteditable=true>${cuePost}</div>
   </div>
-  <div class="cue">${item.cue}</div>
-</div>`
+  <div class="line-container">
+    <label for="line">${linePre}:</label>
+    <div name="line" class="browser-line" contenteditable=true>${linePost}</div>
+  </div>
+</div>
+
+`
     }
     container.innerHTML = code;
 }

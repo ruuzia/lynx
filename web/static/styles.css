@@ -327,4 +327,37 @@ body { --header-height: 60px; }
 
 .browser-card {
     margin-top: 1em;
+    max-width: 650px;
+    width: 100%;
+    background-color: var(--color-active-2);
+    padding: 25px;
+    border-radius: 8px;
 }
+
+.browser-line, .browser-cue {
+    background-color: var(--bg);
+    padding: 10px;
+    flex-grow: 1;
+    margin-left: 5px;
+    border-radius: 5px;
+    /* text-align: left; */
+}
+
+.line-container, .cue-container {
+    display: flex;
+    margin: 10px;
+    align-items: center;
+}
+
+.line-container label, .cue-container label {
+    /* width: 50px; */
+    flex-shrink: 0;
+    color: var(--button-fg);
+}
+
+#browser-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center
+}
+
