@@ -312,6 +312,7 @@ body { --header-height: 60px; }
 }
 
 /*-----------------------------------------------------*/
+/* SPA minimal "page" set-up */
 
 .page {
     padding-top: var(--header-height);
@@ -319,4 +320,11 @@ body { --header-height: 60px; }
 
 .page:not(:target) {
     display: none;
+}
+
+/*-----------------------------------------------------*/
+/* Line browse tool */
+
+.browser-card {
+    margin-top: 1em;
 }

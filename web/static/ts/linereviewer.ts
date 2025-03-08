@@ -1,13 +1,5 @@
 import * as Save from "./save.js"
 
-interface Card {
-    cue: string;
-    line: string;
-    notes: string;
-    id: number;
-    starred: boolean;
-}
-
 var lineData: Card[] | null;
 var reviewMethod: string | null;
 

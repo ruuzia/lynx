@@ -42,6 +42,7 @@ type BuilderPage struct {
 type HomePage struct {
     Name string
     State SessionData
+    LineSets []string
 }
 
 //---------------------------------------------------------
@@ -297,9 +298,15 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
         redirectLogin(w, r)
         return
     }
+    lineSets, err  := database.GetLineSets(session.id)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
     data := HomePage {
         Name: session.username,
         State: session.save,
+        LineSets: lineSets,
     }
     debug.Println("serveHome", data, session.save.LineFile);
 

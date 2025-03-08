@@ -14,10 +14,6 @@
 </head>
 <body>
   <script src="/static/js/colorscheme.js"></script>
-  <script>
-    initialSessionState = {{.State}}
-  </script>
-
   <!---------------------------------------------->
   <!--------  navigation bar     ----------------->
 
@@ -27,6 +23,7 @@
       <div class="sidebar-items">
         <div class="sidebar-item"><a href="/#home">Home</a></div>
         <div class="sidebar-item"><a href="/#builder">Builder</a></div>
+        <div class="sidebar-item"><a href="/#browser">Browser</a></div>
         <div class="sidebar-item"><a href="/#reviewer">Reviewer</a></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item"><a href="/feline/logout">Log out</a></div>
@@ -134,15 +131,13 @@ POCO: Another line
   </div>
 
   <!--   #reviewer     -->
-  <!------------------------------------------->
 
 
   <!------------------------------------------->
   <!--   #lineset-select  -->
   <div class="page" id="lineset-select">
     <h1>Select your line set</h1>
-    <div id="lineset-page-list">
-    </div>
+    <div id="lineset-page-list"></div>
     <form action="/#builder" method="get">
       <button style="background-color: hsl(267 100% 10%)">Create new line set</button>
       <input type="hidden" name="returnTo" value="session" />
@@ -150,7 +145,6 @@ POCO: Another line
   </div>
 
   <!--   #lineset-select  -->
-  <!------------------------------------------->
 
   <!------------------------------------------->
   <!--   #settings  -->
@@ -161,6 +155,22 @@ POCO: Another line
   </div>
 
   <!--   #settings  -->
+
   <!------------------------------------------->
+  <!--   #browser  -->
+  <div class="page" id="browser">
+    <h1>Line browser</h1>
+    <select id="browser-line-select"></select>
+    <div id="browser-container"></div>
+  </div>
+
+  <!--   #browser  -->
+
+
+  <script>
+    initialSessionState = {{.State}}
+    lineSets = {{.LineSets}}
+  </script>
+
 </body>
 </html>
