@@ -1,14 +1,16 @@
 package database
 
 import (
-    "context"
-    "database/sql"
-    "fmt"
-    "encoding/json"
-    "log"
-    "os"
-    "time"
-    _ "github.com/go-sql-driver/mysql"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
@@ -50,6 +52,13 @@ func OpenDatabase() {
     if err != nil {
         log.Fatal(err)
     }
+	if credentials.PassswordFile != "" {
+		content, err := os.ReadFile(credentials.PassswordFile);
+		if err != nil {
+			log.Fatal("FAILED to read " + credentials.PassswordFile)
+		}
+		credentials.Passsword = strings.TrimSpace(string(content))
+	}
 
 	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
     if err != nil {
@@ -235,7 +244,8 @@ func AddUser(username string, passwordHash []byte) (User, error) {
 type credentials struct {
     Host string `json:"host"`
     User string `json:"user"`
-    Passsword string `json:"password"`
+    Passsword string `json:"password,omitempty"`
+    PassswordFile string `json:"password_file,omitempty"`
     Database string `json:"database"`
 }
 

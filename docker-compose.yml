@@ -18,6 +18,7 @@ services:
       - mysql
     secrets:
       - credentials
+      - db_password
     environment:
       LYNX_CREDENTIALS_FILE: /run/secrets/credentials
 
