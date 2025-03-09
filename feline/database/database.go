@@ -37,7 +37,11 @@ type LineData struct {
  */
 func OpenDatabase() {
     var err error
-    credententialsFile, err := os.Open("credentials.json");
+	credentialsFile := os.Getenv("LYNX_CREDENTIALS_FILE")
+	if credentialsFile == "" {
+		credentialsFile = "credentials.json"
+	}
+    credententialsFile, err := os.Open(credentialsFile);
     if err != nil {
         log.Fatal(err)
     }

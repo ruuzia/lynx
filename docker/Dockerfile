@@ -5,4 +5,4 @@ RUN go mod download
 COPY . .
 RUN go build -o /feline
 EXPOSE 8080
-CMD [ "/app/init.sh" ]
+CMD [ "/app/docker/init.sh" ]

@@ -1,22 +1,35 @@
+secrets:
+  credentials:
+    file: docker/credentials.json
+  db_password:
+    file: docker/db_password.txt
+
 services:
   app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     image: lynx
-    build: .
-    command: /app/init.sh
+    command: /app/docker/init.sh
     ports:
       - 8080:2323
     working_dir: /app
     depends_on:
       - mysql
+    secrets:
+      - credentials
+    environment:
+      LYNX_CREDENTIALS_FILE: /run/secrets/credentials
 
   mysql:
     image: mysql:8.0
     volumes:
       - lynx-mysql:/var/lib/mysql
-
     environment:
-      MYSQL_ROOT_PASSWORD: unissued-crinkly-crystal-corral
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
       MYSQL_DATABASE: lynx
+    secrets:
+      - db_password
 
 volumes:
   lynx-mysql:
