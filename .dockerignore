@@ -1,2 +1,2 @@
-credentials.json
-db_password.txt
+/credentials.json
+docker/db_password.txt

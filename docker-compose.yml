@@ -1,6 +1,4 @@
 secrets:
-  credentials:
-    file: docker/credentials.json
   db_password:
     file: docker/db_password.txt
 
@@ -17,10 +15,9 @@ services:
     depends_on:
       - mysql
     secrets:
-      - credentials
       - db_password
     environment:
-      LYNX_CREDENTIALS_FILE: /run/secrets/credentials
+      LYNX_CREDENTIALS_FILE: docker/credentials.json
 
   mysql:
     image: mysql:8.0
