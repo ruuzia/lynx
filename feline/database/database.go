@@ -47,7 +47,7 @@ func OpenDatabase() {
         log.Fatal(err)
     }
 
-    db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", credentials.User, credentials.Passsword, credentials.Database))
+	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
     if err != nil {
         log.Fatal(err)
     }
