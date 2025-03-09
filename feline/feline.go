@@ -16,7 +16,9 @@ var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 
 func OpenServer(address string) {
     database.OpenDatabase()
-    runTscWatch()
+	if (os.Getenv("LYNX_DEV") != "") {
+		runTscWatch()
+	}
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {

@@ -1,14 +1,16 @@
 package database
 
 import (
-    "context"
-    "database/sql"
-    "fmt"
-    "encoding/json"
-    "log"
-    "os"
-    "time"
-    _ "github.com/go-sql-driver/mysql"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var db *sql.DB
@@ -37,7 +39,11 @@ type LineData struct {
  */
 func OpenDatabase() {
     var err error
-    credententialsFile, err := os.Open("credentials.json");
+	credentialsFile := os.Getenv("LYNX_CREDENTIALS_FILE")
+	if credentialsFile == "" {
+		credentialsFile = "credentials.json"
+	}
+    credententialsFile, err := os.Open(credentialsFile);
     if err != nil {
         log.Fatal(err)
     }
@@ -46,8 +52,15 @@ func OpenDatabase() {
     if err != nil {
         log.Fatal(err)
     }
+	if credentials.PassswordFile != "" {
+		content, err := os.ReadFile(credentials.PassswordFile);
+		if err != nil {
+			log.Fatal("FAILED to read " + credentials.PassswordFile)
+		}
+		credentials.Passsword = strings.TrimSpace(string(content))
+	}
 
-    db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@/%s", credentials.User, credentials.Passsword, credentials.Database))
+	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
     if err != nil {
         log.Fatal(err)
     }
@@ -58,6 +71,54 @@ func OpenDatabase() {
     db.SetConnMaxLifetime(time.Minute * 3)
     db.SetMaxOpenConns(10)
     db.SetMaxIdleConns(10)
+	if err = CreateTables(); err != nil {
+        log.Fatal("Error creating tables " + err.Error());
+	}
+}
+
+func CreateTables() (err error) {
+	_, err = db.Exec(`
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);
+	`)
+	if err != nil {
+		return err;
+	}
+	_, err = db.Exec(`
+CREATE TABLE IF NOT EXISTS line_sets (
+    id int NOT NULL AUTO_INCREMENT,
+    user_id int,
+    title varchar(1024),
+    PRIMARY KEY(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+	`)
+	if err != nil {
+		return err;
+	}
+	_, err = db.Exec(`
+CREATE TABLE IF NOT EXISTS line_data (
+    id int NOT NULL AUTO_INCREMENT,
+    user_id int,
+    line_set_id int,
+    line_number int,
+    location VARCHAR(16),
+    cue TEXT(65000),
+    line TEXT(65000),
+    notes TEXT(65000),
+    starred boolean,
+    PRIMARY KEY(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (line_set_id) REFERENCES line_sets(id)
+);
+	`);
+	if err != nil {
+		return err;
+	}
+	return;
 }
 
 func GetLineSets(user_id UserId) ([]string, error) {
@@ -183,7 +244,8 @@ func AddUser(username string, passwordHash []byte) (User, error) {
 type credentials struct {
     Host string `json:"host"`
     User string `json:"user"`
-    Passsword string `json:"password"`
+    Passsword string `json:"password,omitempty"`
+    PassswordFile string `json:"password_file,omitempty"`
     Database string `json:"database"`
 }
 
