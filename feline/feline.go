@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"os/exec"
@@ -35,6 +36,7 @@ func OpenServer(address string) {
             handleSignup(w, r)
         }
     })
+	mime.AddExtensionType(".js", "application/javascript")
     fs := http.FileServer(http.Dir("./web/static/"))
     http.Handle("/static/", http.StripPrefix("/static/", fs))
     http.HandleFunc("/feline/logout", handleLogout)
