@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -208,15 +207,6 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
     }
     f.WriteString(session.builderPage.Text);
     f.Close();
-    out, err := runLynxCommand(session.username, "add-set", session.builderPage.Title, "../" + tempFile)
-    debug.Printf("add-set: %s\n", out)
-    if err != nil {
-        message := string(err.(*exec.ExitError).Stderr)
-        debug.Println(err.Error(), message)
-        session.builderPage.ErrorMsg = "Error in format. " + message
-        http.Redirect(w, r, "/builder", http.StatusFound)
-        return
-    }
 
     err = database.AddLineSet(session.id, session.builderPage.Title)
     if err != nil {

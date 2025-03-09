@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/ruuzia/lynx/feline/database"
 )
@@ -17,7 +16,6 @@ var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
 
 func OpenServer(address string) {
     database.OpenDatabase()
-    buildLynx()
     runTscWatch()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
@@ -84,13 +82,6 @@ func execute(dir string, exe string, arg ...string) {
         log.Fatal(err)
     }
     
-}
-
-// Mostly a convenience so that I don't have to do it myself :>
-func buildLynx() {
-    execute("", "mkdir", "-p", "build")
-    execute("./build/", "cmake", "..", "-G", "Ninja")
-    execute("./build/", "ninja")
 }
 
 func runTscWatch() {
@@ -186,23 +177,6 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
     }
 
     StartSession(w, r, user)
-}
-
-func runLynxCommand(user string, args... string) ([]byte, error) {
-    var cmdArgs []string
-    cmdArgs = append(cmdArgs, "--user")
-    cmdArgs = append(cmdArgs, user)
-    for _, arg := range args {
-        cmdArgs = append(cmdArgs, arg)
-    }
-    fmt.Println("CMD: ./Lynx", strings.Join(cmdArgs, " "))
-    cmd := exec.Command("./Lynx", cmdArgs...)
-    cmd.Dir = "build"
-    out, err := cmd.Output()
-    if err != nil {
-        fmt.Printf("Error: Code: %d Stderr: %s\n", err.(*exec.ExitError).ExitCode(), string(err.(*exec.ExitError).Stderr))
-    }
-    return out, err
 }
 
 type LoginPage struct {
