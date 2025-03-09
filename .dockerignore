@@ -1,2 +1,4 @@
 /credentials.json
 docker/db_password.txt
+/web/static/node_modules
+/web/static/package-lock.json
