@@ -11,22 +11,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var loginSessions = map[SessionToken] database.UserId {}
-
 func HashPassword(password string) ([]byte, error) {
     return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
 
 func VerifyPassword(password string, hashed []byte) bool {
     return bcrypt.CompareHashAndPassword(hashed, []byte(password)) == nil
-}
-
-func ActiveSession(w http.ResponseWriter, r *http.Request) (*Session, error) {
-    userId, err := CheckAuth(w, r)
-    if err != nil {
-        return nil, err
-    }
-    return lynxSessions[userId], nil
 }
 
 func Login(w http.ResponseWriter, user *database.User) (err error) {
@@ -37,7 +27,6 @@ func Login(w http.ResponseWriter, user *database.User) (err error) {
         Value: string(token),
         Path: "/",
     })
-    loginSessions[SessionToken(token)] = user.Id
 	err = database.AddSessionToken(user.Id, string(token))
 	if err != nil {
 		debug.Println("[Login] ERROR adding session token: ", err.Error())
@@ -58,15 +47,13 @@ func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) 
 
     token := SessionToken(cookie.Value)
 
-	found_ ,userId_, created_, err := database.LookupSessionToken(string(token));
+	found ,userId, created_date, err := database.LookupSessionToken(string(token));
 	if err != nil {
-		debug.Println("Error finding token: ", err.Error())
-		// return -1, err
+		debug.Println("[CheckAuth] Error finding token: ", err.Error())
+		return -1, err
 	}
-	debug.Println("Lookup:", found_, userId_, created_)
-
-    userId, is_authenticated := loginSessions[token]
-    if !is_authenticated {
+	debug.Println("[CheckAuth]:", found, userId, created_date)
+	if !found {
         debug.Println("Invalid session_token cookie. Redirecting to /login")
         return -1, errors.New("Invalid token")
     }

@@ -112,9 +112,10 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
         log.Fatal(err)
     }
 
-    token := SessionToken(cookie.Value)
-
-    delete(loginSessions, token)
+	err = database.SessionLogout(cookie.Value)
+	if err != nil {
+		debug.Println("[handleLogout] failed to logout: " + err.Error());
+	}
     redirectLogin(w, r)
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -245,6 +246,12 @@ func GetUser(username string) (User, error) {
     return user, err;
 }
 
+func GetUsername(userId UserId) (username string, err error) {
+    row := db.QueryRow(`SELECT name FROM users WHERE id = ?;`, userId)
+    err = row.Scan(&username)
+    return
+}
+
 func AddUser(username string, passwordHash []byte) (User, error) {
     q := `INSERT INTO users (name, password_hash) VALUES (?, ?);`
     _, err := db.Exec(q, username, passwordHash)
@@ -269,7 +276,7 @@ func LookupSessionToken(token string) (found bool, userId UserId, created time.T
 	row := db.QueryRow(`
 		SELECT user_id, created FROM login_sessions WHERE token = ?
 	`, token)
-	err = row.Scan(&token, &created)
+	err = row.Scan(&userId, &created)
 	if err == sql.ErrNoRows {
 		return false, 0, time.Time{}, nil
 	}
@@ -282,6 +289,17 @@ func AddSessionToken(user_id UserId, token string) (err error) {
 		VALUES (?, ?);
 		`, user_id, token)
 	return err
+}
+
+func SessionLogout(token string) (err error) {
+	result, err := db.Exec(`
+		DELETE FROM login_sessions WHERE token = ?
+	`, token)
+	rows_affected, queryFail := result.RowsAffected()
+	if queryFail == nil && rows_affected < 1 {
+		return errors.New("[SessionLogout] Failed to logout; token not found")
+	}
+	return err;
 }
 
 //------------------------------------------------------------

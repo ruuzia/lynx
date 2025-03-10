@@ -24,7 +24,6 @@ type Session struct {
     builderPage BuilderPage;
 }
 type SessionToken string
-type UserId int
 
 type SessionData struct {
     LineFile string `json:"lineSet"`
@@ -53,19 +52,37 @@ func StartSession(w http.ResponseWriter, r *http.Request, user database.User) (e
 		debug.Println("[StartSession] error:", err.Error())
 		return err
 	}
-    if _, exists := lynxSessions[user.Id]; !exists {
-        lynxSessions[user.Id] = &Session{
-            username: user.Name,
-            id: user.Id,
-            save: SessionData{
-                LineFile: "",
-                ReviewMethod: "",
-            },
-        }
-    }
-
+	getOrCreateSession(user.Id)
     http.Redirect(w, r, "/", http.StatusFound)
 	return
+}
+
+func ActiveSession(w http.ResponseWriter, r *http.Request) (*Session, error) {
+    userId, err := CheckAuth(w, r)
+	debug.Printf("[ActiveSesson] userId=%d\n", int(userId))
+    if err != nil {
+        return nil, err
+    }
+    return getOrCreateSession(userId), nil
+}
+
+func getOrCreateSession(userId database.UserId) *Session {
+	if _, exists := lynxSessions[userId]; !exists {
+		username, err := database.GetUsername(userId);
+		if err != nil {
+			debug.Println("[getOrCreateSession] ERROR querying database")
+			return nil;
+		}
+		lynxSessions[userId] = &Session{
+			username: username,
+			id: userId,
+			save: SessionData{
+				LineFile: "",
+				ReviewMethod: "",
+			},
+		}
+	}
+	return lynxSessions[userId]
 }
 
 
