@@ -29,8 +29,8 @@ func ActiveSession(w http.ResponseWriter, r *http.Request) (*Session, error) {
     return lynxSessions[userId], nil
 }
 
-func Login(w http.ResponseWriter, user *database.User) {
-    debug.Println("[auth] Login: Creating session token cookie")
+func Login(w http.ResponseWriter, user *database.User) (err error) {
+    debug.Println("[Login] Creating session token cookie")
     token := generateSessionToken()
     http.SetCookie(w, &http.Cookie{
         Name: "session_token",
@@ -38,6 +38,12 @@ func Login(w http.ResponseWriter, user *database.User) {
         Path: "/",
     })
     loginSessions[SessionToken(token)] = user.Id
+	err = database.AddSessionToken(user.Id, string(token))
+	if err != nil {
+		debug.Println("[Login] ERROR adding session token: ", err.Error())
+		return err
+	}
+	return
 }
 
 func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) {
@@ -51,6 +57,13 @@ func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) 
     }
 
     token := SessionToken(cookie.Value)
+
+	found_ ,userId_, created_, err := database.LookupSessionToken(string(token));
+	if err != nil {
+		debug.Println("Error finding token: ", err.Error())
+		// return -1, err
+	}
+	debug.Println("Lookup:", found_, userId_, created_)
 
     userId, is_authenticated := loginSessions[token]
     if !is_authenticated {

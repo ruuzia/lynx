@@ -180,7 +180,12 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    StartSession(w, r, user)
+    err = StartSession(w, r, user)
+	if err != nil {
+        http.Error(w, "Error starting session.", http.StatusInternalServerError)
+		debug.Println("[handleSignup] Error starting session: " + err.Error())
+        return
+	}
 }
 
 type LoginPage struct {

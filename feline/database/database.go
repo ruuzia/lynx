@@ -60,7 +60,7 @@ func OpenDatabase() {
 		credentials.Passsword = strings.TrimSpace(string(content))
 	}
 
-	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
+	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=true", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
     if err != nil {
         log.Fatal(err)
     }
@@ -113,6 +113,19 @@ CREATE TABLE IF NOT EXISTS line_data (
     PRIMARY KEY(id),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (line_set_id) REFERENCES line_sets(id)
+);
+	`);
+	if err != nil {
+		return err;
+	}
+	_, err = db.Exec(`
+CREATE TABLE IF NOT EXISTS login_sessions (
+    id int NOT NULL AUTO_INCREMENT,
+    user_id int,
+	token VARCHAR(255),
+	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 	`);
 	if err != nil {
@@ -249,3 +262,26 @@ type credentials struct {
     Database string `json:"database"`
 }
 
+
+//------------------------------------------------------------
+
+func LookupSessionToken(token string) (found bool, userId UserId, created time.Time, err error) {
+	row := db.QueryRow(`
+		SELECT user_id, created FROM login_sessions WHERE token = ?
+	`, token)
+	err = row.Scan(&token, &created)
+	if err == sql.ErrNoRows {
+		return false, 0, time.Time{}, nil
+	}
+	return true, userId, created, err
+}
+
+func AddSessionToken(user_id UserId, token string) (err error) {
+	_, err = db.Exec(`
+		INSERT INTO login_sessions (user_id, token)
+		VALUES (?, ?);
+		`, user_id, token)
+	return err
+}
+
+//------------------------------------------------------------

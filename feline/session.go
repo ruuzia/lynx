@@ -46,9 +46,13 @@ type HomePage struct {
 
 //---------------------------------------------------------
 
-func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
+func StartSession(w http.ResponseWriter, r *http.Request, user database.User) (err error) {
     debug.Printf("Starting session %s\n", user.Name)
-    Login(w, &user)
+    err = Login(w, &user)
+	if err != nil {
+		debug.Println("[StartSession] error:", err.Error())
+		return err
+	}
     if _, exists := lynxSessions[user.Id]; !exists {
         lynxSessions[user.Id] = &Session{
             username: user.Name,
@@ -61,6 +65,7 @@ func StartSession(w http.ResponseWriter, r *http.Request, user database.User) {
     }
 
     http.Redirect(w, r, "/", http.StatusFound)
+	return
 }
 
 
