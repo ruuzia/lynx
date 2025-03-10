@@ -1,8 +1,15 @@
 package main
 
-import "github.com/ruuzia/lynx/feline"
+import (
+	"os"
+	"github.com/ruuzia/lynx/feline"
+)
 
 func main() {
-    feline.OpenServer(":2323")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "2323"
+	}
+    feline.OpenServer(":"+port)
 }
 
