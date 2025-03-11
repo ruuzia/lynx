@@ -3,10 +3,15 @@ package feline
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/ruuzia/lynx/feline/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -67,5 +72,74 @@ func generateSessionToken() SessionToken {
     token := base32.StdEncoding.EncodeToString(randomBytes)
     log.Printf("generateSessionToken: %s", token)
     return SessionToken(token)
+}
+
+//---------------------------------------
+type GoogleClaims struct {
+	Email string `json:"email"`
+// email_verified:true
+// family_name:Zia
+// given_name:Rustum
+// name:Rustum Zia
+// picture:https://lh3.googleusercontent.com/a/ACg8ocLGTlaNWiEjKmzeSO9zAadL6J20Reafp-ycL6L6PpTVleDCLeFb=s96-c
+
+	jwt.RegisteredClaims
+}
+
+func VerifyGoogleIdToken(tokenString string) (username string, err error) {
+	publicKey, err := fetchGooglePublicKey()
+	if err != nil {
+		debug.Println("[VerifyGoogleIdToken] failed to fetch google public key")
+		return "", err
+	}
+	_ = publicKey
+	token, err := jwt.ParseWithClaims(tokenString, &GoogleClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return publicKey["kid"], nil
+	})
+
+	claims := token.Claims.(*GoogleClaims)
+	debug.Println("[VerifyGoogleIdToken] claims:", claims)
+	// TODO: check clams.GetAudience is equal to client ID
+	if claims.Issuer != "accounts.google.com" && claims.Issuer != "https://accounts.google.com" {
+		return "", fmt.Errorf("Invalid claims.Issue %v", claims.Issuer)
+	}
+	if claims.ExpiresAt.Time.Unix() < time.Now().Unix() {
+		return "", fmt.Errorf("Google auth has expired: %v", claims.Issuer)
+	}
+	
+	return claims.Email, nil
+}
+
+func fetchGooglePublicKey() (key map[string]string, err error) {
+	res, err := http.Get("https://www.googleapis.com/oauth2/v3/certs")
+	if err != nil {
+		return
+	}
+	body, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if res.StatusCode > 299 {
+		debug.Println("[fetchGooglePublicKey] response failed " + res.Status)
+		err = fmt.Errorf("Response failed %v", res.Status)
+		return
+	}
+	if err != nil {
+		return
+	}
+	var object map[string][]map[string]string
+	err = json.Unmarshal(body, &object);
+	if err != nil {
+		debug.Println("[fetchGooglePublicKey] Failed parsing response")
+		return
+	}
+	key = object["keys"][0]
+	return
+	// debug.Println("[fetchGooglePublicKey]", object)
+	// return "", errors.New("unimplemented")
 }
 

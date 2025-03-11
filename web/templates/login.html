@@ -14,12 +14,34 @@
         Or, <a href="/signup">create an account!</a>
       </div>
       <div>
+
+        <div class="center-content">
+          <div id="g_id_onload"
+            data-client_id="1061110404018-u0b2endrdfag25g27ain71l93mm6ji9p.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="popup"
+            data-login_uri="/login"
+            data-auto_prompt="false">
+          </div>
+
+          <div class="g_id_signin"
+            data-type="standard"
+            data-shape="pill"
+            data-theme="filled_black"
+            data-text="signin_with"
+            data-size="medium"
+            data-logo_alignment="left">
+          </div>
+        </div>
+
       <span style="color: red">
         {{.ErrorMessage}}
       </span>
       </div>
       <div></div>
       <div>
+        <script src="https://accounts.google.com/gsi/client" async></script>
+
         <form action="/login" method="post" class="login">
           <div>
             <label for="username">Enter your username: </label>
