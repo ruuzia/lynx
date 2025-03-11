@@ -7,29 +7,41 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 
 	"github.com/ruuzia/lynx/feline/database"
+	"gopkg.in/gomail.v2"
 )
 
 var debug = log.New(os.Stdout, "debug: ", log.Lshortfile)
+var domain string
 
 func OpenServer(address string) {
-    database.OpenDatabase()
-	if (os.Getenv("LYNX_DEV") != "") {
+	if os.Getenv("LYNX_DEV") != "" {
 		runTscWatch()
 	}
+	domain = os.Getenv("LYNX_DOMAIN")
+	if domain == "" {
+		domain = address
+	}
+    database.OpenDatabase()
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == "GET" {
-            serveLogin(w, LoginPage{})
+			if _, err := CheckAuth(w, r); err != nil {
+				serveLogin(w, LoginPage{})
+			} else {
+				http.Redirect(w, r, "/", http.StatusFound)
+			}
         } else {
             handleLogin(w, r)
         }
     })
 	http.HandleFunc("/login/google", handleGoogleLogin)
+	http.HandleFunc("/login/email", handleEmailLogin)
     http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == "GET" {
             serveSignup(w, SignupPage{})
@@ -185,6 +197,76 @@ func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	StartSession(w, r, user)
+}
+
+func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	if token := r.Form.Get("token"); token != "" {
+		// Login
+		debug.Println("Login with token!")
+		claims, err := ParseJWT(token)
+		if err != nil {
+			http.Error(w, "Invalid token.", http.StatusBadRequest)
+			return
+		}
+		fmt.Println("JWT claims", claims);
+
+		user, err := database.GetUser(claims.Username)
+		if err != nil {
+			// Create user
+			user, err = database.AddUser(claims.Username, []byte("email"));
+			if err != nil {
+				debug.Println("Error querying database: " + err.Error())
+				serveLogin(w, LoginPage{
+					ErrorMessage: "Error with sign-up.",
+				})
+				return
+			}
+		}
+
+		StartSession(w, r, user)
+	} else {
+		// Create login
+		email := r.Form.Get("email")
+		if email == "" {
+			serveLogin(w, LoginPage{
+				ErrorMessage: "Missing email",
+			})
+			return
+		}
+		token, err := GenerateJWT(email)
+		if err != nil {
+			debug.Println("Failed to generate JWT: " + err.Error())
+			serveLogin(w, LoginPage{
+				ErrorMessage: "Error logging in",
+			})
+			return
+		}
+		query := url.Values{}
+		query.Set("token", token)
+		url := domain + "/login/email?" + query.Encode()
+
+		message := gomail.NewMessage()
+		message.SetHeader("From", "ziarustum@gmail.com")
+		message.SetHeader("To", email)
+		message.SetHeader("Subject", "Lynx login")
+		message.SetBody("text/html", fmt.Sprintf(`
+			Hello! Open this link to log-in to Lynx on your device.
+			<a href="%s">%s</a>
+			`, url, url))
+		dialer := gomail.NewDialer("smtp.gmail.com", 587, "ziarustum@gmail.com", "vrpx fueb dcbt gokg")
+		err = dialer.DialAndSend(message)
+
+		if err != nil {
+			debug.Println("Fail sending email " + err.Error())
+			serveLogin(w, LoginPage{
+				ErrorMessage: fmt.Sprintf("Failed to send email to \"%v\"", email),
+			})
+			return
+		}
+		debug.Println("Verification email sent to " + email)
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {

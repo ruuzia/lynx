@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -64,6 +65,35 @@ func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) 
     }
 
     return userId, nil
+}
+
+type LynxClaims struct {
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
+func GenerateJWT(username string) (token_ string, err error) {
+	claims := &LynxClaims{
+		Username: username,
+		RegisteredClaims: jwt.RegisteredClaims{},
+	}
+	key := os.Getenv("LYNX_SIGN_KEY")
+	if key == "" { key = "pumpkin alphabet wanderer"; }
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(key))
+}
+
+func ParseJWT(tokenString string) (*LynxClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &LynxClaims{}, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		key := os.Getenv("LYNX_SIGN_KEY")
+		if key == "" { key = "pumpkin alphabet wanderer"; }
+		return []byte(key), nil
+	})
+	return token.Claims.(*LynxClaims), err
 }
 
 func generateSessionToken() SessionToken {

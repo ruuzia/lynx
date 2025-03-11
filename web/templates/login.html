@@ -8,51 +8,38 @@
   </head>
   <body>
     <script src="/static/js/colorscheme.js"></script>
-    <div>
-      <h1>Who are you?</h1>
-      <div>
-
-        <div class="center-content">
-          <div id="g_id_onload"
-            data-client_id="1061110404018-u0b2endrdfag25g27ain71l93mm6ji9p.apps.googleusercontent.com"
-            data-context="signin"
-            data-ux_mode="popup"
-            data-login_uri="/login/google"
-            data-auto_prompt="false">
-          </div>
-
-          <div class="g_id_signin"
-            data-type="standard"
-            data-shape="pill"
-            data-theme="filled_black"
-            data-text="signin_with"
-            data-size="large"
-            data-logo_alignment="left">
-          </div>
-        </div>
-
-      <span style="color: red">
-        {{.ErrorMessage}}
-      </span>
+    <h1>Who are you?</h1>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <div class="center-content">
+      <div id="g_id_onload"
+        data-client_id="1061110404018-u0b2endrdfag25g27ain71l93mm6ji9p.apps.googleusercontent.com"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-login_uri="/login/google"
+        data-auto_prompt="false">
       </div>
-      <div></div>
-      <div>
-        <script src="https://accounts.google.com/gsi/client" async></script>
 
-        <form action="/login" method="post" class="login">
-          <div>
-            <label for="username">Enter your username: </label>
-            <input type="text" name="username" id="username" required />
-          </div>
-          <div>
-            <label for="password">Enter your password: </label>
-            <input type="password" name="password" id="password" required />
-          </div>
-          <div>
-            <button>Submit</button>
-          </div>
-        </form>
+      <div class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-width="500"
+        data-theme="filled_black"
+        data-text="signin_with"
+        data-size="large"
+        data-logo_alignment="left">
       </div>
     </div>
+
+    <span style="color: red">
+      {{.ErrorMessage}}
+    </span>
+
+    <form action="/login/email" method="post" style="display: flex; justify-content: center;">
+      <div>
+        <label for="email">Enter email:</label>
+        <input type="email" name="email" id="email-input" required />
+      </div>
+      <button class="buttonify">Verify</button>
+    </form>
   </body>
 </html>

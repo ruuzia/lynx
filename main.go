@@ -10,6 +10,6 @@ func main() {
 	if port == "" {
 		port = "2323"
 	}
-    feline.OpenServer(":"+port)
+    feline.OpenServer("0.0.0.0:"+port)
 }
 
