@@ -6,10 +6,10 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/ruuzia/lynx/feline/credentials"
 	"github.com/ruuzia/lynx/feline/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -72,10 +72,8 @@ func GenerateJWT(username string) (token_ string, err error) {
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{},
 	}
-	key := os.Getenv("LYNX_SIGN_KEY")
-	if key == "" { key = "pumpkin alphabet wanderer"; }
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(key))
+	return token.SignedString([]byte(credentials.GetJwtPassword()))
 }
 
 func ParseJWT(tokenString string) (*LynxClaims, error) {
@@ -83,10 +81,7 @@ func ParseJWT(tokenString string) (*LynxClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-
-		key := os.Getenv("LYNX_SIGN_KEY")
-		if key == "" { key = "pumpkin alphabet wanderer"; }
-		return []byte(key), nil
+		return []byte(credentials.GetJwtPassword()), nil
 	})
 	if err != nil {
 		return nil, err

@@ -3,15 +3,14 @@ package database
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/ruuzia/lynx/feline/credentials"
 )
 
 var db *sql.DB
@@ -39,41 +38,24 @@ type LineData struct {
  * on each machine.
  */
 func OpenDatabase() {
-    var err error
-	credentialsFile := os.Getenv("LYNX_CREDENTIALS_FILE")
-	if credentialsFile == "" {
-		credentialsFile = "credentials.json"
+	var err error
+	err = credentials.LoadCredentials()
+	if err != nil {
+        debug.Fatal("Error loading credentials " + err.Error())
 	}
-    credententialsFile, err := os.Open(credentialsFile);
+	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=true", credentials.GetUser(), credentials.GetDatabasePassword(), credentials.GetHost(), credentials.GetDatabase()))
     if err != nil {
-        log.Fatal(err)
-    }
-    var credentials credentials
-    err = json.NewDecoder(credententialsFile).Decode(&credentials);
-    if err != nil {
-        log.Fatal(err)
-    }
-	if credentials.PassswordFile != "" {
-		content, err := os.ReadFile(credentials.PassswordFile);
-		if err != nil {
-			log.Fatal("FAILED to read " + credentials.PassswordFile)
-		}
-		credentials.Passsword = strings.TrimSpace(string(content))
-	}
-
-	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?parseTime=true", credentials.User, credentials.Passsword, credentials.Host, credentials.Database))
-    if err != nil {
-        log.Fatal(err)
+        debug.Fatal(err)
     }
 
     if err := db.PingContext(context.Background()); err != nil {
-        log.Fatal(err)
+        debug.Fatal(err)
     }
     db.SetConnMaxLifetime(time.Minute * 3)
     db.SetMaxOpenConns(10)
     db.SetMaxIdleConns(10)
 	if err = CreateTables(); err != nil {
-        log.Fatal("Error creating tables " + err.Error());
+        debug.Fatal("Error creating tables " + err.Error());
 	}
 }
 
@@ -260,15 +242,6 @@ func AddUser(username string, passwordHash []byte) (User, error) {
     }
     return GetUser(username)
 }
-
-type credentials struct {
-    Host string `json:"host"`
-    User string `json:"user"`
-    Passsword string `json:"password,omitempty"`
-    PassswordFile string `json:"password_file,omitempty"`
-    Database string `json:"database"`
-}
-
 
 //------------------------------------------------------------
 

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/ruuzia/lynx/feline/credentials"
 	"github.com/ruuzia/lynx/feline/database"
 	"gopkg.in/gomail.v2"
 )
@@ -241,14 +242,14 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 		url := domain + "/login/email?" + query.Encode()
 
 		message := gomail.NewMessage()
-		message.SetHeader("From", "ziarustum@gmail.com")
+		message.SetHeader("From", credentials.GetEmail())
 		message.SetHeader("To", email)
-		message.SetHeader("Subject", "Lynx login")
-		message.SetBody("text/html", fmt.Sprintf(`
-			Hello! Open this link to log-in to Lynx on your device.
+		message.SetHeader("Subject", "Lynx access URL")
+		message.SetBody("text/html", fmt.Sprintf(`/
+			Hello! This is your special account link. And can be used to log-on on any device.
 			<a href="%s">%s</a>
 			`, url, url))
-		dialer := gomail.NewDialer("smtp.gmail.com", 587, "ziarustum@gmail.com", "vrpx fueb dcbt gokg")
+		dialer := gomail.NewDialer("smtp.gmail.com", 587, credentials.GetEmail(), credentials.GetEmailPassword())
 		err = dialer.DialAndSend(message)
 
 		if err != nil {
@@ -259,7 +260,12 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		debug.Println("Verification email sent to " + email)
-		w.WriteHeader(http.StatusOK)
+		t, err := template.ParseFiles("./web/templates/verification.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		t.Execute(w, struct{ Address string }{ email })
 	}
 }
 
