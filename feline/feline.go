@@ -31,6 +31,8 @@ func OpenServer(address string) {
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == "GET" {
+			cookie, _ := r.Cookie("session_token");
+			debug.Println("GET serving /login", cookie.Value)
 			if _, err := CheckAuth(w, r); err != nil {
 				serveLogin(w, LoginPage{})
 			} else {
@@ -85,6 +87,11 @@ func serveSignup(w http.ResponseWriter, data SignupPage) {
 }
 
 func redirectLogin(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name: "session_token",
+		Value: "",
+		Path: "/",
+	})
     http.Redirect(w, r, "/login", http.StatusFound)
 }
 
@@ -115,20 +122,7 @@ func runTscWatch() {
 }
 
 func handleLogout(w http.ResponseWriter, r *http.Request) {
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        if err == http.ErrNoCookie {
-            // Not logged in
-            redirectLogin(w, r)
-            return
-        }
-        log.Fatal(err)
-    }
-
-	err = database.SessionLogout(cookie.Value)
-	if err != nil {
-		debug.Println("[handleLogout] failed to logout: " + err.Error());
-	}
+	fmt.Println("handleLogout")
     redirectLogin(w, r)
 }
 

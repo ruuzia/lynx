@@ -1,10 +1,7 @@
 package feline
 
 import (
-	"crypto/rand"
-	"encoding/base32"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -27,17 +24,16 @@ func VerifyPassword(password string, hashed []byte) bool {
 
 func Login(w http.ResponseWriter, user *database.User) (err error) {
     debug.Println("[Login] Creating session token cookie")
-    token := generateSessionToken()
+    token, err := GenerateJWT(user.Name)
+	if err != nil {
+		debug.Println("[Login] error generating JWT: ", err.Error())
+		return err;
+	}
     http.SetCookie(w, &http.Cookie{
         Name: "session_token",
         Value: string(token),
         Path: "/",
     })
-	err = database.AddSessionToken(user.Id, string(token))
-	if err != nil {
-		debug.Println("[Login] ERROR adding session token: ", err.Error())
-		return err
-	}
 	return
 }
 
@@ -51,20 +47,19 @@ func CheckAuth(_ http.ResponseWriter, r *http.Request) (database.UserId, error) 
         log.Fatal(err)
     }
 
-    token := SessionToken(cookie.Value)
-
-	found ,userId, created_date, err := database.LookupSessionToken(string(token));
+	claims, err := ParseJWT(cookie.Value)
 	if err != nil {
-		debug.Println("[CheckAuth] Error finding token: ", err.Error())
+		debug.Println("[CheckAuth] error parsing JWT: " + err.Error())
 		return -1, err
 	}
-	debug.Println("[CheckAuth]:", found, userId, created_date)
-	if !found {
-        debug.Println("Invalid session_token cookie. Redirecting to /login")
-        return -1, errors.New("Invalid token")
-    }
 
-    return userId, nil
+	user, err := database.GetUser(claims.Username)
+	if err != nil {
+		debug.Println("[CheckAuth] error getting user: " + err.Error())
+		return -1, err
+	}
+
+    return user.Id, nil
 }
 
 type LynxClaims struct {
@@ -93,15 +88,10 @@ func ParseJWT(tokenString string) (*LynxClaims, error) {
 		if key == "" { key = "pumpkin alphabet wanderer"; }
 		return []byte(key), nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	return token.Claims.(*LynxClaims), err
-}
-
-func generateSessionToken() SessionToken {
-    randomBytes := make([]byte, 16)
-    rand.Read(randomBytes)
-    token := base32.StdEncoding.EncodeToString(randomBytes)
-    log.Printf("generateSessionToken: %s", token)
-    return SessionToken(token)
 }
 
 //---------------------------------------
