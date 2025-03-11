@@ -70,7 +70,9 @@ type LynxClaims struct {
 func GenerateJWT(username string) (token_ string, err error) {
 	claims := &LynxClaims{
 		Username: username,
-		RegisteredClaims: jwt.RegisteredClaims{},
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now()),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(credentials.GetJwtPassword()))
