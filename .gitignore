@@ -6,6 +6,9 @@ data/
 cmake-build-debug
 /credentials.json
 db_password.txt
+db_password.txt
+email_password.txt
+jwt_secret.txt
 node_modules
 package-lock.json
 web/static/js/*

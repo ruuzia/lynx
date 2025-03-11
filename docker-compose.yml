@@ -1,6 +1,10 @@
 secrets:
   db_password:
     file: docker/db_password.txt
+  email_password:
+    file: docker/email_password.txt
+  jwt_secret:
+    file: docker/jwt_secret.txt
 
 services:
   app:
@@ -16,6 +20,8 @@ services:
       - mysql
     secrets:
       - db_password
+      - email_password
+      - jwt_secret
     environment:
       LYNX_CREDENTIALS_FILE: docker/credentials.json
 

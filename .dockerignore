@@ -1,4 +1,6 @@
 /credentials.json
 docker/db_password.txt
+docker/email_password.txt
+docker/jwt_secret.txt
 /web/static/node_modules
 /web/static/package-lock.json
