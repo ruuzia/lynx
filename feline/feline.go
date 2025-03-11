@@ -29,6 +29,7 @@ func OpenServer(address string) {
             handleLogin(w, r)
         }
     })
+	http.HandleFunc("/login/google", handleGoogleLogin)
     http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == "GET" {
             serveSignup(w, SignupPage{})
@@ -122,65 +123,68 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 func handleLogin(w http.ResponseWriter, r *http.Request) {
     debug.Printf("handleLogin\n")
     r.ParseForm()
-	if csrfToken := r.Form.Get("g_csrf_token"); csrfToken != "" {
-		// Use google auth
-		csrfCookie, err := r.Cookie("g_csrf_token")
-		if err != nil || csrfCookie.Value != csrfToken {
-			// debug.Printf("[handleLogin] CSRF cookie=%s :: token=%s\n", csrfCookie.Value, csrfToken)
-			serveLogin(w, LoginPage{
-				ErrorMessage: "Bad request (Failed to verify double submit cookie)",
-			})
-			return
-		}
-		username, err := VerifyGoogleIdToken(r.Form.Get("credential"));
-		if err != nil {
-			debug.Println("[handleLogin] failed verifying google id token: " + err.Error())
-			serveLogin(w, LoginPage{
-				ErrorMessage: "Failed to authenticate Google authentication token.",
-			})
-			return
-		}
-
-		user, err := database.GetUser(username)
-		if err != nil {
-			// Create user
-			user, err = database.AddUser(username, []byte("google"));
-			if err != nil {
-				debug.Println("Error querying database: " + err.Error())
-				serveLogin(w, LoginPage{
-					ErrorMessage: "Error with sign-up.",
-				})
-				return
-			}
-		}
-
-		StartSession(w, r, user)
-	} else {
-		username := r.Form.Get("username")
-		password := r.Form.Get("password")
-		if username == "" || password == "" {
-			http.Error(w, "Missing user authentication", http.StatusBadRequest)
-			return
-		}
-
-		user, err := database.GetUser(username)
-		if err == sql.ErrNoRows {
-			serveLogin(w, LoginPage{
-				ErrorMessage: "Hmmm, this username was not found in the database.",
-			})
-			return
-		} else if err != nil {
-			log.Fatal(err)
-		}
-
-		if !VerifyPassword(password, user.PasswordHash) {
-			serveLogin(w, LoginPage{
-				ErrorMessage: "Sorry, password incorrect.",
-			})
-			return
-		}
-		StartSession(w, r, user)
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	if username == "" || password == "" {
+		http.Error(w, "Missing user authentication", http.StatusBadRequest)
+		return
 	}
+
+	user, err := database.GetUser(username)
+	if err == sql.ErrNoRows {
+		serveLogin(w, LoginPage{
+			ErrorMessage: "Hmmm, this username was not found in the database.",
+		})
+		return
+	} else if err != nil {
+		log.Fatal(err)
+	}
+
+	if !VerifyPassword(password, user.PasswordHash) {
+		serveLogin(w, LoginPage{
+			ErrorMessage: "Sorry, password incorrect.",
+		})
+		return
+	}
+	StartSession(w, r, user)
+}
+
+func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
+	debug.Printf("handleGoogleLogin\n")
+	r.ParseForm()
+
+	// Token and cookie values must match
+	csrfToken := r.Form.Get("g_csrf_token")
+	csrfCookie, err := r.Cookie("g_csrf_token")
+	if csrfToken == "" || err != nil || csrfToken != csrfCookie.Value {
+		serveLogin(w, LoginPage{
+			ErrorMessage: "Bad request (Failed to verify double submit cookie)",
+		})
+	}
+
+	username, err := VerifyGoogleIdToken(r.Form.Get("credential"));
+	if err != nil {
+		debug.Println("[handleLogin] failed verifying google id token: " + err.Error())
+		serveLogin(w, LoginPage{
+			ErrorMessage: "Failed to authenticate Google authentication token.",
+		})
+		return
+	}
+
+	user, err := database.GetUser(username)
+	if err != nil {
+		// Create user
+		user, err = database.AddUser(username, []byte("google"));
+		if err != nil {
+			debug.Println("Error querying database: " + err.Error())
+			serveLogin(w, LoginPage{
+				ErrorMessage: "Error with sign-up.",
+			})
+			return
+		}
+	}
+
+	StartSession(w, r, user)
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
