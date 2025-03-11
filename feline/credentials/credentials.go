@@ -31,13 +31,6 @@ func GetDatabase() string {
 	return creds.Database
 }
 
-func GetEmail() string {
-	if creds == nil {
-		log.Fatal("[GetEmail] credentials not loaded")
-	}
-	return creds.Email
-}
-
 func GetDatabasePassword() string {
 	if creds == nil {
 		log.Fatal("[GetPassword] credentials not loaded")
@@ -45,11 +38,11 @@ func GetDatabasePassword() string {
 	return creds.Password
 }
 
-func GetEmailPassword() string {
+func GetEmailConfig() *EmailConfig {
 	if creds == nil {
-		log.Fatal("[GetEmailPassword] credentials not loaded")
+		log.Fatal("[GetEmail] credentials not loaded")
 	}
-	return creds.EmailPassword
+	return &creds.Email
 }
 
 func GetJwtPassword() string {
@@ -78,7 +71,7 @@ func LoadCredentials() (err error) {
 	if err != nil {
 		return fmt.Errorf("[GetCredentials] Invalid password: %s", err.Error())
 	}
-	err = allowPullFromFile(&creds.EmailPassword, creds.EmailPasswordFile)
+	err = allowPullFromFile(&creds.Email.Password, creds.Email.PasswordFile)
 	if err != nil {
 		return fmt.Errorf("[GetCredentials] Invalid email_password: %s", err.Error())
 	}
@@ -108,11 +101,18 @@ type credentials struct {
     Host string `json:"host"`
     User string `json:"user"`
     Database string `json:"database"`
-	Email string `json:"email"`
     Password string `json:"password,omitempty"`
     PasswordFile string `json:"password_file,omitempty"`
-	EmailPassword string `json:"email_password,omitempty"`
-	EmailPasswordFile string `json:"email_password_file,omitempty"`
 	JwtPassword string `json:"jwt_secret,omitempty"`
 	JwtPasswordFile string `json:"jwt_secret_file,omitempty"`
+	Email EmailConfig
+}
+
+type EmailConfig struct {
+	Server string
+	Port int
+	FromAddress string `json:"from_address"`
+	Username string
+	Password string
+	PasswordFile string `json:"password_file"`
 }

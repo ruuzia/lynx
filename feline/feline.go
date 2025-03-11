@@ -45,6 +45,7 @@ func OpenServer(address string) {
     })
 	http.HandleFunc("/login/google", handleGoogleLogin)
 	http.HandleFunc("/login/email", handleEmailLogin)
+	http.HandleFunc("/login/email/confirm", handleEmailLoginConfirm)
     http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
         if r.Method == "GET" {
             serveSignup(w, SignupPage{})
@@ -241,15 +242,16 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 		query.Set("token", token)
 		url := domain + "/login/email?" + query.Encode()
 
+		config := credentials.GetEmailConfig()
 		message := gomail.NewMessage()
-		message.SetHeader("From", credentials.GetEmail())
+		message.SetHeader("From", config.FromAddress)
 		message.SetHeader("To", email)
 		message.SetHeader("Subject", "Lynx access URL")
-		message.SetBody("text/html", fmt.Sprintf(`/
+		message.SetBody("text/html", fmt.Sprintf(`
 			Hello! This is your special account link. And can be used to log-on on any device.
 			<a href="%s">%s</a>
 			`, url, url))
-		dialer := gomail.NewDialer("smtp.gmail.com", 587, credentials.GetEmail(), credentials.GetEmailPassword())
+		dialer := gomail.NewDialer(config.Server, config.Port, config.Username, config.Password)
 		err = dialer.DialAndSend(message)
 
 		if err != nil {
@@ -260,13 +262,20 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		debug.Println("Verification email sent to " + email)
-		t, err := template.ParseFiles("./web/templates/verification.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		t.Execute(w, struct{ Address string }{ email })
+
+		http.Redirect(w, r, "/login/email/confirm?address="+email, http.StatusFound)
 	}
+}
+
+func handleEmailLoginConfirm(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	t, err := template.ParseFiles("./web/templates/verification.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, struct{ Address string }{ r.Form.Get("address") })
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
