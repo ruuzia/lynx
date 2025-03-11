@@ -295,11 +295,15 @@ func SessionLogout(token string) (err error) {
 	result, err := db.Exec(`
 		DELETE FROM login_sessions WHERE token = ?
 	`, token)
-	rows_affected, queryFail := result.RowsAffected()
-	if queryFail == nil && rows_affected < 1 {
+	if err != nil {
+		return err;
+	}
+	debug.Println("[SessionLogout]", result)
+	rows_affected, err := result.RowsAffected()
+	if err == nil && rows_affected < 1 {
 		return errors.New("[SessionLogout] Failed to logout; token not found")
 	}
-	return err;
+	return nil;
 }
 
 //------------------------------------------------------------

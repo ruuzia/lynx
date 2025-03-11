@@ -39,7 +39,7 @@ Replace <PASSWORD> with the password from step 2.
 Grant privileges for the back-end to execute SQL command.
 
 ```sql
-GRANT SELECT, INSERT, UPDATE ON lynx.* TO 'feline_user'@'localhost';
+GRANT SELECT, INSERT, UPDATE, CREATE, DELETE ON lynx.* TO 'feline_user'@'localhost';
 ```
 
 ### 4. Create tables
