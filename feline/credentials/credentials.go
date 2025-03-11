@@ -1,10 +1,11 @@
 package credentials
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 var creds *credentials = nil
@@ -98,7 +99,7 @@ func allowPullFromFile(item *string, filePath string) (err error) {
 		if err != nil {
 			return err
 		}
-		*item = string(content)
+		*item = strings.TrimSpace(string(content))
 	}
 	return nil
 }
