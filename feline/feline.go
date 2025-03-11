@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -46,14 +45,6 @@ func OpenServer(address string) {
 	http.HandleFunc("/login/google", handleGoogleLogin)
 	http.HandleFunc("/login/email", handleEmailLogin)
 	http.HandleFunc("/login/email/confirm", handleEmailLoginConfirm)
-    http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == "GET" {
-            serveSignup(w, SignupPage{})
-        } else {
-            handleSignup(w, r)
-        }
-    })
-	mime.AddExtensionType(".js", "application/javascript")
     fs := http.FileServer(http.Dir("./web/static/"))
     http.Handle("/static/", http.StripPrefix("/static/", fs))
     http.HandleFunc("/feline/logout", handleLogout)
@@ -72,15 +63,6 @@ func OpenServer(address string) {
 
 func serveLogin(w http.ResponseWriter, data LoginPage) {
     t, err := template.ParseFiles("./web/templates/login.html")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    t.Execute(w, data)
-}
-
-func serveSignup(w http.ResponseWriter, data SignupPage) {
-    t, err := template.ParseFiles("./web/templates/signup.html")
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -277,50 +259,6 @@ func handleEmailLoginConfirm(w http.ResponseWriter, r *http.Request) {
 	}
 	t.Execute(w, struct{ Address string }{ r.Form.Get("address") })
 }
-
-func handleSignup(w http.ResponseWriter, r *http.Request) {
-    debug.Printf("handleSignup\n")
-    r.ParseForm()
-    username := r.Form.Get("username")
-    password := r.Form.Get("password")
-
-    if len(username) < 3 {
-        http.Error(w, "Username must be at least 3 characters long!", http.StatusBadRequest)
-        return
-    }
-
-    if _, err := database.GetUser(username); err == nil {
-        serveSignup(w, SignupPage{
-            ErrorMessage: "This user already exists!",
-        })
-        return
-    }
-
-    debug.Printf("[handleSignup] Adding new password: (%s, %s)\n", username, password)
-    hashed, err := HashPassword(password);
-    if err != nil {
-        http.Error(w, "Error hashing password: " + err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    user, err := database.AddUser(username, hashed)
-    if err != nil {
-        http.Error(w, "Error accessing database: " + err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    err = StartSession(w, r, user)
-	if err != nil {
-        http.Error(w, "Error starting session.", http.StatusInternalServerError)
-		debug.Println("[handleSignup] Error starting session: " + err.Error())
-        return
-	}
-}
-
 type LoginPage struct {
-    ErrorMessage string
-}
-
-type SignupPage struct {
     ErrorMessage string
 }
