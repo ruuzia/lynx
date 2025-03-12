@@ -1,4 +1,4 @@
-import { MakeItemsDraggable } from "./draggablelist.js";
+import { MakeItemsDraggable } from "./util/draggablelist.js";
 import * as Save from "./save.js"
 const html = String.raw
 

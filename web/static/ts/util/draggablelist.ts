@@ -38,16 +38,23 @@ export function MakeItemsDraggable(container: HTMLElement) {
             const dragMove = (e: MouseEvent) => {
                 const placeholder = getPlaceholder();
                 card.style.position = 'absolute';
-                card.style.top = (window.scrollY + e.clientY - offsetY) + 'px';
-                card.style.left = (window.scrollX + e.clientX - offsetX) + 'px';
+                const top = e.clientY - offsetY;
+                const left = e.clientX - offsetX;
+                card.style.top = (window.scrollY + top) + 'px';
+                card.style.left = (window.scrollX + left) + 'px';
 
                 for (const element of document.elementsFromPoint(e.clientX, e.clientY)) {
-                    if (element != card && element.classList.contains("browser-card")) {
+                    if (element != card && element.parentElement == container) {
                         const newRect = element.getBoundingClientRect();
                         const oldRect = placeholder.getBoundingClientRect();
+                        // Y position of mouse within element
                         const relativeY = e.clientY - newRect.y;
-                        // Card under mouse we now want to move into
+
+                        // Two cases: new location is *below* the current (placeholder) location
+                        // or new location is *above* the placeholder location. 
                         if (newRect.y > oldRect.y) {
+                            // We must also watch out for the case when the new spot is bigger than the
+                            // element we're moving.
                             if (relativeY > newRect.height - oldRect.height) {
                                 container.replaceChild(placeholder, element);
                                 container.insertBefore(element, placeholder);
