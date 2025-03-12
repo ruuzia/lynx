@@ -1,3 +1,4 @@
+import { MakeItemsDraggable } from "./draggablelist.js";
 import * as Save from "./save.js"
 const html = String.raw
 
@@ -98,6 +99,7 @@ function render(lines_: Card[]) {
             }
         }
 
+        /*
         const sidebar = card.querySelector(".browser-card-sidebar");
         if (!(sidebar instanceof HTMLElement)) {
             throw new Error("Missing .browser-card-sidebar")
@@ -168,7 +170,10 @@ function render(lines_: Card[]) {
             window.addEventListener('mousemove', ondrag)
             window.addEventListener('mouseup', dragend)
         }
+        */
     }
+
+    MakeItemsDraggable(container);
 }
 
 function getLineData(id: number) {
