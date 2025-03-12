@@ -85,6 +85,7 @@ function render(lines_: Card[]) {
 `;
         container.appendChild(card);
 
+        // Accordian expand/contract
         card.onclick = (event) => {
             if (event.target == null) {
                 console.log("browserCardClick target is null");
@@ -94,8 +95,78 @@ function render(lines_: Card[]) {
 
             if (event.target.classList.contains("browser-card-view-toggle")) {
                 card.classList.toggle("browser-card-squished");
-                // const data = getLineData(id)
             }
+        }
+
+        const sidebar = card.querySelector(".browser-card-sidebar");
+        if (!(sidebar instanceof HTMLElement)) {
+            throw new Error("Missing .browser-card-sidebar")
+        }
+
+        sidebar.onmousedown = (downEvent) => {
+            if (downEvent.target == null) {
+                return;
+            }
+            if (downEvent.target instanceof HTMLDivElement
+                && downEvent.target.classList.contains("browser-card-view-toggle")) {
+                return;
+            }
+
+            const rect = card.getBoundingClientRect();
+            const offsetX = downEvent.clientX - rect.left;
+            const offsetY = downEvent.clientY - rect.top;
+
+            const ghostCard = () => {
+                let ghost: HTMLElement|null = document.querySelector(".browser-card-drag-ghost");
+                if (ghost == null) {
+                    ghost = document.createElement("div");
+                    ghost.classList.add("browser-card-drag-ghost");
+                    ghost.style.width = `${rect.width}px`;
+                    ghost.style.height = `${rect.height}px`;
+                    const cardStyle = window.getComputedStyle(card);
+                    ghost.style.marginTop = cardStyle.marginTop;
+                    ghost.style.marginBottom = cardStyle.marginBottom;
+                    container.insertBefore(ghost, card);
+                }
+                return ghost;
+
+            }
+
+            const ondrag = (e: MouseEvent) => {
+                const ghost = ghostCard();
+                card.style.position = 'absolute';
+                card.style.top = (window.scrollY + e.clientY - offsetY) + 'px';
+                card.style.left = (window.scrollX + e.clientX - offsetX) + 'px';
+                const underMouse = document.elementsFromPoint(e.clientX, e.clientY);
+                for (const element of underMouse) {
+                    if (element != card && element.classList.contains("browser-card")) {
+                        const newRect = element.getBoundingClientRect();
+                        const oldRect = ghost.getBoundingClientRect();
+                        const relativeY = e.clientY - newRect.y;
+                        // Card under mouse we now want to move into
+                        if (newRect.y > oldRect.y) {
+                            if (relativeY > newRect.height - oldRect.height) {
+                                container.replaceChild(ghost, element);
+                                container.insertBefore(element, ghost);
+                            }
+                        } else {
+                            if (relativeY < oldRect.height) {
+                                container.insertBefore(ghost, element);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            const dragend = (e: MouseEvent) => {
+                window.removeEventListener('mousemove', ondrag);
+                card.style.position = 'static';
+                container.replaceChild(card, ghostCard());
+            }
+
+            window.addEventListener('mousemove', ondrag)
+            window.addEventListener('mouseup', dragend)
         }
     }
 }

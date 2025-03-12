@@ -415,3 +415,7 @@ body { --header-height: 60px; }
     visibility: hidden;
     opacity: 0;
 }
+
+.browser-card-drag-ghost {
+    border: 5px var(--color-active-1) dashed;
+}
