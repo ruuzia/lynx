@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/ruuzia/lynx/feline/credentials"
 	"github.com/ruuzia/lynx/feline/database"
@@ -204,6 +205,15 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 
 		StartSession(w, r, user)
 	} else {
+		referrer := r.Referer()
+		if !strings.HasSuffix(referrer, "/login") {
+			serveLogin(w, LoginPage{
+				ErrorMessage: "Invalid referer.",
+			})
+			return
+
+		}
+		
 		// Create login
 		email := r.Form.Get("email")
 		if email == "" {
@@ -222,7 +232,7 @@ func handleEmailLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		query := url.Values{}
 		query.Set("token", token)
-		url := domain + "/login/email?" + query.Encode()
+		url := referrer + "/email?" + query.Encode()
 
 		config := credentials.GetEmailConfig()
 		message := gomail.NewMessage()
