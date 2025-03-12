@@ -90,6 +90,10 @@ button:active {
     background-color: var(--color-active-2);
 }
 
+svg {
+    fill: var(--fg);
+}
+
 
 /*-----------------------------------------------------*/
 /* util */
@@ -330,8 +334,13 @@ body { --header-height: 60px; }
     max-width: 650px;
     width: 100%;
     background-color: var(--color-active-2);
-    padding: 25px;
+    padding: 15px;
     border-radius: 8px;
+    display: flex;
+}
+
+.browser-card-content {
+    flex-grow: 1;
 }
 
 .browser-line, .browser-cue {
@@ -361,3 +370,48 @@ body { --header-height: 60px; }
     align-items: center
 }
 
+.browser-line-metadata {
+    display: flex;
+    align-items: center;
+}
+
+.browser-card-sidebar {
+    flex-grow: 0;
+    width: 35px;
+    display: flex;
+    flex-direction: column;
+}
+
+.browser-card-mover {
+    /* flex-basis: 50px; */
+    transform: translateX(-10px)
+}
+
+.browser-card-view-toggle {
+    /* flex-basis: 30px; */
+    border-radius: 5px;
+    width: fit-content;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.5s;
+}
+
+.browser-card-squished .browser-card-view-toggle {
+    transform: rotate(-90deg);
+}
+
+.cue-container, .browser-line-metadata {
+    max-height: 100px;
+    transition-property: max-height, margin, padding, visibility, opacity;
+    transition-duration: 0.5s;
+}
+
+.browser-card-squished .cue-container, .browser-card-squished .browser-line-metadata {
+    max-height: 0;
+    flex-shrink: 1;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+    opacity: 0;
+}
