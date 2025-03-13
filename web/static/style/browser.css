@@ -25,11 +25,11 @@
 
     .dropdown-item {
         cursor: pointer;
-        padding: 10px;
+        padding: 20px;
         border-radius: 5px;
-        margin-top: 7px;
-        margin-bottom: 7px;
-
+        &:hover {
+            background-color: var(--color-active-2);
+        }
     }
 }
 
