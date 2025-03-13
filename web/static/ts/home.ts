@@ -123,15 +123,18 @@ function subpageLoad() {
         case "#browser":
             import('./pages/browser.js').then(BrowserPage => {
                 BrowserPage.Init();
-            })
+            });
+            break;
+        case "#reviewer":
+            import("./pages/linereviewer.js");
             break;
         case "#lineset-select":
             break;
         case "#settings":
-            import('./pages/settings.js')
+            import('./pages/settings.js');
             break;
         default:
-            console.log("Unknown subpage " + location.hash)
+            console.log("Unknown subpage " + location.hash);
             break;
     }
 }
