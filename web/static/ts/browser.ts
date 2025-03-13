@@ -56,27 +56,27 @@ function render(lines_: Card[]) {
         const [cuePre, cuePost] = sepLine(item.cue)
         console.log(linePre, linePost);
         const card = document.createElement("div");
-        card.classList.add("browser-card", "browser-card-squished");
+        card.classList.add("card", "card-squished");
         card.innerHTML = html`
-<div class="browser-card-sidebar">
-  <div class="browser-card-view-toggle">﹀</div>
-  <div class="browser-card-mover clickable">
+<div class="card-sidebar">
+  <div class="card-view-toggle">﹀</div>
+  <div class="card-mover clickable">
     <svg width="30px" height="30px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
       <path d="M104,60.0001a12,12,0,1,1-12-12A12,12,0,0,1,104,60.0001Zm60,12a12,12,0,1,0-12-12A12,12,0,0,0,164,72.0001Zm-72,44a12,12,0,1,0,12,12A12,12,0,0,0,92,116.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,116.0001Zm-72,68a12,12,0,1,0,12,12A12,12,0,0,0,92,184.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,184.0001Z"/>
     </svg>
   </div>
 </div>
-<div class="brower-card-content">
+<div class="card-content">
   <div class="cue-container">
     <label for="cue">${cuePre}:</label>
-    <div name="cue" class="browser-cue" contenteditable=true>${cuePost}</div>
+    <div name="cue" class="cue" contenteditable=true>${cuePost}</div>
   </div>
   <div class="line-container">
     <label for="line">${linePre}:</label>
-    <div name="line" class="browser-line" contenteditable=true>${linePost}</div>
+    <div name="line" class="line" contenteditable=true>${linePost}</div>
   </div>
-  <div class="browser-line-metadata">
-    <textarea name="linenotes" class="browser-linenotes" placeholder="Add line notes">${item.notes}</textarea>
+  <div class="line-metadata">
+    <textarea name="linenotes" class="linenotes" placeholder="Add line notes">${item.notes}</textarea>
     <label>
       <input type="checkbox" name="starred" ${item.starred ? "checked" : ""}></input>
       Starred
@@ -94,15 +94,15 @@ function render(lines_: Card[]) {
             }
             if(!(event.target instanceof HTMLElement)) return;
 
-            if (event.target.classList.contains("browser-card-view-toggle")) {
-                card.classList.toggle("browser-card-squished");
+            if (event.target.classList.contains("card-view-toggle")) {
+                card.classList.toggle("card-squished");
             }
         })
     }
 
     MakeItemsDraggable(container, {
         canDrag: (e) => !(e.target instanceof HTMLDivElement
-                       && e.target.classList.contains("browser-card-view-toggle")),
+                       && e.target.classList.contains("card-view-toggle")),
         onUpdated: (oldIndex, newIndex, item) => {
             console.log(`old:${oldIndex} new:${newIndex}`)
         }
