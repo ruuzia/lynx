@@ -42,7 +42,7 @@
   <!------------------------------------------->
   <!-------   #home          ------------------>
 
-  <div id="home" class="page">
+  <div id="home" class="page" hidden>
     <div>
       <div id="home-message"></div>
       <div>
@@ -66,7 +66,7 @@
 
   <!------------------------------------------->
   <!-------   #builder       ------------------>
-  <div id="builder" class="page">
+  <div id="builder" class="page" hidden>
     <script src="/static/js/linesetbuilder.js" defer></script>
 
     <h1>Add your lines</h1>
@@ -98,7 +98,7 @@ POCO: Another line
 
   <!------------------------------------------->
   <!-------   #reviewer       ------------------>
-  <div id="reviewer" class="page">
+  <div id="reviewer" class="page" hidden>
     <script type="module" src="/static/js/linereviewer.js"></script>
     <div id="card">
       <div class="content">
@@ -137,7 +137,7 @@ POCO: Another line
 
   <!------------------------------------------->
   <!--   #lineset-select  -->
-  <div class="page" id="lineset-select">
+  <div class="page" id="lineset-select" hidden>
     <h1>Select your line set</h1>
     <div id="lineset-page-list"></div>
     <form action="/#builder" method="get">
@@ -150,7 +150,7 @@ POCO: Another line
 
   <!------------------------------------------->
   <!--   #settings  -->
-  <div class="page" id="settings">
+  <div class="page" id="settings" hidden>
     <script src="/static/js/settings.js" type="module"></script>
     <h1>Select a review strategy</h1>
     <div id="settings-strategy-list"></div>
@@ -160,8 +160,9 @@ POCO: Another line
 
   <!------------------------------------------->
   <!--   #browser  -->
-  <div class="page" id="browser">
-      <link rel="stylesheet" href="/static/style/browser.css" />
+  <div class="page" id="browser" hidden>
+    <script src="/static/js/browser.js" type="module"></script>
+    <link rel="stylesheet" href="/static/style/browser.css" />
     <h1>Line browser</h1>
     <select id="browser-line-select"></select>
     <div id="browser-container"></div>
