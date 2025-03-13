@@ -10,8 +10,6 @@
     if (location.hash == "") location.hash = "#home";
   </script>
   <link rel="stylesheet" href="/static/style/common.css" />
-  <!-- <link rel="preload" href="/static/fonts/Lora-VariableFont_wght.ttf" as="font" type="font/ttf" /> -->
-  <!-- <link rel="preload" href="/static/fonts/Quintessential-Regular.ttf" as="font" type="font/ttf" /> -->
   <script src="/static/js/home.js" type="module"></script>
 </head>
 <body>
@@ -156,21 +154,13 @@ POCO: Another line
     <div id="settings-strategy-list"></div>
   </div>
 
-  <!--   #settings  -->
-
-  <!------------------------------------------->
-  <!--   #browser  -->
-    <script src="/static/js/browser.js" type="module"></script>
-  <div class="page" id="browser" hidden>
-  </div>
 
   <!--   #browser  -->
-
+  <div class="page" id="browser" hidden></div>
 
   <script>
     initialSessionState = {{.State}}
     lineSets = {{.LineSets}}
   </script>
-
 </body>
 </html>

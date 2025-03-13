@@ -1,40 +1,6 @@
 import { MakeItemsDraggable } from "./util/draggablelist.js";
-import * as Save from "./save.js"
+import { $create, $query } from "./util/dom.js"
 const html = String.raw
-
-//-----------------------------------
-/**
- * Lightweight wrapper around document.createElement.
- */
-function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: HTMLElement[]|string): HTMLElementTagNameMap[K] {
-    const elem = document.createElement(type);
-    for (const [k, v] of Object.entries(props ?? {})) {
-        elem[k] = v;
-    }
-    if (typeof children == 'string') {
-        elem.innerHTML = children;
-    } else {
-        for (const child of children ?? []) {
-            elem.appendChild(child);
-        }
-    }
-    return elem;
-}
-
-/**
- * Lightweight wrapper around document.querySelector with type checking.
- */
-function $query<T extends Element>(query: string, type: new() => T): T {
-    const elem = document.querySelector(query);
-    if (elem == null) {
-        throw new Error(`$query failed to find ${query}`);
-    }
-    if (!(elem instanceof type)) {
-        throw new Error(`$query ${query} expected ${type}`);
-    }
-    return elem;
-}
-//-----------------------------------
 
 document.head.appendChild($create("link",
     {
@@ -44,7 +10,7 @@ document.head.appendChild($create("link",
 ));
 
 const browser = $query("#browser", HTMLDivElement);
-browser.appendChild($create("h1", {}, "Line browser" ));
+browser.appendChild($create( "h1", {}, "Line browser" ));
 
 const selector = browser.appendChild($create("select",
     {
@@ -103,7 +69,7 @@ function sepLine(line: string): [string, string] {
 
 function render(lines_: Card[]) {
     lines = lines_
-    container.innerHTML = "";
+    container.replaceChildren();
     for (const item of lines) {
         const [linePre, linePost] = sepLine(item.line)
         const [cuePre, cuePost] = sepLine(item.cue)
