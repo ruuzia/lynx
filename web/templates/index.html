@@ -9,7 +9,9 @@
   <script>
     if (location.hash == "") location.hash = "#home";
   </script>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/style/common.css" />
+  <!-- <link rel="preload" href="/static/fonts/Lora-VariableFont_wght.ttf" as="font" type="font/ttf" /> -->
+  <!-- <link rel="preload" href="/static/fonts/Quintessential-Regular.ttf" as="font" type="font/ttf" /> -->
   <script src="/static/js/home.js" type="module"></script>
 </head>
 <body>
@@ -32,7 +34,7 @@
     </div>
     <div class="navbar">
       <a class="sidebar-toggle clickable" onclick="sidebarToggle()">≡</a>
-      <div style="font-family: Quintessential;">Lynx</div>
+      <div class="header">Lynx</div>
       <div></div>
     </div>
   </div>
@@ -159,6 +161,7 @@ POCO: Another line
   <!------------------------------------------->
   <!--   #browser  -->
   <div class="page" id="browser">
+      <link rel="stylesheet" href="/static/style/browser.css" />
     <h1>Line browser</h1>
     <select id="browser-line-select"></select>
     <div id="browser-container"></div>
