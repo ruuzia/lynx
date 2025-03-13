@@ -8,7 +8,6 @@ declare global {
     interface Window { linesetSelected: Function, browseLineset: Function }
 }
 
-
 //-------------------------------------------
 // Update line set selection menus on page load
 
@@ -60,12 +59,6 @@ ${name}</a>
         container.innerHTML = s;
 
     }
-
-    { /*** Browser ***/
-        import("./pages/browser.js").then(Browser => {
-            Browser.UpdateLineSets(lineSets)
-        });
-    }
 }
 loadLineSets(lineSets);
 
@@ -91,11 +84,12 @@ function homePageUpdate() {
 //---------------------------------------------------------------
 // lineset select page
 
-import * as lineReviewer from "./pages/linereviewer.js";
 
 window.linesetSelected = (title: string) => {
     console.log("linesetSelected() " + title);
-    lineReviewer.SetLineSet(title);
+    import("./pages/linereviewer.js").then(lineReviewer => {
+        lineReviewer.SetLineSet(title);
+    });
 
 }
 
@@ -122,6 +116,7 @@ function subpageLoad() {
             break;
         case "#browser":
             import('./pages/browser.js').then(BrowserPage => {
+                BrowserPage.UpdateLineSets(lineSets);
                 BrowserPage.Init();
             });
             break;
