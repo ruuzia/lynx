@@ -1,5 +1,6 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { $create, $query } from "../util/dom.js"
+
 const html = String.raw
 
 document.head.appendChild($create("link",
@@ -20,6 +21,65 @@ const selector = browser.appendChild($create("select",
         }
     }
 ));
+
+const dropdown = browser.appendChild($create("div",
+    { classList: "actions-dropdown" },
+    `
+<div class="dropdown-button buttonify">Actions ▼</div>
+<div class="dropdown-options" hidden>
+    <div class="dropdown-item rename">Rename</div>
+    <div class="dropdown-item new-lineset">New Lineset</div>
+    <div class="dropdown-item delete">Delete Lineset</div>
+</div>
+`,
+));
+
+
+browser.appendChild($create("div", {
+    classList: "browser-heading",
+}, [ selector, dropdown ]))
+
+dropdown.onclick = (e) => {
+    const elem = e.target;
+    console.log(elem);
+    if (!elem || !(elem instanceof Element)) return;
+    const options = dropdown.querySelector(".dropdown-options");
+    if (options == null || !(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+
+    if (elem.classList.contains("dropdown-button")) {
+        options.hidden = !options.hidden;
+
+        // Ensure close on next click
+        window.addEventListener("click", () => {
+            options.hidden = true;
+        }, { once: true })
+        // Prevent the listener we just added from getting fired right now
+        e.stopPropagation();
+    } else if (elem.classList.contains("dropdown-item")) {
+        options.hidden = true;
+        if (elem.classList.contains("rename")) {
+            const popup = dropdown.appendChild($create("div",
+                {
+                    classList: "popup",
+                    onclick: (e: Event) => {
+                        e.stopPropagation();
+                    }
+                },
+                `Hello world`
+            ));
+            window.addEventListener("click", () => {
+                dropdown.removeChild(popup)
+            }, { once: true })
+            e.stopPropagation();
+            console.log("RENAME not implemented")
+        } else if (elem.classList.contains("new-lineset")) {
+            console.log("New-lineset not implemented")
+        } else if (elem.classList.contains("delete")) {
+            console.log("Delete not implemented")
+        }
+    }
+}
+
 const container = browser.appendChild($create("div",
     { id: "browser-container" },
 ));
@@ -28,19 +88,22 @@ const container = browser.appendChild($create("div",
 //-----------------------------------
 
 let lines: Card[]
+let line_set: string|null
 
 export function UpdateLineSets(sets: string[]) {
     selector.replaceChildren();
     for (const name of sets) {
         selector.add($create("option", { value: name }, name ));
     }
+    if (line_set) selector.value = line_set
+}
+
+export function SelectLineSet(title: string) {
+    line_set = title;
 }
 
 export function Init() {
-    if (!(selector instanceof HTMLSelectElement)) {
-        throw new Error("missing #browser-line-select");
-    }
-    const title = selector.value;
+    const title = line_set ?? selector.options[0].value;
     if (title == null || title == "") {
         throw new Error("no lineset selected");
     }
@@ -49,7 +112,7 @@ export function Init() {
 }
 
 function load(title: string) {
-    console.log("Loading line set title: " + name)
+    console.log("Loading line set title: " + title)
     fetch('/feline/get-line-data', {
         method: "POST",
         body: new URLSearchParams({
@@ -73,7 +136,6 @@ function render(lines_: Card[]) {
     for (const item of lines) {
         const [linePre, linePost] = sepLine(item.line)
         const [cuePre, cuePost] = sepLine(item.cue)
-        console.log(linePre, linePost);
         const card = container.appendChild($create("div",
             {
                 classList: "card card-squished",

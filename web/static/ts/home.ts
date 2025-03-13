@@ -94,11 +94,9 @@ window.linesetSelected = (title: string) => {
 }
 
 window.browseLineset = (title: string) => {
-    const selector = document.getElementById("browser-line-select");
-    if (!(selector instanceof HTMLSelectElement)) {
-        throw new Error("missing #browser-line-select");
-    }
-    selector.value = title;
+    import("./pages/browser.js").then(Browser => {
+        Browser.SelectLineSet(title)
+    });
 }
 //--------------------------
 

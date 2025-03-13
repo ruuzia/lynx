@@ -4,7 +4,7 @@
  * @param props?: optional dictionary of properties
  * @param children?: optional array of children elements OR innerHTML
  */
-export function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: HTMLElement[]|string): HTMLElementTagNameMap[K] {
+export function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: Node[]|string): HTMLElementTagNameMap[K] {
     const elem = document.createElement(type);
     for (const [k, v] of Object.entries(props ?? {})) {
         (elem as any)[k] = v;
