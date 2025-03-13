@@ -62,7 +62,7 @@ ${name}</a>
     }
 
     { /*** Browser ***/
-        import("./browser.js").then(Browser => {
+        import("./pages/browser.js").then(Browser => {
             Browser.UpdateLineSets(lineSets)
         });
     }
@@ -91,7 +91,7 @@ function homePageUpdate() {
 //---------------------------------------------------------------
 // lineset select page
 
-import * as lineReviewer from "./linereviewer.js";
+import * as lineReviewer from "./pages/linereviewer.js";
 
 window.linesetSelected = (title: string) => {
     console.log("linesetSelected() " + title);
@@ -120,13 +120,14 @@ function subpageLoad() {
         case "#builder":
             break;
         case "#browser":
-            import('./browser.js').then(BrowserPage => {
+            import('./pages/browser.js').then(BrowserPage => {
                 BrowserPage.Init();
             })
             break;
         case "#lineset-select":
             break;
         case "#settings":
+            import('./pages/settings.js')
             break;
         default:
             console.log("Unknown subpage " + location.hash)

@@ -1,3 +1,6 @@
+import { SetReviewMethod } from "./linereviewer.js"
+import * as Save from "../save.js"
+
 export const settings = {
     reviewMethod: null,
 };
@@ -47,9 +50,6 @@ ${title}
 declare global {
     interface Window { selectReviewType : Function }
 }
-
-import { SetReviewMethod } from "./linereviewer.js"
-import * as Save from "./save.js"
 
 window.selectReviewType = (type: string) => {
     Save.state.reviewMethod = type;

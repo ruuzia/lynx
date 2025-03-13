@@ -1,4 +1,4 @@
-import * as Save from "./save.js"
+import * as Save from "../save.js"
 
 var lineData: Card[] | null;
 var reviewMethod: string | null;

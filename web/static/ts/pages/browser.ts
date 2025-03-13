@@ -1,5 +1,5 @@
-import { MakeItemsDraggable } from "./util/draggablelist.js";
-import { $create, $query } from "./util/dom.js"
+import { MakeItemsDraggable } from "../util/draggablelist.js";
+import { $create, $query } from "../util/dom.js"
 const html = String.raw
 
 document.head.appendChild($create("link",
