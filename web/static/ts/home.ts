@@ -62,17 +62,9 @@ ${name}</a>
     }
 
     { /*** Browser ***/
-        const container = document.getElementById("browser-line-select");
-        if (container === null) {
-            throw new Error("Did not find #browser-line-select");
-        }
-        let content = ``;
-        for (const name of lineSets) {
-            content += `
-<option value="${name}">${name}</option>
-`
-        }
-        container.innerHTML = content;
+        import("./browser.js").then(Browser => {
+            Browser.UpdateLineSets(lineSets)
+        });
     }
 }
 loadLineSets(lineSets);

@@ -2,15 +2,72 @@ import { MakeItemsDraggable } from "./util/draggablelist.js";
 import * as Save from "./save.js"
 const html = String.raw
 
+//-----------------------------------
+/**
+ * Lightweight wrapper around document.createElement.
+ */
+function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: HTMLElement[]|string): HTMLElementTagNameMap[K] {
+    const elem = document.createElement(type);
+    for (const [k, v] of Object.entries(props ?? {})) {
+        elem[k] = v;
+    }
+    if (typeof children == 'string') {
+        elem.innerHTML = children;
+    } else {
+        for (const child of children ?? []) {
+            elem.appendChild(child);
+        }
+    }
+    return elem;
+}
+
+/**
+ * Lightweight wrapper around document.querySelector with type checking.
+ */
+function $query<T extends Element>(query: string, type: new() => T): T {
+    const elem = document.querySelector(query);
+    if (elem == null) {
+        throw new Error(`$query failed to find ${query}`);
+    }
+    if (!(elem instanceof type)) {
+        throw new Error(`$query ${query} expected ${type}`);
+    }
+    return elem;
+}
+//-----------------------------------
+
+document.head.appendChild($create("link",
+    {
+        rel: "stylesheet",
+        href: "/static/style/browser.css",
+    },
+));
+
+const browser = $query("#browser", HTMLDivElement);
+browser.appendChild($create("h1", {}, "Line browser" ));
+
+const selector = browser.appendChild($create("select",
+    {
+        id: "browser-line-select",
+        onchange: () => {
+            load(selector.value);
+        }
+    }
+));
+const container = browser.appendChild($create("div",
+    { id: "browser-container" },
+));
+
+
+//-----------------------------------
+
 let lines: Card[]
 
-const selector = document.getElementById("browser-line-select");
-if (!(selector instanceof HTMLSelectElement)) {
-    throw new Error("missing #browser-line-select");
-}
-selector.onchange = () => {
-    console.log("selector.onchange")
-    load(selector.value);
+export function UpdateLineSets(sets: string[]) {
+    selector.replaceChildren();
+    for (const name of sets) {
+        selector.add($create("option", { value: name }, name ));
+    }
 }
 
 export function Init() {
@@ -46,18 +103,16 @@ function sepLine(line: string): [string, string] {
 
 function render(lines_: Card[]) {
     lines = lines_
-    const container = document.getElementById("browser-container");
-    if (container === null) {
-        throw new Error("Missing #browser-container");
-    }
     container.innerHTML = "";
     for (const item of lines) {
         const [linePre, linePost] = sepLine(item.line)
         const [cuePre, cuePost] = sepLine(item.cue)
         console.log(linePre, linePost);
-        const card = document.createElement("div");
-        card.classList.add("card", "card-squished");
-        card.innerHTML = html`
+        const card = container.appendChild($create("div",
+            {
+                classList: "card card-squished",
+            },
+            html`
 <div class="card-sidebar">
   <div class="card-view-toggle">﹀</div>
   <div class="card-mover clickable">
@@ -83,8 +138,8 @@ function render(lines_: Card[]) {
     </label>
   </div>
 </div>
-`;
-        container.appendChild(card);
+`
+        ));
 
         // Accordian expand/contract
         card.addEventListener("click", (event) => {
