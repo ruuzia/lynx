@@ -57,8 +57,6 @@
     }
 
     .card-view-toggle {
-        /* flex-basis: 30px; */
-        border-radius: 5px;
         width: fit-content;
         text-decoration: none;
         cursor: pointer;

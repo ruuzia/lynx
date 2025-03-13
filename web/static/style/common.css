@@ -44,10 +44,9 @@
 .page {
     padding-top: var(--header-height);
     display: none;
-}
-
-.page:target {
-    display: block;
+    &:target {
+        display: block;
+    }
 }
 
 /*---------------------------------------*/
