@@ -7,7 +7,11 @@
 export function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: Node[]|string): HTMLElementTagNameMap[K] {
     const elem = document.createElement(type);
     for (const [k, v] of Object.entries(props ?? {})) {
-        (elem as any)[k] = v;
+        if (k.startsWith("$")) {
+            elem.setAttribute(k, v);
+        } else {
+            (elem as any)[k] = v;
+        }
     }
     if (typeof children == 'string') {
         elem.innerHTML = children;
