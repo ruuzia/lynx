@@ -46,7 +46,7 @@ export function MakeItemsDraggable(container: HTMLElement, options? : DraggableL
 
             }
 
-            const dragMove = (e: MouseEvent|TouchEvent) => {
+            const dragMove = (e: MouseEvent) => {
                 const placeholder = getPlaceholder();
                 card.style.position = 'absolute';
                 const top = e.clientY - offsetY;
@@ -98,8 +98,6 @@ export function MakeItemsDraggable(container: HTMLElement, options? : DraggableL
 
             window.addEventListener('mousemove', dragMove)
             window.addEventListener('mouseup', dragEnd)
-            window.addEventListener('touchmove', dragMove)
-            window.addEventListener('touchend', dragEnd)
-            window.addEventListener('mouseup', dragEnd)
+        }
     }
 }
