@@ -62,40 +62,10 @@
     </div>
   </div>
 
-  <!------------------------------------------->
-  <!-------   #builder       ------------------>
-  <div id="builder" class="page" hidden>
-    <script src="/static/js/pages/linesetbuilder.js" defer></script>
+  <!-----   #builder  ------->
+  <div id="builder" class="page" hidden></div>
 
-    <h1>Add your lines</h1>
-    <div style="width: min(100%, 650px); text-align: left; margin-left: auto; margin-right: auto;">
-      <div>
-        <label for="title">Please provide a title:</label>
-        <input name="title" id="title" type="text" value=""/>
-      </div>
-      <div style="color: red;">
-      </div>
-      <div>
-        Type up or paste your character's lines with their cues in the simple format shown.
-      </div>
-      <textarea id="data" rows="20" cols="40" placeholder="RUFUS: This is Poco's cue
-POCO: My line
-
-RUFUS: Lines are separated by a blank space
-POCO: Another line
-"></textarea>
-      <div>
-        Status: <span>saving</span>
-      </div>
-      <form action="/feline/finishbuilder">
-        <button id="submit" style="width: 20em;">Create line set</button>
-      </form>
-      <form action=""> <button style="width: 20em;">Go back</button> </form>
-    </div>
-  </div>
-
-  <!------------------------------------------->
-  <!-------   #reviewer       ------------------>
+  <!-----   #reviewer  ----->
   <div id="reviewer" class="page" hidden>
     <script type="module" src="/static/js/pages/linereviewer.js"></script>
     <div id="card">

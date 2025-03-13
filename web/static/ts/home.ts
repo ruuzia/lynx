@@ -118,6 +118,7 @@ function subpageLoad() {
             homePageUpdate();
             break;
         case "#builder":
+            import("./pages/builder.js")
             break;
         case "#browser":
             import('./pages/browser.js').then(BrowserPage => {
