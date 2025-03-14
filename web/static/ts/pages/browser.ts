@@ -122,7 +122,7 @@ function buildModals() {
 
   MicroModal.init({
     onShow: (modal) => {
-      const options = query(".dropdown-options", HTMLElement, container);
+      const options = query(".dropdown-options", HTMLElement, dropdown);
       if (modal?.id == "browser-rename") {
         const input = query("#browser-rename-input", HTMLInputElement);
         input.value = selector.value;
