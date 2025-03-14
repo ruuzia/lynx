@@ -1,7 +1,7 @@
 import * as Save from "../save.js"
-import { $query } from "../util/dom.js";
+import { query } from "../util/dom.js";
 
-const reviewer = $query("#reviewer", HTMLDivElement);
+const reviewer = query("#reviewer", HTMLDivElement);
 reviewer.innerHTML = `
 <link rel="stylesheet" href="/static/style/reviewer.css"></link>
 <div id="card">

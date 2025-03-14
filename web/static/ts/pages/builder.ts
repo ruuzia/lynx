@@ -1,6 +1,6 @@
-import { $query, $create } from "../util/dom.js";
+import { query, create } from "../util/dom.js";
 
-const builder = $query("#builder", HTMLDivElement)
+const builder = query("#builder", HTMLDivElement)
 
 // document.head.appendChild($create("link",
 //     { rel: "stylesheet", href: "/static/style/builder.css" },
@@ -34,9 +34,9 @@ builder.innerHTML = `
 </div>
 `
 
-const title = $query("#builder-title", HTMLInputElement);
-const data = $query("#builder-data", HTMLTextAreaElement);
-const submit = $query("#builder-submit", HTMLButtonElement);
+const title = query("#builder-title", HTMLInputElement);
+const data = query("#builder-data", HTMLTextAreaElement);
+const submit = query("#builder-submit", HTMLButtonElement);
 
 const update = async () => {
     const payload = {

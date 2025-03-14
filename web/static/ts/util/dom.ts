@@ -4,7 +4,7 @@
  * @param props?: optional dictionary of properties
  * @param children?: optional array of children elements OR innerHTML
  */
-export function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: Node[]|string): HTMLElementTagNameMap[K] {
+export function create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: Node[]|string): HTMLElementTagNameMap[K] {
     const elem = document.createElement(type);
     for (const [k, v] of Object.entries(props ?? {})) {
         if (k.startsWith("$")) {
@@ -28,8 +28,8 @@ export function $create<K extends keyof HTMLElementTagNameMap>(type: K, props?: 
  * @param query argument to querySelector
  * @param type (e.g. HTMLSelectElement)
  */
-export function $query<T extends Element>(query: string, type: new() => T): T {
-    const elem = document.querySelector(query);
+export function query<T extends Element>(query: string, type: new() => T, container: Document|Element = document): T {
+    const elem = container.querySelector(query);
     if (elem == null) {
         throw new Error(`$query failed to find ${query}`);
     }

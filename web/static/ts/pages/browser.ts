@@ -1,11 +1,11 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
-import { $create, $query } from "../util/dom.js";
+import { create, query } from "../util/dom.js";
 import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js"
 const html = String.raw; // Editor HTML highlighting in template strings
 
 // Wait until stylesheet is loaded
 await (new Promise((resolve, reject) => {
-    const link = document.head.appendChild($create("link",
+    const link = document.head.appendChild(create("link",
         {
             rel: "stylesheet",
             href: "/static/style/browser.css",
@@ -18,7 +18,7 @@ await (new Promise((resolve, reject) => {
 
 //---------------------------------------------
 function buildModals() {
-    const modal = (id: string, title: string, content: string) => $create("div",
+    const modal = (id: string, title: string, content: string) => create("div",
         { id: id, ariaHidden: "true", classList: "modal" },
         html`
 
@@ -51,7 +51,7 @@ function buildModals() {
 `));
 
     const saveRename = () => {
-        const input = $query("#browser-rename-input", HTMLInputElement);
+        const input = query("#browser-rename-input", HTMLInputElement);
         const newName = input.value;
         console.log("saveRename", selector.value, input.value);
         MicroModal.close(renameModal.id)
@@ -88,16 +88,15 @@ function buildModals() {
 
     MicroModal.init({
         onShow: (modal) => {
-            const options = container.querySelector(".dropdown-options");
-            if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+            const options = query(".dropdown-options", HTMLElement, container);
             if (modal?.id == "browser-rename") {
-                const input = $query("#browser-rename-input", HTMLInputElement);
+                const input = query("#browser-rename-input", HTMLInputElement);
                 input.value = selector.value;
                 options.hidden = true;
             } else if (modal?.id == "browser-delete-lineset") {
-                const message = $query("#delete-lineset-message", HTMLElement);
+                const message = query("#delete-lineset-message", HTMLElement);
                 message.innerHTML = `Are you sure you want to permamently delete line set <b>${selector.value}</b>?`
-                $query("#browser-delete-lineset-button", HTMLElement).innerText = `Delete ${selector.value}`
+                query("#browser-delete-lineset-button", HTMLElement).innerText = `Delete ${selector.value}`
             }
         }
     });
@@ -109,8 +108,7 @@ function makeDropdown(container: HTMLElement, onselect?: (option: Element) => vo
     container.onclick = (e) => {
         const elem = e.target;
         if (!elem || !(elem instanceof Element)) return;
-        const options = container.querySelector(".dropdown-options");
-        if (options == null || !(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+        const options = query(".dropdown-options", HTMLElement, container);
 
         if (elem.classList.contains("dropdown-button")) {
             options.hidden = !options.hidden;
@@ -123,8 +121,7 @@ function makeDropdown(container: HTMLElement, onselect?: (option: Element) => vo
 
     // Close on click outside
     window.addEventListener("click", () => {
-        const options = container.querySelector(".dropdown-options");
-        if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+        const options = query(".dropdown-options", HTMLElement, container);
         options.hidden = true;
     })
 
@@ -149,18 +146,18 @@ function makeDropdown(container: HTMLElement, onselect?: (option: Element) => vo
 
 //----------------------------
 
-const browser = $query("#browser", HTMLDivElement);
+const browser = query("#browser", HTMLDivElement);
 
-browser.appendChild($create( "h1", {}, "Line browser" ));
+browser.appendChild(create( "h1", {}, "Line browser" ));
 
-const selector = $create("select", {
+const selector = create("select", {
     id: "browser-line-select",
     onchange: () => {
         load(selector.value);
     }
 });
 
-const dropdown = makeDropdown($create("div", { classList: "actions-dropdown" }, html`
+const dropdown = makeDropdown(create("div", { classList: "actions-dropdown" }, html`
 
 <div class="dropdown-button buttonify" tabindex="0">Actions ▼</div>
 <div class="dropdown-options" hidden>
@@ -172,12 +169,12 @@ const dropdown = makeDropdown($create("div", { classList: "actions-dropdown" }, 
 `));
 
 
-browser.appendChild($create("div", {
+browser.appendChild(create("div", {
     classList: "browser-heading",
 }, [ selector, dropdown ]))
 
 
-const container = browser.appendChild($create("div",
+const container = browser.appendChild(create("div",
     { id: "browser-container" },
 ));
 
@@ -192,7 +189,7 @@ let line_set: string|null
 export function UpdateLineSets(sets: string[]) {
     selector.replaceChildren();
     for (const name of sets) {
-        selector.add($create("option", { value: name }, name ));
+        selector.add(create("option", { value: name }, name ));
     }
     if (line_set) selector.value = line_set
 }
@@ -235,7 +232,7 @@ function render(lines_: Card[]) {
     for (const item of lines) {
         const [linePre, linePost] = sepLine(item.line)
         const [cuePre, cuePost] = sepLine(item.cue)
-        const card = container.appendChild($create("div",
+        const card = container.appendChild(create("div",
             {
                 classList: "card card-squished",
             },
@@ -270,10 +267,7 @@ function render(lines_: Card[]) {
 
         // Accordian expand/contract
         card.addEventListener("click", (event) => {
-            if (event.target == null) {
-                console.log("browserCardClick target is null");
-                return;
-            }
+            if (event.target == null) return;
             if(!(event.target instanceof HTMLElement)) return;
 
             if (event.target.classList.contains("card-view-toggle")) {
