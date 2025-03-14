@@ -16,19 +16,6 @@ await (new Promise((resolve, reject) => {
     ));
 }));
 
-const browser = $query("#browser", HTMLDivElement);
-
-browser.appendChild($create( "h1", {}, "Line browser" ));
-
-const selector = browser.appendChild($create("select",
-    {
-        id: "browser-line-select",
-        onchange: () => {
-            load(selector.value);
-        }
-    }
-));
-
 //---------------------------------------------
 function buildModals() {
     const modal = (id: string, title: string, content: string) => $create("div",
@@ -101,7 +88,7 @@ function buildModals() {
 
     MicroModal.init({
         onShow: (modal) => {
-            const options = dropdown.querySelector(".dropdown-options");
+            const options = container.querySelector(".dropdown-options");
             if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
             if (modal?.id == "browser-rename") {
                 const input = $query("#browser-rename-input", HTMLInputElement);
@@ -118,9 +105,62 @@ function buildModals() {
 // buildModals()
 //----------------------------
 
-const dropdown = browser.appendChild($create("div",
-    { classList: "actions-dropdown" },
-    html`
+function makeDropdown(container: HTMLElement, onselect?: (option: Element) => void) {
+    container.onclick = (e) => {
+        const elem = e.target;
+        if (!elem || !(elem instanceof Element)) return;
+        const options = container.querySelector(".dropdown-options");
+        if (options == null || !(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+
+        if (elem.classList.contains("dropdown-button")) {
+            options.hidden = !options.hidden;
+            // Prevent event from reaching window listener
+            e.stopPropagation();
+        } else if (elem.classList.contains("dropdown-item")) {
+            if (onselect) onselect(elem);
+        }
+    }
+
+    // Close on click outside
+    window.addEventListener("click", () => {
+        const options = container.querySelector(".dropdown-options");
+        if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+        options.hidden = true;
+    })
+
+    container.onkeydown = (e) => {
+        if (!(e.target instanceof HTMLElement)) return;
+        const options = container.querySelector(".dropdown-options");
+        if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+
+        if (e.target.classList.contains("dropdown-button") && e.key == " ") {
+            options.hidden = !options.hidden;
+            e.preventDefault();
+        }
+
+        if (e.target.classList.contains("dropdown-item") && (e.key == "Enter" || e.key == "Space")) {
+            const modalId = e.target.getAttribute("data-micromodal-trigger");
+            if (modalId) MicroModal.show(modalId);
+            e.preventDefault();
+        }
+    }
+    return container;
+}
+
+//----------------------------
+
+const browser = $query("#browser", HTMLDivElement);
+
+browser.appendChild($create( "h1", {}, "Line browser" ));
+
+const selector = $create("select", {
+    id: "browser-line-select",
+    onchange: () => {
+        load(selector.value);
+    }
+});
+
+const dropdown = makeDropdown($create("div", { classList: "actions-dropdown" }, html`
 
 <div class="dropdown-button buttonify" tabindex="0">Actions ▼</div>
 <div class="dropdown-options" hidden>
@@ -129,47 +169,8 @@ const dropdown = browser.appendChild($create("div",
     <div tabindex=0 class="dropdown-item delete" data-micromodal-trigger="browser-delete-lineset">Delete Lineset</div>
 </div>
 
-`,
-));
+`));
 
-dropdown.onclick = (e) => {
-    const elem = e.target;
-    if (!elem || !(elem instanceof Element)) return;
-    const options = dropdown.querySelector(".dropdown-options");
-    if (options == null || !(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
-
-    if (elem.classList.contains("dropdown-button")) {
-        options.hidden = !options.hidden;
-        // Prevent event from reaching window listener
-        e.stopPropagation();
-    } else if (elem.classList.contains("dropdown-item")) {
-        // Will show modal
-    }
-}
-
-// Close on click outside
-window.addEventListener("click", () => {
-    const options = dropdown.querySelector(".dropdown-options");
-    if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
-    options.hidden = true;
-})
-
-dropdown.onkeydown = (e) => {
-    if (!(e.target instanceof HTMLElement)) return;
-    const options = dropdown.querySelector(".dropdown-options");
-    if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
-
-    if (e.target.classList.contains("dropdown-button") && e.key == " ") {
-        options.hidden = !options.hidden;
-        e.preventDefault();
-    }
-
-    if (e.target.classList.contains("dropdown-item") && (e.key == "Enter" || e.key == "Space")) {
-        const modalId = e.target.getAttribute("data-micromodal-trigger");
-        if (modalId) MicroModal.show(modalId);
-        e.preventDefault();
-    }
-}
 
 browser.appendChild($create("div", {
     classList: "browser-heading",
