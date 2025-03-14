@@ -1,17 +1,23 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { $create, $query } from "../util/dom.js";
 import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js"
+const html = String.raw; // Editor HTML highlighting in template strings
 
-const html = String.raw;
-
-document.head.appendChild($create("link",
-    {
-        rel: "stylesheet",
-        href: "/static/style/browser.css",
-    },
-));
+// Wait until stylesheet is loaded
+await (new Promise((resolve, reject) => {
+    const link = document.head.appendChild($create("link",
+        {
+            rel: "stylesheet",
+            href: "/static/style/browser.css",
+            onload: () => {
+                resolve(link);
+            },
+        },
+    ));
+}));
 
 const browser = $query("#browser", HTMLDivElement);
+
 browser.appendChild($create( "h1", {}, "Line browser" ));
 
 const selector = browser.appendChild($create("select",
@@ -23,121 +29,111 @@ const selector = browser.appendChild($create("select",
     }
 ));
 
+//---------------------------------------------
+function buildModals() {
+    const modal = (id: string, title: string, content: string) => $create("div",
+        { id: id, ariaHidden: "true", classList: "modal" },
+        html`
+
+<div tabindex="-1" data-micromodal-close class="modal-overlay">
+  <div role="dialog" aria-modal="true" aria-labelledby="${id}" class="modal-container">
+
+    <header class="modal-header">
+      <h2 class="modal-title"> ${title} </h2>
+      <button class="modal-close" aria-label="Close" data-micromodal-close></button>
+    </header>
+
+    <div class="modal-maincontent"> ${content} </div>
+  </div>
+</div>
+
+`
+    );
+
+    const renameModal = browser.appendChild(modal("browser-rename", "Rename Line Set", html`
+<div>
+  <label>
+    New title:
+    <input id="browser-rename-input"></input>
+  </label>
+</div>
+<div>
+  <button id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
+  <button data-micromodal-close>Cancel</button>
+</div>
+`));
+
+    const saveRename = () => {
+        const input = $query("#browser-rename-input", HTMLInputElement);
+        const newName = input.value;
+        console.log("saveRename", selector.value, input.value);
+        MicroModal.close(renameModal.id)
+    }
+
+    renameModal.onclick = (e) => e.target instanceof HTMLElement && e.target.id == "browser-rename-save-btn" && saveRename();
+    renameModal.onkeydown = (e) => (e.key == "Enter" && e.target instanceof HTMLElement && e.target.id == "browser-rename-input" && saveRename());
+
+    browser.appendChild(modal("browser-new-lineset", "Create New Line Set", html`
+
+<div>
+  <label>
+    Title:
+    <input></input>
+  </label>
+</div>
+<div>
+  <button style="background-color: var(--color-active-1)">Save</button>
+  <button data-micromodal-close>Cancel</button>
+</div>
+
+`));
+
+    browser.appendChild(modal("browser-delete-lineset", "Delete Line Set", html`
+
+<p id="delete-lineset-message">
+</p>
+<div>
+  <button style="background-color: red" id="browser-delete-lineset-button">Delete</button>
+  <button data-micromodal-close>Cancel</button>
+</div>
+
+`));
+
+    MicroModal.init({
+        onShow: (modal) => {
+            const options = dropdown.querySelector(".dropdown-options");
+            if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
+            if (modal?.id == "browser-rename") {
+                const input = $query("#browser-rename-input", HTMLInputElement);
+                input.value = selector.value;
+                options.hidden = true;
+            } else if (modal?.id == "browser-delete-lineset") {
+                const message = $query("#delete-lineset-message", HTMLElement);
+                message.innerHTML = `Are you sure you want to permamently delete line set <b>${selector.value}</b>?`
+                $query("#browser-delete-lineset-button", HTMLElement).innerText = `Delete ${selector.value}`
+            }
+        }
+    });
+}
+// buildModals()
+//----------------------------
+
 const dropdown = browser.appendChild($create("div",
     { classList: "actions-dropdown" },
     html`
+
 <div class="dropdown-button buttonify" tabindex="0">Actions ▼</div>
 <div class="dropdown-options" hidden>
     <div tabindex=0 class="dropdown-item rename" data-micromodal-trigger="browser-rename">Rename</div>
     <div tabindex=0 class="dropdown-item new-lineset" data-micromodal-trigger="browser-new-lineset">New Lineset</div>
-    <div tabindex=0 class="dropdown-item delete">Delete Lineset</div>
+    <div tabindex=0 class="dropdown-item delete" data-micromodal-trigger="browser-delete-lineset">Delete Lineset</div>
 </div>
+
 `,
 ));
 
-const renameModal = browser.appendChild($create("div",
-    { id: "browser-rename", ariaHidden: "true", classList: "modal" },
-    html`
-  <div tabindex="-1" data-micromodal-close class="modal-overlay">
-
-    <div role="dialog" aria-modal="true" aria-labelledby="browser-rename" class="modal-container">
-
-      <header class="modal-header">
-        <h2 class="modal-title">
-          Rename Line Set
-        </h2>
-
-        <button class="modal-close" aria-label="Close" data-micromodal-close></button>
-      </header>
-
-      <div id="browser-rename-content">
-        <div>
-          <label>
-            Title:
-            <input id="browser-rename-input"></input>
-          </label>
-        </div>
-        <div>
-          <button id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-          <button data-micromodal-close>Cancel</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-`
-));
-
-const newLinesetModal = browser.appendChild($create("div",
-    { id: "browser-new-lineset", ariaHidden: "true", classList: "modal" },
-    html`
-  <div tabindex="-1" data-micromodal-close class="modal-overlay">
-
-    <div role="dialog" aria-modal="true" aria-labelledby="browser-new-lineset" class="modal-container">
-
-      <header class="modal-header">
-        <h2 class="modal-title">
-          Create New Line Set
-        </h2>
-
-        <button class="modal-close" aria-label="Close" data-micromodal-close></button>
-      </header>
-
-      <div id="new-lineset-content">
-        <div>
-          <label>
-            Title:
-            <input></input>
-          </label>
-        </div>
-        <div>
-          <button style="background-color: var(--color-active-1)">Save</button>
-          <button data-micromodal-close>Cancel</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-`
-));
-
-function saveRename() {
-    const input = $query("#browser-rename-input", HTMLInputElement);
-    const newName = input.value;
-    console.log(selector.value, input.value);
-    MicroModal.close(renameModal.id)
-}
-
-renameModal.onclick = (e) => {
-    if (e.target instanceof HTMLElement && e.target.id == "browser-rename-save-btn") {
-        saveRename();
-    }
-}
-renameModal.onkeydown = (e) => {
-    if (e.key == "Enter" && e.target instanceof HTMLElement && e.target.id == "browser-rename-input") {
-        saveRename();
-    }
-}
-
-MicroModal.init({
-    onShow: (modal) => {
-        const options = dropdown.querySelector(".dropdown-options");
-        if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
-        if (modal?.id == "browser-rename") {
-            const input = $query("#browser-rename-input", HTMLInputElement);
-            input.value = selector.value;
-            options.hidden = true;
-        }
-    }
-});
-
-browser.appendChild($create("div", {
-    classList: "browser-heading",
-}, [ selector, dropdown ]))
-
 dropdown.onclick = (e) => {
     const elem = e.target;
-    console.log(elem);
     if (!elem || !(elem instanceof Element)) return;
     const options = dropdown.querySelector(".dropdown-options");
     if (options == null || !(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
@@ -159,7 +155,6 @@ window.addEventListener("click", () => {
 })
 
 dropdown.onkeydown = (e) => {
-    console.log(e);
     if (!(e.target instanceof HTMLElement)) return;
     const options = dropdown.querySelector(".dropdown-options");
     if (!(options instanceof HTMLElement)) throw new Error("Missing .dropdown-options");
@@ -176,12 +171,19 @@ dropdown.onkeydown = (e) => {
     }
 }
 
+browser.appendChild($create("div", {
+    classList: "browser-heading",
+}, [ selector, dropdown ]))
+
+
 const container = browser.appendChild($create("div",
     { id: "browser-container" },
 ));
 
 
-//-----------------------------------
+buildModals();
+
+//-------------------------------------
 
 let lines: Card[]
 let line_set: string|null
