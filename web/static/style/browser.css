@@ -1,4 +1,43 @@
-/* Line browser */
+
+#browser-rename {
+    display: none;
+    text-align: left;
+    &.is-open {
+        display: block;
+    }
+    .modal-close {
+        background: transparent;
+        border: 0;
+        &:before {
+            content: "✕";
+            color: var(--fg);
+        }
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: hsla(0 0% 50% / 50%);
+    }
+
+    .modal-container {
+        max-width: 500px;
+        max-height: 400px;
+        background-color: var(--bg);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .model-title {
+        text-align: center;
+    }
+}
+
 .browser-heading {
     display: flex;
     justify-content: center;

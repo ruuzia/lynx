@@ -1,7 +1,8 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
-import { $create, $query } from "../util/dom.js"
+import { $create, $query } from "../util/dom.js";
+import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js"
 
-const html = String.raw
+const html = String.raw;
 
 document.head.appendChild($create("link",
     {
@@ -24,16 +25,43 @@ const selector = browser.appendChild($create("select",
 
 const dropdown = browser.appendChild($create("div",
     { classList: "actions-dropdown" },
-    `
+    html`
 <div class="dropdown-button buttonify">Actions ▼</div>
 <div class="dropdown-options" hidden>
-    <div class="dropdown-item rename">Rename</div>
+    <div class="dropdown-item rename" data-micromodal-trigger="browser-rename">Rename</div>
     <div class="dropdown-item new-lineset">New Lineset</div>
     <div class="dropdown-item delete">Delete Lineset</div>
 </div>
 `,
 ));
 
+browser.appendChild($create("div",
+    { id: "browser-rename", ariaHidden: "true", classList: "modal" },
+    html`
+  <div tabindex="-1" data-micromodal-close class="modal-overlay">
+
+    <div role="dialog" aria-modal="true" aria-labelledby="browser-rename" class="modal-container">
+
+      <header>
+        <h2 class="modal-title">
+          Rename Line Set
+        </h2>
+
+        <button class="modal-close" aria-label="Close" data-micromodal-close></button>
+      </header>
+
+      <div id="browser-rename-content">
+        <label>
+          Title:
+          <input id="browser-rename-input"></input>
+        </label>
+      </div>
+    </div>
+  </div>
+`
+));
+
+MicroModal.init();
 
 browser.appendChild($create("div", {
     classList: "browser-heading",
@@ -58,19 +86,7 @@ dropdown.onclick = (e) => {
     } else if (elem.classList.contains("dropdown-item")) {
         options.hidden = true;
         if (elem.classList.contains("rename")) {
-            const popup = dropdown.appendChild($create("div",
-                {
-                    classList: "popup",
-                    onclick: (e: Event) => {
-                        e.stopPropagation();
-                    }
-                },
-                `Hello world`
-            ));
-            window.addEventListener("click", () => {
-                dropdown.removeChild(popup)
-            }, { once: true })
-            e.stopPropagation();
+            $query("#browser-rename-input", HTMLInputElement).value = selector.value;
             console.log("RENAME not implemented")
         } else if (elem.classList.contains("new-lineset")) {
             console.log("New-lineset not implemented")
