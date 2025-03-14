@@ -4,23 +4,27 @@
  * @param props?: optional dictionary of properties
  * @param children?: optional array of children elements OR innerHTML
  */
-export function create<K extends keyof HTMLElementTagNameMap>(type: K, props?: Object, children?: Node[]|string): HTMLElementTagNameMap[K] {
-    const elem = document.createElement(type);
-    for (const [k, v] of Object.entries(props ?? {})) {
-        if (k.startsWith("$")) {
-            elem.setAttribute(k, v);
-        } else {
-            (elem as any)[k] = v;
-        }
-    }
-    if (typeof children == 'string') {
-        elem.innerHTML = children;
+export function create<K extends keyof HTMLElementTagNameMap>(
+  type: K,
+  props?: Object,
+  children?: Node[] | string,
+): HTMLElementTagNameMap[K] {
+  const elem = document.createElement(type);
+  for (const [k, v] of Object.entries(props ?? {})) {
+    if (k.startsWith("$")) {
+      elem.setAttribute(k, v);
     } else {
-        for (const child of children ?? []) {
-            elem.appendChild(child);
-        }
+      (elem as any)[k] = v;
     }
-    return elem;
+  }
+  if (typeof children == "string") {
+    elem.innerHTML = children;
+  } else {
+    for (const child of children ?? []) {
+      elem.appendChild(child);
+    }
+  }
+  return elem;
 }
 
 /**
@@ -28,13 +32,17 @@ export function create<K extends keyof HTMLElementTagNameMap>(type: K, props?: O
  * @param query argument to querySelector
  * @param type (e.g. HTMLSelectElement)
  */
-export function query<T extends Element>(query: string, type: new() => T, container: Document|Element = document): T {
-    const elem = container.querySelector(query);
-    if (elem == null) {
-        throw new Error(`$query failed to find ${query}`);
-    }
-    if (!(elem instanceof type)) {
-        throw new Error(`$query ${query} expected ${type}`);
-    }
-    return elem;
+export function query<T extends Element>(
+  query: string,
+  type: new () => T,
+  container: Document | Element = document,
+): T {
+  const elem = container.querySelector(query);
+  if (elem == null) {
+    throw new Error(`$query failed to find ${query}`);
+  }
+  if (!(elem instanceof type)) {
+    throw new Error(`$query ${query} expected ${type}`);
+  }
+  return elem;
 }
