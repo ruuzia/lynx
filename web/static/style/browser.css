@@ -1,5 +1,5 @@
 
-#browser-rename {
+.modal {
     display: none;
     text-align: left;
     &.is-open {
@@ -31,6 +31,11 @@
         background-color: var(--bg);
         padding: 20px;
         border-radius: 10px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-around;
     }
 
     .model-title {

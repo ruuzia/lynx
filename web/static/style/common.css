@@ -97,6 +97,7 @@ button, .button-thick {
 	background-color: var(--button-bg);
 	font-size: 20px;
     text-decoration: none;
+    cursor: pointer;
 }
 
 button:hover {
