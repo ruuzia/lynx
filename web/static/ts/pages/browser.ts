@@ -158,9 +158,9 @@ function makeDropdown(
   };
 
   // Close on click outside
-  window.addEventListener("click", () => {
-    const options = query(".dropdown-options", HTMLElement, container);
-    options.hidden = true;
+  container.addEventListener("focusout", (e) => {
+    console.log("onblur");
+    query(".dropdown-options", HTMLElement, container).hidden = true;
   });
 
   container.onkeydown = (e) => {
