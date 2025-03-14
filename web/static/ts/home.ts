@@ -134,3 +134,12 @@ function subpageLoad() {
 
 addEventListener("hashchange", subpageLoad)
 subpageLoad();
+
+
+//--------------------------------
+window.onload = () => {
+  // After the home page is 100% loaded, asynchronously load other subpages
+  import("./pages/browser.js")
+  import("./pages/linereviewer.js")
+  import("./pages/settings.js")
+}

@@ -21,26 +21,27 @@ function buildModals() {
   const modal = (id: string, title: string, content: string) =>
     create(
       "div",
-      { id: id, ariaHidden: "true", classList: "modal" }, html`
-<div tabindex="-1" data-micromodal-close class="modal-overlay">
-  <div
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="${id}"
-    class="modal-container"
-  >
-    <header class="modal-header">
-      <h2 class="modal-title">${title}</h2>
-      <button
-        class="modal-close"
-        aria-label="Close"
-        data-micromodal-close
-      ></button>
-    </header>
+      { id: id, ariaHidden: "true", classList: "modal" },
+      html`
+        <div tabindex="-1" data-micromodal-close class="modal-overlay">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="${id}"
+            class="modal-container"
+          >
+            <header class="modal-header">
+              <h2 class="modal-title">${title}</h2>
+              <button
+                class="modal-close"
+                aria-label="Close"
+                data-micromodal-close
+              ></button>
+            </header>
 
-    <div class="modal-maincontent">${content}</div>
-  </div>
-</div>
+            <div class="modal-maincontent">${content}</div>
+          </div>
+        </div>
       `,
     );
 
@@ -143,10 +144,17 @@ function makeDropdown(
   container: HTMLElement,
   onselect?: (option: Element) => void,
 ) {
+  const isDropdownItem = (elem: Node | EventTarget | null) =>
+    elem instanceof HTMLElement && elem.classList.contains("dropdown-item");
+  const isDropdownButton = (elem: Node | EventTarget | null) =>
+    elem instanceof HTMLElement && elem.classList.contains("dropdown-button");
+
   container.onclick = (e) => {
+    console.log("click!");
     const elem = e.target;
     if (!elem || !(elem instanceof Element)) return;
     const options = query(".dropdown-options", HTMLElement, container);
+    const button = query(".dropdown-button", HTMLElement, container);
 
     if (elem.classList.contains("dropdown-button")) {
       options.hidden = !options.hidden;
@@ -159,28 +167,59 @@ function makeDropdown(
 
   // Close on click outside
   container.addEventListener("focusout", (e) => {
-    console.log("onblur");
-    query(".dropdown-options", HTMLElement, container).hidden = true;
+    if (
+      !isDropdownItem(e.relatedTarget) &&
+      !isDropdownButton(e.relatedTarget)
+    ) {
+      console.log("container->focusout", e.relatedTarget);
+      query(".dropdown-options", HTMLElement, container).hidden = true;
+    }
+  });
+
+  container.addEventListener("blur", (e) => {
+    console.log("container->blur");
+    console.log(document.activeElement);
+    // query(".dropdown-options", HTMLElement, container).hidden = true;
   });
 
   container.onkeydown = (e) => {
     if (!(e.target instanceof HTMLElement)) return;
-    const options = container.querySelector(".dropdown-options");
-    if (!(options instanceof HTMLElement))
-      throw new Error("Missing .dropdown-options");
+    const options = query(".dropdown-options", HTMLElement, container);
 
-    if (e.target.classList.contains("dropdown-button") && e.key == " ") {
+    if (isDropdownButton(e.target) && (e.key == " " || e.key == "Enter")) {
       options.hidden = !options.hidden;
-      e.preventDefault();
-    }
-
-    if (
-      e.target.classList.contains("dropdown-item") &&
-      (e.key == "Enter" || e.key == "Space")
-    ) {
+      return false;
+    } else if (isDropdownItem(e.target) && (e.key == " " || e.key == "Enter")) {
       const modalId = e.target.getAttribute("data-micromodal-trigger");
       if (modalId) MicroModal.show(modalId);
       e.preventDefault();
+      return false;
+    }
+
+    if (e.key == "ArrowUp" || e.key == "ArrowDown") {
+      if (isDropdownButton(e.target)) {
+        // Focus first dropdown item
+        (options.children[0] as HTMLElement).focus();
+      } else if (isDropdownItem(e.target)) {
+        if (e.key == "ArrowUp") {
+          (e.target == options.children[0]
+            ? (options.children[options.children.length - 1] as HTMLElement)
+            : (e.target.previousElementSibling as HTMLElement)
+          ).focus();
+        }
+        if (e.key == "ArrowDown") {
+          (e.target == options.children[options.children.length - 1]
+            ? (options.children[0] as HTMLElement)
+            : (e.target.nextElementSibling as HTMLElement)
+          ).focus();
+        }
+      }
+      return false;
+    }
+
+    if (e.key == "Escape") {
+      options.hidden = true;
+      return false;
     }
   };
   return container;
@@ -206,21 +245,21 @@ const dropdown = makeDropdown(
       <div class="dropdown-button buttonify" tabindex="0">Actions ▼</div>
       <div class="dropdown-options" hidden>
         <div
-          tabindex="0"
+          tabindex="-1"
           class="dropdown-item rename"
           data-micromodal-trigger="browser-rename"
         >
           Rename
         </div>
         <div
-          tabindex="0"
+          tabindex="-1"
           class="dropdown-item new-lineset"
           data-micromodal-trigger="browser-new-lineset"
         >
           New Lineset
         </div>
         <div
-          tabindex="0"
+          tabindex="-1"
           class="dropdown-item delete"
           data-micromodal-trigger="browser-delete-lineset"
         >
@@ -301,7 +340,7 @@ function render(lines_: Card[]) {
       create(
         "div",
         {
-          classList: "card card-squished",
+          classList: "card",
         },
         html`
 <div class="card-sidebar">
