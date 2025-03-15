@@ -71,15 +71,22 @@ function buildModals() {
     MicroModal.close(renameModal.id);
   };
 
-  renameModal.onclick = (e) =>
-    e.target instanceof HTMLElement &&
-    e.target.id == "browser-rename-save-btn" &&
-    saveRename();
-  renameModal.onkeydown = (e) =>
-    e.key == "Enter" &&
-    e.target instanceof HTMLElement &&
-    e.target.id == "browser-rename-input" &&
-    saveRename();
+  renameModal.onclick = (e) => {
+    if (
+      e.target instanceof HTMLElement &&
+      e.target.id == "browser-rename-save-btn"
+    )
+      saveRename();
+  };
+
+  renameModal.onkeydown = (e) => {
+    if (
+      e.key == "Enter" &&
+      e.target instanceof HTMLElement &&
+      e.target.id == "browser-rename-input"
+    )
+      saveRename();
+  };
 
   browser.appendChild(
     modal(
@@ -123,7 +130,9 @@ function buildModals() {
 
   MicroModal.init({
     onShow: (modal) => {
+      console.log("modal");
       const options = query(".dropdown-options", HTMLElement, dropdown);
+      console.log(modal?.id);
       if (modal?.id == "browser-rename") {
         const input = query("#browser-rename-input", HTMLInputElement);
         input.value = selector.value;
@@ -150,7 +159,6 @@ function makeDropdown(
     elem instanceof HTMLElement && elem.classList.contains("dropdown-button");
 
   container.onclick = (e) => {
-    console.log("click!");
     const elem = e.target;
     if (!elem || !(elem instanceof Element)) return;
     const options = query(".dropdown-options", HTMLElement, container);
@@ -190,16 +198,18 @@ function makeDropdown(
       options.hidden = !options.hidden;
       return false;
     } else if (isDropdownItem(e.target) && (e.key == " " || e.key == "Enter")) {
-      const modalId = e.target.getAttribute("data-micromodal-trigger");
-      if (modalId) MicroModal.show(modalId);
-      e.preventDefault();
+      e.target.click();
       return false;
     }
 
     if (e.key == "ArrowUp" || e.key == "ArrowDown") {
       if (isDropdownButton(e.target)) {
         // Focus first dropdown item
-        (options.children[0] as HTMLElement).focus();
+        (
+          options.children[
+            e.key == "ArrowDown" ? 0 : options.children.length - 1
+          ] as HTMLElement
+        ).focus();
       } else if (isDropdownItem(e.target)) {
         if (e.key == "ArrowUp") {
           (e.target == options.children[0]
