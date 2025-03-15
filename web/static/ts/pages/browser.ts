@@ -1,6 +1,6 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { create, query } from "../util/dom.js";
-import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js";
+// import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js";
 const html = String.raw; // Editor HTML highlighting in template strings
 
 // Wait until stylesheet is loaded
@@ -20,28 +20,21 @@ await new Promise((resolve, reject) => {
 function buildModals() {
   const modal = (id: string, title: string, content: string) =>
     create(
-      "div",
-      { id: id, ariaHidden: "true", classList: "modal" },
+      "dialog",
+      { id: id, classList: "modal" },
       html`
-        <div tabindex="-1" data-micromodal-close class="modal-overlay">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="${id}"
-            class="modal-container"
-          >
-            <header class="modal-header">
-              <h2 class="modal-title">${title}</h2>
-              <button
-                class="modal-close"
-                aria-label="Close"
-                data-micromodal-close
-              ></button>
-            </header>
+        <form method="dialog">
+          <header class="modal-header">
+            <h2 class="modal-title">${title}</h2>
+            <button
+              class="modal-close"
+              aria-label="Close"
+              type="reset"
+            ></button>
+          </header>
 
-            <div class="modal-maincontent">${content}</div>
-          </div>
-        </div>
+          <div class="modal-maincontent">${content}</div>
+        </form>
       `,
     );
 
@@ -53,12 +46,12 @@ function buildModals() {
 <div>
   <label>
     New title:
-    <input id="browser-rename-input"></input>
+    <input autofocus id="browser-rename-input"></input>
   </label>
 </div>
 <div>
   <button id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-  <button data-micromodal-close>Cancel</button>
+  <button formmethod="dialog">Cancel</button>
 </div>
 `,
     ),
@@ -68,7 +61,7 @@ function buildModals() {
     const input = query("#browser-rename-input", HTMLInputElement);
     const newName = input.value;
     console.log("saveRename", selector.value, input.value);
-    MicroModal.close(renameModal.id);
+    renameModal.close();
   };
 
   renameModal.onclick = (e) => {
@@ -102,7 +95,7 @@ function buildModals() {
 </div>
 <div>
   <button style="background-color: var(--color-active-1)">Save</button>
-  <button data-micromodal-close>Cancel</button>
+  <button formmethod="dialog">Cancel</button>
 </div>
 
 `,
@@ -122,31 +115,35 @@ function buildModals() {
           >
             Delete
           </button>
-          <button data-micromodal-close>Cancel</button>
+          <button formmethod="dialog">Cancel</button>
         </div>
       `,
     ),
   );
-
-  MicroModal.init({
-    onShow: (modal) => {
-      console.log("modal");
-      const options = query(".dropdown-options", HTMLElement, dropdown);
-      console.log(modal?.id);
-      if (modal?.id == "browser-rename") {
-        const input = query("#browser-rename-input", HTMLInputElement);
-        input.value = selector.value;
-        options.hidden = true;
-      } else if (modal?.id == "browser-delete-lineset") {
-        const message = query("#delete-lineset-message", HTMLElement);
-        message.innerHTML = `Are you sure you want to permamently delete line set <b>${selector.value}</b>?`;
-        query("#browser-delete-lineset-button", HTMLElement).innerText =
-          `Delete ${selector.value}`;
-      }
-    },
-  });
 }
 // buildModals()
+
+// Note: beforetoggle event not currently implemented on Safari for Modals as of March 2025
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/beforetoggle_event#browser_compatibility
+// So we activate modals with this function instead
+function showModal(q: string) {
+  const modal = query(q, HTMLDialogElement);
+  switch (modal.id) {
+    case "browser-new-lineset":
+      break;
+    case "browser-rename":
+      const input = query("#browser-rename-input", HTMLInputElement);
+      input.value = selector.value;
+      break;
+    case "browser-delete-lineset":
+      const message = query("#delete-lineset-message", HTMLElement);
+      message.innerHTML = `Are you sure you want to permamently delete line set <b>${selector.value}</b>?`;
+      query("#browser-delete-lineset-button", HTMLElement).innerText =
+        `Delete ${selector.value}`;
+  }
+  modal.showModal();
+}
+
 //----------------------------
 
 function makeDropdown(
@@ -162,7 +159,6 @@ function makeDropdown(
     const elem = e.target;
     if (!elem || !(elem instanceof Element)) return;
     const options = query(".dropdown-options", HTMLElement, container);
-    const button = query(".dropdown-button", HTMLElement, container);
 
     if (elem.classList.contains("dropdown-button")) {
       options.hidden = !options.hidden;
@@ -182,12 +178,6 @@ function makeDropdown(
       console.log("container->focusout", e.relatedTarget);
       query(".dropdown-options", HTMLElement, container).hidden = true;
     }
-  });
-
-  container.addEventListener("blur", (e) => {
-    console.log("container->blur");
-    console.log(document.activeElement);
-    // query(".dropdown-options", HTMLElement, container).hidden = true;
   });
 
   container.onkeydown = (e) => {
@@ -257,27 +247,33 @@ const dropdown = makeDropdown(
         <div
           tabindex="-1"
           class="dropdown-item rename"
-          data-micromodal-trigger="browser-rename"
+          data-show-modal="#browser-rename"
         >
           Rename
         </div>
         <div
           tabindex="-1"
-          class="dropdown-item new-lineset"
-          data-micromodal-trigger="browser-new-lineset"
+          class="dropdown-item"
+          data-show-modal="#browser-new-lineset"
         >
           New Lineset
         </div>
         <div
           tabindex="-1"
-          class="dropdown-item delete"
-          data-micromodal-trigger="browser-delete-lineset"
+          class="dropdown-item"
+          data-show-modal="#browser-delete-lineset"
         >
           Delete Lineset
         </div>
       </div>
     `,
   ),
+  (selection) => {
+    const modal = selection.getAttribute("data-show-modal");
+    if (modal) {
+      showModal(modal);
+    }
+  },
 );
 
 browser.appendChild(
@@ -295,6 +291,19 @@ const container = browser.appendChild(
 );
 
 buildModals();
+
+document.body.appendChild(
+  create(
+    "div",
+    {},
+    html`
+      <dialog id="test-dialog">
+        <button autofocus>Close</button>
+        <p>This modal dialog has a groovy backdrop!</p>
+      </dialog>
+    `,
+  ),
+);
 
 //-------------------------------------
 
@@ -349,7 +358,7 @@ function render(lines_: Card[]) {
     const card = container.appendChild(
       create(
         "div",
-        { classList: "card", },
+        { classList: "card" },
         html`
 <div class="card-flex">
   <div class="card-sidebar">
@@ -406,12 +415,12 @@ function render(lines_: Card[]) {
   MakeItemsDraggable(container, {
     canDrag: (e) =>
       !(
-        e.target instanceof HTMLDivElement &&
-        (e.target.classList.contains("card-view-toggle"))
-        || e.target instanceof HTMLInputElement
-        || e.target instanceof HTMLDivElement && e.target.contentEditable
-        || e.target instanceof HTMLTextAreaElement
-        || e.target instanceof HTMLButtonElement
+        (e.target instanceof HTMLDivElement &&
+          e.target.classList.contains("card-view-toggle")) ||
+        e.target instanceof HTMLInputElement ||
+        (e.target instanceof HTMLDivElement && e.target.contentEditable) ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLButtonElement
       ),
     onUpdated: (oldIndex, newIndex, item) => {
       console.log(`old:${oldIndex} new:${newIndex}`);
