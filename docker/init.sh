@@ -1,18 +1,18 @@
 #!/bin/sh
 
-set -eu
+set -e
 
 mkdir -p /run/secrets
 
-if [-v LYNX_DB_PASSWORD ]; then
-  echo $LYNX_DP_PASSWORD > /run/secrets/db_password
+if [ -z "$LYNX_DB_PASSWORD" ]; then
+  echo "$LYNX_DP_PASSWORD" > /run/secrets/db_password
 fi
 
-if [-v LYNX_EMAIL_PASSWORD ]; then
+if [ -z "$LYNX_EMAIL_PASSWORD" ]; then
   echo $LYNX_EMAIL_PASSWORD > /run/secrets/email_password
 fi
 
-if [-v LYNX_JWT_SECRET ]; then
+if [ -z "$LYNX_JWT_SECRET" ]; then
   echo $LYNX_JWT_SECRET > /run/secrets/jwt_secret
 fi
 
