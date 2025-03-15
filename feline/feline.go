@@ -1,7 +1,6 @@
 package feline
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -31,17 +30,13 @@ func OpenServer(address string) {
     http.HandleFunc("/", serveHome)
     http.HandleFunc("/builder", serveBuilder)
     http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method == "GET" {
-			cookie, _ := r.Cookie("session_token");
-			debug.Println("GET serving /login", cookie.Value)
-			if _, err := CheckAuth(w, r); err != nil {
-				serveLogin(w, LoginPage{})
-			} else {
-				http.Redirect(w, r, "/", http.StatusFound)
-			}
-        } else {
-            handleLogin(w, r)
-        }
+		cookie, _ := r.Cookie("session_token");
+		debug.Println("GET serving /login", cookie.Value)
+		if _, err := CheckAuth(w, r); err != nil {
+			serveLogin(w, LoginPage{})
+		} else {
+			http.Redirect(w, r, "/", http.StatusFound)
+		}
     })
 	http.HandleFunc("/login/google", handleGoogleLogin)
 	http.HandleFunc("/login/email", handleEmailLogin)
@@ -109,35 +104,6 @@ func runTscWatch() {
 func handleLogout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("handleLogout")
     redirectLogin(w, r)
-}
-
-func handleLogin(w http.ResponseWriter, r *http.Request) {
-    debug.Printf("handleLogin\n")
-    r.ParseForm()
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
-	if username == "" || password == "" {
-		http.Error(w, "Missing user authentication", http.StatusBadRequest)
-		return
-	}
-
-	user, err := database.GetUser(username)
-	if err == sql.ErrNoRows {
-		serveLogin(w, LoginPage{
-			ErrorMessage: "Hmmm, this username was not found in the database.",
-		})
-		return
-	} else if err != nil {
-		log.Fatal(err)
-	}
-
-	if !VerifyPassword(password, user.PasswordHash) {
-		serveLogin(w, LoginPage{
-			ErrorMessage: "Sorry, password incorrect.",
-		})
-		return
-	}
-	StartSession(w, r, user)
 }
 
 func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
