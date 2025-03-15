@@ -11,16 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ruuzia/lynx/feline/credentials"
 	"github.com/ruuzia/lynx/feline/database"
-	"golang.org/x/crypto/bcrypt"
 )
-
-func HashPassword(password string) ([]byte, error) {
-    return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-}
-
-func VerifyPassword(password string, hashed []byte) bool {
-    return bcrypt.CompareHashAndPassword(hashed, []byte(password)) == nil
-}
 
 func Login(w http.ResponseWriter, user *database.User) (err error) {
     debug.Println("[Login] Creating session token cookie")
