@@ -1,6 +1,5 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { create, query } from "../util/dom.js";
-// import MicroModal from "/static/node_modules/micromodal/dist/micromodal.es.js";
 const html = String.raw; // Editor HTML highlighting in template strings
 
 // Wait until stylesheet is loaded
