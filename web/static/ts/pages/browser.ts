@@ -349,33 +349,39 @@ function render(lines_: Card[]) {
     const card = container.appendChild(
       create(
         "div",
-        {
-          classList: "card",
-        },
+        { classList: "card", },
         html`
-<div class="card-sidebar">
-  <div class="card-view-toggle">﹀</div>
-  <div class="card-mover clickable">
-    <svg width="30px" height="30px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
-      <path d="M104,60.0001a12,12,0,1,1-12-12A12,12,0,0,1,104,60.0001Zm60,12a12,12,0,1,0-12-12A12,12,0,0,0,164,72.0001Zm-72,44a12,12,0,1,0,12,12A12,12,0,0,0,92,116.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,116.0001Zm-72,68a12,12,0,1,0,12,12A12,12,0,0,0,92,184.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,184.0001Z"/>
-    </svg>
+<div class="card-flex">
+  <div class="card-sidebar">
+    <div class="card-view-toggle">﹀</div>
+    <div class="card-mover clickable">
+      <svg width="30px" height="30px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
+        <path d="M104,60.0001a12,12,0,1,1-12-12A12,12,0,0,1,104,60.0001Zm60,12a12,12,0,1,0-12-12A12,12,0,0,0,164,72.0001Zm-72,44a12,12,0,1,0,12,12A12,12,0,0,0,92,116.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,116.0001Zm-72,68a12,12,0,1,0,12,12A12,12,0,0,0,92,184.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,184.0001Z"/>
+      </svg>
+    </div>
+  </div>
+  <div class="card-content">
+    <div class="cue-container">
+      <label for="cue">${cuePre}:</label>
+      <div name="cue" class="cue" contenteditable=true>${cuePost}</div>
+    </div>
+    <div class="line-container">
+      <label for="line">${linePre}:</label>
+      <div name="line" class="line" contenteditable=true>${linePost}</div>
+    </div>
+    <div class="line-metadata">
+      <textarea name="linenotes" class="linenotes" placeholder="Add line notes">${item.notes}</textarea>
+      <label>
+        <input type="checkbox" name="starred" ${item.starred ? "checked" : ""}></input>
+        Starred
+      </label>
+    </div>
   </div>
 </div>
-<div class="card-content">
-  <div class="cue-container">
-    <label for="cue">${cuePre}:</label>
-    <div name="cue" class="cue" contenteditable=true>${cuePost}</div>
-  </div>
-  <div class="line-container">
-    <label for="line">${linePre}:</label>
-    <div name="line" class="line" contenteditable=true>${linePost}</div>
-  </div>
-  <div class="line-metadata">
-    <textarea name="linenotes" class="linenotes" placeholder="Add line notes">${item.notes}</textarea>
-    <label>
-      <input type="checkbox" name="starred" ${item.starred ? "checked" : ""}></input>
-      Starred
-    </label>
+<div class="card-add-position">
+  <div class="card-add">
+    <hr />
+    <button class="card-add-btn">+ Add</button>
   </div>
 </div>
 `,
@@ -390,6 +396,10 @@ function render(lines_: Card[]) {
       if (event.target.classList.contains("card-view-toggle")) {
         card.classList.toggle("card-squished");
       }
+      if (event.target.classList.contains("card-add-btn")) {
+        console.log("card-add", event.target);
+        event.preventDefault();
+      }
     });
   }
 
@@ -397,7 +407,11 @@ function render(lines_: Card[]) {
     canDrag: (e) =>
       !(
         e.target instanceof HTMLDivElement &&
-        e.target.classList.contains("card-view-toggle")
+        (e.target.classList.contains("card-view-toggle"))
+        || e.target instanceof HTMLInputElement
+        || e.target instanceof HTMLDivElement && e.target.contentEditable
+        || e.target instanceof HTMLTextAreaElement
+        || e.target instanceof HTMLButtonElement
       ),
     onUpdated: (oldIndex, newIndex, item) => {
       console.log(`old:${oldIndex} new:${newIndex}`);

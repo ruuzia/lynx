@@ -30,7 +30,6 @@ export function MakeItemsDraggable(
       const cardRect = card.getBoundingClientRect();
       const offsetX = e.clientX - cardRect.left;
       const offsetY = Math.round(e.clientY - cardRect.top);
-      console.log(`offsetY=${offsetY}`);
 
       // We don't want to create placeholder until after first dragMove car so construct lazily
       const getPlaceholder = () => {
