@@ -2,25 +2,18 @@
 
 set -eu
 
-echo "Waiting for MySQL..."
+mkdir -p /run/secrets
 
-i=0
-until [ $i -ge 10 ]
-do
-    nc -z mysql 3306 && break
+if [-v LYNX_DB_PASSWORD ]; then
+  echo $LYNX_DP_PASSWORD > /run/secrets/db_password
+fi;
 
-    i=$(( i + 1 ))
+if [-v LYNX_EMAIL_PASSWORD ]; then
+  echo $LYNX_EMAIL_PASSWORD > /run/secrets/email_password
+fi;
 
-    echo "$i: Sleeping 1 second ..."
-    sleep 1
-done
-
-if [ $i -eq 10 ]
-then
-    echo "MySQL connection refused, terminating ..."
-    exit 1
-fi
-
-echo "DB is up... Starting!"
+if [-v LYNX_JWT_SECRET ]; then
+  echo $LYNX_JWT_SECRET > /run/secrets/jwt_secret
+fi;
 
 /feline
