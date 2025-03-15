@@ -25,11 +25,7 @@ function buildModals() {
         <form method="dialog">
           <header class="modal-header">
             <h2 class="modal-title">${title}</h2>
-            <button
-              class="modal-close"
-              aria-label="Close"
-              type="reset"
-            ></button>
+            <button class="modal-close" aria-label="Close"></button>
           </header>
 
           <div class="modal-maincontent">${content}</div>
@@ -50,7 +46,7 @@ function buildModals() {
 </div>
 <div>
   <button id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-  <button formmethod="dialog">Cancel</button>
+  <button>Cancel</button>
 </div>
 `,
     ),
@@ -226,8 +222,6 @@ function makeDropdown(
 //--------------------------------
 
 const browser = query("#browser", HTMLDivElement);
-
-browser.appendChild(create("h1", {}, "Line browser"));
 
 const selector = create("select", {
   id: "browser-line-select",
