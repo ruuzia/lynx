@@ -12,7 +12,7 @@ export function create<K extends keyof HTMLElementTagNameMap>(
   const elem = document.createElement(type);
   for (const [k, v] of Object.entries(props ?? {})) {
     if (k.startsWith("$")) {
-      elem.setAttribute(k, v);
+      elem.setAttribute(k.substring(1), v);
     } else {
       (elem as any)[k] = v;
     }

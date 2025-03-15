@@ -56,6 +56,7 @@ function buildModals() {
   renameModal.onclose = function(e) {
     console.log("Rename:", renameModal.returnValue);
     const newName = query("#browser-rename-input", HTMLInputElement).value;
+    fetch(`/feline/linesets/${selector}`)
   }
 
   browser.appendChild(
@@ -174,7 +175,7 @@ function makeDropdown(
         // Focus first dropdown item
         (
           options.children[
-            e.key == "ArrowDown" ? 0 : options.children.length - 1
+          e.key == "ArrowDown" ? 0 : options.children.length - 1
           ] as HTMLElement
         ).focus();
       } else if (isDropdownItem(e.target)) {
@@ -283,30 +284,30 @@ document.body.appendChild(
 //-------------------------------------
 
 let lines: Card[];
-let line_set: string | null;
 
 export function UpdateLineSets(sets: DeckInfo[]) {
+  const save = selector.value;
   selector.replaceChildren();
-  for (const { title } of sets) {
-    selector.add(create("option", { value: title }, title));
+  for (const { id, title } of sets) {
+    selector.add(create("option", {
+      value: title,
+      "$data-lineset-id": id,
+    }, title));
   }
-  if (line_set) selector.value = line_set;
+  if (save) selector.value = save
 }
 
-export function SelectLineSet(title: string) {
-  line_set = title;
+export function SelectLineSet(lineSet: DeckInfo) {
+  selector.value = lineSet.title
+  console.log("SelectLineSet", selector.value)
 }
 
 export function Init() {
-  const title = line_set ?? selector.options[0].value;
+  const title = selector.value;
   if (title == null || title == "") {
     throw new Error("no lineset selected");
   }
   load(title);
-}
-
-function getLineData(id: number) {
-  return lines.find((item) => item.index == id);
 }
 
 function load(title: string) {

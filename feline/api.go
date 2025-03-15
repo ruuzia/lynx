@@ -21,7 +21,7 @@ func RegisterApiHandlers() {
 }
 
 func handleItem(userId database.UserId, r *http.Request) (any, error) {
-	itemId, err := strconv.Atoi(r.PathValue("id"));
+	itemId, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		return nil, fmt.Errorf("Request URL expected integer {lineId}")
 	}
@@ -50,10 +50,13 @@ func handleItem(userId database.UserId, r *http.Request) (any, error) {
 }
 
 func handleLineset(userId database.UserId, r *http.Request) (any, error) {
-	_ = userId
 	switch r.Method {
 	case "GET":
-		return nil, fmt.Errorf("GET /feline/lineset not implemented")
+		names, err := database.GetLineSets(userId)
+		if err != nil {
+			return nil, fmt.Errorf("Failed getting linesets for user: %s", err.Error())
+		}
+		return &names, nil
 	case "POST":
 		return nil, fmt.Errorf("POST /feline/lineset not implemented")
 	case "PUT":
@@ -74,13 +77,13 @@ func handler(fn func(database.UserId, *http.Request) (response any, err error)) 
 			http.Error(w, "Failed to authenticate request", http.StatusBadRequest)
 		}
 
-		resp, err := fn(userId, r);
+		resp, err := fn(userId, r)
 		if err != nil {
 			debug.Println("Request failed: ", err.Error())
-			debug.Println("REQUEST:",r)
+			debug.Println("REQUEST:", r)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
-		err = json.NewEncoder(w).Encode(resp);
+		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
 			debug.Println("Failed to encode response!")
 			debug.Println("RESPONSE:", resp)
