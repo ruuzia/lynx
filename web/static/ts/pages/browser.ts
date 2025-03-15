@@ -329,6 +329,10 @@ export function Init() {
   load(title);
 }
 
+function getLineData(id: number) {
+  return lines.find((item) => item.index == id);
+}
+
 function load(title: string) {
   console.log("Loading line set title: " + title);
   fetch("/feline/get-line-data", {
@@ -380,7 +384,7 @@ function render(lines_: Card[]) {
     <div class="line-metadata">
       <textarea name="linenotes" class="linenotes" placeholder="Add line notes">${item.notes}</textarea>
       <label>
-        <input type="checkbox" name="starred" ${item.starred ? "checked" : ""}></input>
+        <input class="starred" type="checkbox" name="starred" ${item.starred ? "checked" : ""}></input>
         Starred
       </label>
     </div>
@@ -409,6 +413,27 @@ function render(lines_: Card[]) {
         event.preventDefault();
       }
     });
+
+    const notes = query(".linenotes", HTMLTextAreaElement, card);
+    const cue = query(".cue", HTMLDivElement, card);
+    const line = query(".line", HTMLDivElement, card);
+    const starred = query(".starred", HTMLInputElement, card);
+
+    const onCardUpdate = async () => {
+      item.notes = notes.value;
+      item.cue = cuePre + ": " + cue.innerText;
+      item.line = linePre + ": " + line.innerText;
+      item.starred = starred.checked;
+      const resp = await fetch(`/feline/items/${item.id}`, {
+        method: "PUT",
+        body: JSON.stringify(item),
+      })
+      console.log("PUT request: ", resp.statusText)
+    }
+    notes.addEventListener("input", onCardUpdate);
+    cue.addEventListener("input", onCardUpdate);
+    line.addEventListener("input", onCardUpdate);
+    starred.addEventListener("input", onCardUpdate);
   }
 
   MakeItemsDraggable(container, {
@@ -425,8 +450,4 @@ function render(lines_: Card[]) {
       console.log(`old:${oldIndex} new:${newIndex}`);
     },
   });
-}
-
-function getLineData(id: number) {
-  return lines.find((item) => item.id == id);
 }

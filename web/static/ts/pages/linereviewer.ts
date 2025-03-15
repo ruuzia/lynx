@@ -41,7 +41,7 @@ var reviewMethod: string | null;
 
 const default_front_fn = (item: Card) => item.cue;
 const default_back_fn = (item: Card) => item.line;
-const default_header_fn = (item: Card) => "Line " + (item.id + 1);
+const default_header_fn = (item: Card) => "Line " + (item.index + 1);
 
 let i = 0;
 let show_back = false;

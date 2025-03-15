@@ -9,23 +9,37 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/ruuzia/lynx/feline/database"
 )
 
 func RegisterApiHandlers() {
-	http.HandleFunc("/feline/item", handler(handleItem))
+	http.HandleFunc("/feline/items/{id}", handler(handleItem))
 	http.HandleFunc("/feline/lineset", handler(handleLineset))
 }
 
 func handleItem(userId database.UserId, r *http.Request) (any, error) {
+	itemId, err := strconv.Atoi(r.PathValue("id"));
+	if err != nil {
+		return nil, fmt.Errorf("Request URL expected integer {lineId}")
+	}
+	fmt.Println("handleItem()", itemId)
 	switch r.Method {
 	case "GET":
 		return nil, fmt.Errorf("GET /feline/item not implemented")
 	case "POST":
 		return nil, fmt.Errorf("POST /feline/item not implemented")
 	case "PUT":
-		return nil, fmt.Errorf("POST /feline/item not implemented")
+		var item database.LineData
+		err = json.NewDecoder(r.Body).Decode(&item)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse line item: %s", err.Error())
+		}
+		if itemId != item.Id {
+			return nil, fmt.Errorf("PUT can not change item id")
+		}
+		return map[string]string{}, database.UpdateLine(userId, &item)
 	case "PATCH":
 		return nil, fmt.Errorf("PATCH /feline/item not implemented")
 	case "DELETE":

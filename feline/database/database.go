@@ -25,7 +25,8 @@ type User struct {
 }
 
 type LineData struct {
-    Id int `json:"id"`
+	Id int `json:"id"`
+    Index int `json:"index"`
     Cue string `json:"cue"`
     Line string `json:"line"`
     Starred bool `json:"starred"`
@@ -164,7 +165,17 @@ func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
     INSERT INTO line_data (user_id, line_set_id, line_number, location, cue, line, notes, starred)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `
-    _, err = db.Exec(q, user_id, line_set_id, item.Id, "1", item.Cue, item.Line, item.Notes, item.Starred)
+    _, err = db.Exec(q, user_id, line_set_id, item.Index, "1", item.Cue, item.Line, item.Notes, item.Starred)
+    return err
+}
+
+func UpdateLine(userId UserId, item *LineData) (err error) {
+    q := `
+    UPDATE line_data
+	SET line_number = ?, cue = ?, line = ?, notes = ?, starred = ?
+	WHERE user_id = ? AND id = ?
+    `
+    _, err = db.Exec(q, item.Index, item.Cue, item.Line, item.Notes, item.Starred, userId, item.Id)
     return err
 }
 
@@ -175,7 +186,7 @@ func GetLineData(user_id UserId, title string) (lineData []LineData, err error) 
         return nil, err
     }
     q := `
-    SELECT line_number, cue, line, notes, starred
+    SELECT id, line_number, cue, line, notes, starred
     FROM line_data
     WHERE user_id = ? AND line_set_id = ?
     `
@@ -185,7 +196,7 @@ func GetLineData(user_id UserId, title string) (lineData []LineData, err error) 
     }
     for rows.Next() {
         var line LineData
-        if err = rows.Scan(&line.Id, &line.Cue, &line.Line, &line.Notes, &line.Starred); err != nil {
+        if err = rows.Scan(&line.Id, &line.Index, &line.Cue, &line.Line, &line.Notes, &line.Starred); err != nil {
             return nil, err
         }
         lineData = append(lineData, line)

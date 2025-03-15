@@ -1,8 +1,9 @@
 interface Card {
-    cue: string;
-    line: string;
-    notes: string;
-    id: number;
-    starred: boolean;
+  id: number
+  cue: string
+  line: string
+  notes: string
+  index: number
+  starred: boolean
 }
 
