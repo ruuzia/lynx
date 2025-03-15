@@ -130,13 +130,6 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		log.Fatal(err)
 	}
-
-	if !VerifyPassword(password, user.PasswordHash) {
-		serveLogin(w, LoginPage{
-			ErrorMessage: "Sorry, password incorrect.",
-		})
-		return
-	}
 	StartSession(w, r, user)
 }
 
