@@ -33,6 +33,11 @@ type LineData struct {
     Notes string `json:"notes"`
 };
 
+type LineSetInfo struct {
+	Id int `json:"id"`
+	Title string `json:"title"`
+}
+
 /**
  * Opens and configures SQL database using credentials stored in
  * credentials.json. The credentials.json file must be created manually
@@ -118,24 +123,23 @@ CREATE TABLE IF NOT EXISTS login_sessions (
 	return;
 }
 
-func GetLineSets(user_id UserId) ([]string, error) {
-    var files []string
+func GetLineSets(user_id UserId) ([]LineSetInfo, error) {
+    var lineSets []LineSetInfo
     q := `
-    SELECT title FROM line_sets WHERE user_id = ?
+    SELECT id, title FROM line_sets WHERE user_id = ?
     `
     rows, err := db.Query(q, int(user_id))
     if err != nil {
         return nil, err
     }
     for rows.Next() {
-        var name string
-        if err = rows.Scan(&name); err != nil {
+        var item LineSetInfo
+        if err = rows.Scan(&item.Id, &item.Title); err != nil {
             return nil, err
         }
-
-        files = append(files, name)
-    }
-    return files, nil
+        lineSets = append(lineSets, item)
+	}
+    return lineSets, nil
 }
 
 func AddLineSet(user_id UserId, title string) error {

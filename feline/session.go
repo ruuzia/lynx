@@ -40,7 +40,7 @@ type BuilderPage struct {
 type HomePage struct {
     Name string
     State SessionData
-    LineSets []string
+    LineSets []database.LineSetInfo
 }
 
 //---------------------------------------------------------
@@ -261,7 +261,7 @@ func parseLineData(data string) (lineData []database.LineData, err error) {
         cue := lines[0]
         text := strings.Join(lines[1:], "\n")
         item := database.LineData {
-            Id: len(lineData),
+            Index: len(lineData),
             Cue: cue,
             Line: text,
             Starred: false,

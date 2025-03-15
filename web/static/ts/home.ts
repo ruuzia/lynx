@@ -11,9 +11,9 @@ declare global {
 //-------------------------------------------
 // Update line set selection menus on page load
 
-declare let lineSets: string[]
+declare let lineSets: DeckInfo[]
 
-const loadLineSets = (_lineSets: string[]) => {
+const loadLineSets = (_lineSets: DeckInfo[]) => {
     lineSets = _lineSets
 
     { /*** Home page listing ****/
@@ -28,15 +28,15 @@ const loadLineSets = (_lineSets: string[]) => {
 
         container.hidden = false;
         let content = ``;
-        for (const lineSet of lineSets) {
+        for (const {title} of lineSets) {
             content += html`
 <div class="line-set-row">
-    <span class="lineset-name">${lineSet}</span>
+    <span class="lineset-name">${title}</span>
     <a href="#settings"
-        onclick="linesetSelected('${lineSet}')"
+        onclick="linesetSelected('${title}')"
         class="lineset-review">Review</a>
     <a href="#browser"
-        onclick="browseLineset('${lineSet}')"
+        onclick="browseLineset('${title}')"
         class="lineset-edit">Browse</a>
 </div>`
         }

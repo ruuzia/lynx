@@ -16,7 +16,8 @@ import (
 
 func RegisterApiHandlers() {
 	http.HandleFunc("/feline/items/{id}", handler(handleItem))
-	http.HandleFunc("/feline/lineset", handler(handleLineset))
+	http.HandleFunc("/feline/linesets", handler(handleLineset))
+	http.HandleFunc("/feline/linesets/{id}", handler(handleLineset))
 }
 
 func handleItem(userId database.UserId, r *http.Request) (any, error) {

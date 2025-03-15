@@ -7,3 +7,7 @@ interface Card {
   starred: boolean
 }
 
+interface DeckInfo {
+  id: number,
+  title: string,
+}

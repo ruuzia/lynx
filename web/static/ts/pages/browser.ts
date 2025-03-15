@@ -25,9 +25,10 @@ function buildModals() {
         <form method="dialog">
           <header class="modal-header">
             <h2 class="modal-title">${title}</h2>
-            <button class="modal-close" aria-label="Close"></button>
+            <button value="close" class="modal-close" aria-label="Close"></button>
           </header>
-
+        </form>
+        <form method="dialog">
           <div class="modal-maincontent">${content}</div>
         </form>
       `,
@@ -45,36 +46,17 @@ function buildModals() {
   </label>
 </div>
 <div>
-  <button id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-  <button>Cancel</button>
+  <button value="save" id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
+  <button value="cancel">Cancel</button>
 </div>
 `,
     ),
   );
 
-  const saveRename = () => {
-    const input = query("#browser-rename-input", HTMLInputElement);
-    const newName = input.value;
-    console.log("saveRename", selector.value, input.value);
-    renameModal.close();
-  };
-
-  renameModal.onclick = (e) => {
-    if (
-      e.target instanceof HTMLElement &&
-      e.target.id == "browser-rename-save-btn"
-    )
-      saveRename();
-  };
-
-  renameModal.onkeydown = (e) => {
-    if (
-      e.key == "Enter" &&
-      e.target instanceof HTMLElement &&
-      e.target.id == "browser-rename-input"
-    )
-      saveRename();
-  };
+  renameModal.onclose = function(e) {
+    console.log("Rename:", renameModal.returnValue);
+    const newName = query("#browser-rename-input", HTMLInputElement).value;
+  }
 
   browser.appendChild(
     modal(
@@ -303,10 +285,10 @@ document.body.appendChild(
 let lines: Card[];
 let line_set: string | null;
 
-export function UpdateLineSets(sets: string[]) {
+export function UpdateLineSets(sets: DeckInfo[]) {
   selector.replaceChildren();
-  for (const name of sets) {
-    selector.add(create("option", { value: name }, name));
+  for (const { title } of sets) {
+    selector.add(create("option", { value: title }, title));
   }
   if (line_set) selector.value = line_set;
 }
