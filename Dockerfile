@@ -14,4 +14,5 @@ COPY --from=build /feline /feline
 COPY --from=build /app/docker /app/docker
 COPY --from=build /app/web /app/web
 EXPOSE 8080
-CMD [ "/app/docker/init.sh" ]
+ENV LYNX_CREDENTIALS_FILE=/app/docker/credentials.json
+ENTRYPOINT [ "/app/docker/init.sh" ]
