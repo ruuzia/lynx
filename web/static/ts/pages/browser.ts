@@ -591,7 +591,9 @@ function render(lines: Card[]) {
     })()
 
 
-    return render(lines);
+    render(lines);
+    // Focus new card input
+    query(".cue-view", HTMLElement, container.children[index+1]).focus();
   }
 
   const postOrdering = async () => {
