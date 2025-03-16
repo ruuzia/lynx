@@ -128,19 +128,30 @@
   }
 
   .line, .cue {
-    background-color: var(--bg);
-    padding: 10px;
     flex-grow: 1;
     margin-left: 5px;
     border-radius: 5px;
     /* text-align: left; */
   }
 
-  .line-container, .cue-container {
-    display: flex;
+  .cue-view, .line-view {
+    padding: 10px;
+  }
+
+  .cue-edit, .line-edit {
+    padding: 10px;
+    background-color: var(--bg);
+    text-align: left;
+  }
+
+  .cue-container, .line-container {
     margin: 10px;
+  }
+
+  .line-view, .cue-view {
+    display: flex;
     align-items: center;
-    lable {
+    label {
       /* width: 50px; */
       flex-shrink: 0;
       color: var(--button-fg);

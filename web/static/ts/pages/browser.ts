@@ -407,6 +407,10 @@ function sepLine(line: string): [string, string] {
 }
 
 function render(lines: Card[]) {
+  if (lines.length == 0) {
+    // Start with one card
+    addNewCard(0);
+  }
   container.replaceChildren();
   for (const item of lines) {
     container.appendChild(buildCard(item));
@@ -431,9 +435,26 @@ function render(lines: Card[]) {
     },
   });
 
+  function renderCue (line: string) {
+    const [cuePre, cuePost] = sepLine(line);
+    return `
+      <div class="cue-view" tabindex=0>
+        <label for="cue">${cuePre}:</label>
+        <div name="cue" class="cue">${cuePost}</div>
+      </div>
+`
+  }
+  function renderLine (line: string) {
+    const [linePre, linePost] = sepLine(line);
+    return `
+      <div class="line-view" tabindex=0>
+        <label for="line">${linePre}:</label>
+        <div name="line" class="line">${linePost}</div>
+      </div>
+`
+  }
+
   function buildCard(item: Card) {
-    const [linePre, linePost] = sepLine(item.line);
-    const [cuePre, cuePost] = sepLine(item.cue);
     const card = create(
       "div",
       { classList: "card" },
@@ -449,12 +470,10 @@ function render(lines: Card[]) {
   </div>
   <div class="card-content">
     <div class="cue-container">
-      <label for="cue">${cuePre}:</label>
-      <div name="cue" class="cue" contenteditable=true>${cuePost}</div>
+      ${renderCue(item.cue)}
     </div>
     <div class="line-container">
-      <label for="line">${linePre}:</label>
-      <div name="line" class="line" contenteditable=true>${linePost}</div>
+      ${renderLine(item.line)}
     </div>
     <div class="line-metadata">
       <textarea name="linenotes" class="linenotes" placeholder="Add line notes">${item.notes}</textarea>
@@ -473,6 +492,39 @@ function render(lines: Card[]) {
 </div>
 `,
     );
+
+    card.addEventListener("focusin", (e) => {
+      if (!(e.target instanceof HTMLElement)) return;
+      if (e.target.classList.contains("cue-view")) {
+        const cueContainer = query(".cue-container", HTMLElement, card);
+        const cueEdit = create("div", {
+          className: "cue-edit",
+          contentEditable: "true",
+        }, `${item.cue}`)
+        cueContainer.replaceChildren(cueEdit);
+        cueEdit.focus();
+        cueEdit.addEventListener("focusout", () => {
+          cueContainer.innerHTML = renderCue(cueEdit.innerText);
+          item.cue = cueContainer.innerText;
+          onCardUpdate();
+        })
+      }
+
+      if (e.target.classList.contains("line-view")) {
+        const lineContainer = query(".line-container", HTMLElement, card);
+        const lineEdit = create("div", {
+          className: "line-edit",
+          contentEditable: "true",
+        }, `${item.line}`)
+        lineContainer.replaceChildren(lineEdit);
+        lineEdit.focus();
+        lineEdit.addEventListener("focusout", () => {
+          lineContainer.innerHTML = renderLine(lineEdit.innerText);
+          item.line = lineContainer.innerText;
+          onCardUpdate();
+        })
+      }
+    })
 
     // Accordian expand/contract
     card.addEventListener("click", (event) => {
@@ -495,8 +547,6 @@ function render(lines: Card[]) {
 
     const onCardUpdate = async () => {
       item.notes = notes.value;
-      item.cue = cuePre + ": " + cue.innerText;
-      item.line = linePre + ": " + line.innerText;
       item.starred = starred.checked;
       const resp = await fetch(`/feline/items/${item.id}`, {
         method: "PUT",
