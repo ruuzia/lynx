@@ -176,16 +176,12 @@ func DeleteLineSet(userId UserId, lineSetId int) (err error) {
 
 //-----------------------------------------------------------
 
-func AddLine(user_id UserId, line_set string, item* LineData) (err error) {
-    line_set_id, err := GetLineSetId(user_id, line_set);
-    if err != nil {
-        return err
-    }
+func AddLine(userId UserId, lineSetId int, item* LineData) (err error) {
     q := `
     INSERT INTO line_data (user_id, line_set_id, line_number, location, cue, line, notes, starred)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `
-    _, err = db.Exec(q, user_id, line_set_id, item.Index, "1", item.Cue, item.Line, item.Notes, item.Starred)
+    _, err = db.Exec(q, userId, lineSetId, item.Index, "1", item.Cue, item.Line, item.Notes, item.Starred)
     return err
 }
 
@@ -326,3 +322,9 @@ func SessionLogout(token string) (err error) {
 }
 
 //------------------------------------------------------------
+
+func LastInsertId() (id int, err error) {
+	row := db.QueryRow(`SELECT LAST_INSERT_ID();`)
+	err = row.Scan(&id);
+	return id, err
+}

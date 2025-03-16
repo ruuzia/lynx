@@ -220,7 +220,6 @@ function makeDropdown(
       !isDropdownItem(e.relatedTarget) &&
       !isDropdownButton(e.relatedTarget)
     ) {
-      console.log("container->focusout", e.relatedTarget);
       query(".dropdown-options", HTMLElement, container).hidden = true;
     }
   });
@@ -410,13 +409,35 @@ function sepLine(line: string): [string, string] {
 function render(lines: Card[]) {
   container.replaceChildren();
   for (const item of lines) {
+    container.appendChild(buildCard(item));
+  }
+
+  MakeItemsDraggable(container, {
+    canDrag: (e) =>
+      !(
+        (e.target instanceof HTMLDivElement &&
+          e.target.classList.contains("card-view-toggle")) ||
+        e.target instanceof HTMLInputElement ||
+        (e.target instanceof HTMLDivElement && e.target.contentEditable) ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLButtonElement
+      ),
+    onUpdated: (oldIndex, newIndex, item) => {
+      console.log(`DRAG old:${oldIndex} new:${newIndex}`);
+      const element = lines[oldIndex];
+      lines.splice(oldIndex, 1);
+      lines.splice(newIndex, 0, element);
+      postOrdering();
+    },
+  });
+
+  function buildCard(item: Card) {
     const [linePre, linePost] = sepLine(item.line);
     const [cuePre, cuePost] = sepLine(item.cue);
-    const card = container.appendChild(
-      create(
-        "div",
-        { classList: "card" },
-        html`
+    const card = create(
+      "div",
+      { classList: "card" },
+      html`
 <div class="card-flex">
   <div class="card-sidebar">
     <div class="card-view-toggle">﹀</div>
@@ -451,7 +472,6 @@ function render(lines: Card[]) {
   </div>
 </div>
 `,
-      ),
     );
 
     // Accordian expand/contract
@@ -463,7 +483,7 @@ function render(lines: Card[]) {
         card.classList.toggle("card-squished");
       }
       if (event.target.classList.contains("card-add-btn")) {
-        console.log("card-add", event.target);
+        addNewCard(item.index);
         event.preventDefault();
       }
     });
@@ -488,33 +508,54 @@ function render(lines: Card[]) {
     cue.addEventListener("input", onCardUpdate);
     line.addEventListener("input", onCardUpdate);
     starred.addEventListener("input", onCardUpdate);
+
+    return card;
   }
 
-  MakeItemsDraggable(container, {
-    canDrag: (e) =>
-      !(
-        (e.target instanceof HTMLDivElement &&
-          e.target.classList.contains("card-view-toggle")) ||
-        e.target instanceof HTMLInputElement ||
-        (e.target instanceof HTMLDivElement && e.target.contentEditable) ||
-        e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLButtonElement
-      ),
-    onUpdated: (oldIndex, newIndex, item) => {
-      console.log(`DRAG old:${oldIndex} new:${newIndex}`);
-      const element = lines[oldIndex];
-      lines.splice(oldIndex, 1);
-      lines.splice(newIndex, 0, element);
-      fetch(`/feline/linesets/${getDeckId()}/items/ordering`, {
+  function addNewCard(index: number) {
+    const item: Card = {
+      id: -1,
+      cue: "",
+      line: "",
+      notes: "",
+      index: index,
+      starred: false,
+    };
+    lines.splice(index+1, 0, item);
+
+    // Update server in background without blocking client
+    (async () => {
+      const resp = await fetch(`/feline/linesets/${getDeckId()}/items`, {
         method: "POST",
-        body: JSON.stringify(
-          lines.map(line => line.id)
-        ),
-      }).then(resp => {
-          if (!resp.ok) {
-            throw new Error("Failed updating indices!!");
-          }
-        });
-    },
-  });
+        body: JSON.stringify(item),
+      })
+      if (!resp.ok) {
+        throw new Error("Failed to add new card! " + await resp.text());
+      }
+      const data = await resp.json();
+      item.id = data.id;
+      console.log(data);
+      console.log(item.id);
+
+      await postOrdering();
+    })()
+
+
+    return render(lines);
+  }
+
+  const postOrdering = async () => {
+    // We also updatte our own .index values
+    for (const [i, v] of lines.entries()) v.index = i;
+    const resp = await fetch(`/feline/linesets/${getDeckId()}/items/ordering`, {
+      method: "POST",
+      body: JSON.stringify(
+        lines.map(line => line.id)
+      ),
+    })
+    if (!resp.ok) {
+      throw new Error("Failed updating indices!!");
+    }
+  }
+
 }

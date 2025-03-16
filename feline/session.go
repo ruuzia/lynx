@@ -238,7 +238,16 @@ func handleFinishBuilder(w http.ResponseWriter, r *http.Request) {
 
     lines, err := parseLineData(session.builderPage.Text)
     for _, line := range lines {
-        database.AddLine(session.id, session.builderPage.Title, &line)
+		lineSetId, err := database.GetLineSetId(session.id, session.builderPage.Title);
+		if err != nil {
+			http.Error(w, "Error adding set " + err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = database.AddLine(session.id, lineSetId, &line)
+		if err != nil {
+			http.Error(w, "Error adding set " + err.Error(), http.StatusInternalServerError)
+			return
+		}
     }
 
     err = os.Remove(tempFile)

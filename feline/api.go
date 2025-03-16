@@ -60,6 +60,24 @@ func handleLinesetItems(userId database.UserId, r *http.Request) (any, error) {
 			return nil, fmt.Errorf("Failed fetching line data: %s", err.Error())
 		}
 		return &lines, nil
+	case "POST":
+		var item database.LineData
+		err = json.NewDecoder(r.Body).Decode(&item)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse line item: %s", err.Error())
+		}
+		err = database.AddLine(userId, setId, &item);
+		if err != nil {
+			return nil, fmt.Errorf("Failed to inserting item: %s", err.Error())
+		}
+		id, err := database.LastInsertId()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to inserting item: %s", err.Error())
+		}
+		type ReturnPayload struct {
+			Id int `json:"id"`
+		}
+		return &ReturnPayload{ Id: id }, err
 		
 	default:
 		return nil, fmt.Errorf("%s unsupported", r.Method)
