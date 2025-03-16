@@ -2,6 +2,10 @@ import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { create, query } from "../util/dom.js";
 const html = String.raw; // Editor HTML highlighting in template strings
 
+// TODO:
+// - [ ] Card deletion
+// - [ ] Deleting line set only works while empty
+
 // Wait until stylesheet is loaded
 await new Promise((resolve, reject) => {
   const link = document.head.appendChild(
