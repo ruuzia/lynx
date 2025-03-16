@@ -19,6 +19,32 @@ func RegisterApiHandlers() {
 	http.HandleFunc("/feline/linesets", handler(handleLinesets))
 	http.HandleFunc("/feline/linesets/{id}", handler(handleSingleLineset))
 	http.HandleFunc("/feline/linesets/{id}/items", handler(handleLinesetItems))
+	http.HandleFunc("/feline/linesets/{id}/items/ordering", handler(handleLinesetItemsOrdering))
+}
+
+func handleLinesetItemsOrdering(userId database.UserId, r *http.Request) (any, error) {
+	setId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		return nil, fmt.Errorf("Request URL expected integer {id}")
+	}
+	switch r.Method {
+	case "POST":
+		var lines []int
+		err = json.NewDecoder(r.Body).Decode(&lines)
+		if err != nil{
+			return nil, fmt.Errorf("Failed to decode payload: %s", err.Error())
+		}
+		for index, lineId := range lines {
+			err = database.SetLineIndex(userId, setId, lineId, index)
+			if err != nil {
+				// note: not atomic in error
+				return nil, fmt.Errorf("Failed setting line index: %s", lineId, index, err.Error())
+			}
+		}
+		return map[string]string{}, nil
+	default:
+		return nil, fmt.Errorf("%s not supported", r.Method)
+	}
 }
 
 func handleLinesetItems(userId database.UserId, r *http.Request) (any, error) {
@@ -33,7 +59,6 @@ func handleLinesetItems(userId database.UserId, r *http.Request) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed fetching line data: %s", err.Error())
 		}
-		fmt.Println("handleLinesetItems", lines)
 		return &lines, nil
 		
 	default:

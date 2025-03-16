@@ -501,7 +501,20 @@ function render(lines: Card[]) {
         e.target instanceof HTMLButtonElement
       ),
     onUpdated: (oldIndex, newIndex, item) => {
-      console.log(`old:${oldIndex} new:${newIndex}`);
+      console.log(`DRAG old:${oldIndex} new:${newIndex}`);
+      const element = lines[oldIndex];
+      lines.splice(oldIndex, 1);
+      lines.splice(newIndex, 0, element);
+      fetch(`/feline/linesets/${getDeckId()}/items/ordering`, {
+        method: "POST",
+        body: JSON.stringify(
+          lines.map(line => line.id)
+        ),
+      }).then(resp => {
+          if (!resp.ok) {
+            throw new Error("Failed updating indices!!");
+          }
+        });
     },
   });
 }

@@ -199,6 +199,16 @@ func UpdateLine(userId UserId, item *LineData) (err error) {
     return err
 }
 
+func SetLineIndex(userId UserId, setId int, lineId int, index int) (err error) {
+    q := `
+    UPDATE line_data
+	SET line_number = ?
+	WHERE user_id = ? AND line_set_id = ? AND id = ?
+    `
+    _, err = db.Exec(q, index, userId, setId, lineId)
+    return err
+}
+
 func GetLineDataByTitle(userId UserId, title string) (lineData []LineData, err error) {
     debug.Printf("GetLineData %d %s\n", userId, title)
     lineSetId, err := GetLineSetId(userId, title);
@@ -213,6 +223,7 @@ func GetLineData(userId UserId, lineSetId int) (lineData []LineData, err error) 
     SELECT id, line_number, cue, line, notes, starred
     FROM line_data
     WHERE user_id = ? AND line_set_id = ?
+	ORDER BY line_number
     `
     rows, err := db.Query(q, userId, lineSetId)
     if err != nil {
