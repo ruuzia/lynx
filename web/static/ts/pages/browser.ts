@@ -354,7 +354,7 @@ document.body.appendChild(
 //-------------------------------------
 
 export function UpdateLineSets(sets: DeckInfo[]) {
-  const save = selector.value;
+  const save = selector.value || localStorage.getItem("browser-line-set");
   selector.replaceChildren();
   for (const { id, title } of sets) {
     selector.add(
@@ -390,6 +390,7 @@ export function Init() {
 async function load() {
   const title = getDeckTitle();
   const id = getDeckId();
+  localStorage.setItem("browser-line-set", title);
   console.log("Loading line set title: " + title);
   try {
     const resp = await fetch(`/feline/linesets/${id}/items`, {
