@@ -403,13 +403,14 @@ async function load() {
 
 function sepLine(line: string): [string, string] {
   const sepIndex = line.indexOf(":");
-  return [line.slice(0, sepIndex), line.slice(sepIndex + 1, line.length)];
+  if (sepIndex == -1) return ["", line];
+  return [line.slice(0, sepIndex+1), line.slice(sepIndex + 1, line.length)];
 }
 
 function render(lines: Card[]) {
   if (lines.length == 0) {
     // Start with one card
-    addNewCard(0);
+    return addNewCard(0);
   }
   container.replaceChildren();
   for (const item of lines) {
@@ -439,7 +440,7 @@ function render(lines: Card[]) {
     const [cuePre, cuePost] = sepLine(line);
     return `
       <div class="cue-view" tabindex=0>
-        <label for="cue">${cuePre}:</label>
+        <label for="cue">${cuePre}</label>
         <div name="cue" class="cue">${cuePost}</div>
       </div>
 `
@@ -448,7 +449,7 @@ function render(lines: Card[]) {
     const [linePre, linePost] = sepLine(line);
     return `
       <div class="line-view" tabindex=0>
-        <label for="line">${linePre}:</label>
+        <label for="line">${linePre}</label>
         <div name="line" class="line">${linePost}</div>
       </div>
 `
@@ -562,7 +563,7 @@ function render(lines: Card[]) {
     return card;
   }
 
-  function addNewCard(index: number) {
+  function addNewCard(index: number): void {
     const item: Card = {
       id: -1,
       cue: "",
