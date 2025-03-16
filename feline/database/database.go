@@ -150,12 +150,28 @@ func AddLineSet(user_id UserId, title string) error {
     return err
 }
 
+func RenameLineSet(userId UserId, lineSet *LineSetInfo) error {
+	_, err := db.Exec(`
+		UPDATE line_sets
+		SET title = ?
+		WHERE id = ? AND user_id = ?
+	`, lineSet.Title, lineSet.Id, userId)
+	return err
+}
+
 func GetLineSetId(user_id UserId, title string) (id int, err error) {
     row := db.QueryRow(`
         SELECT id FROM line_sets WHERE user_id = ? AND title = ?
     `, user_id, title)
     err = row.Scan(&id)
     return id, err
+}
+
+func DeleteLineSet(userId UserId, lineSetId int) (err error) {
+    _, err = db.Exec(`
+        DELETE FROM line_sets WHERE user_id = ? AND id = ?
+    `, userId, lineSetId)
+    return err
 }
 
 //-----------------------------------------------------------
@@ -183,18 +199,22 @@ func UpdateLine(userId UserId, item *LineData) (err error) {
     return err
 }
 
-func GetLineData(user_id UserId, title string) (lineData []LineData, err error) {
-    debug.Printf("GetLineData %d %s\n", user_id, title)
-    line_set_id, err := GetLineSetId(user_id, title);
+func GetLineDataByTitle(userId UserId, title string) (lineData []LineData, err error) {
+    debug.Printf("GetLineData %d %s\n", userId, title)
+    lineSetId, err := GetLineSetId(userId, title);
     if err != nil {
         return nil, err
     }
+	return GetLineData(userId, lineSetId)
+}
+
+func GetLineData(userId UserId, lineSetId int) (lineData []LineData, err error) {
     q := `
     SELECT id, line_number, cue, line, notes, starred
     FROM line_data
     WHERE user_id = ? AND line_set_id = ?
     `
-    rows, err := db.Query(q, user_id, line_set_id)
+    rows, err := db.Query(q, userId, lineSetId)
     if err != nil {
         return nil, err
     }

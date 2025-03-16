@@ -15,9 +15,14 @@ await new Promise((resolve, reject) => {
   );
 });
 
+const getDeckTitle = () => selector.value;
+const getDeckId = () =>
+  selector.children[selector.selectedIndex].getAttribute("data-lineset-id");
+
 //---------------------------------------------
+
 function buildModals() {
-  const modal = (id: string, title: string, content: string) =>
+  const makeDialog = (id: string, title: string, content: string) =>
     create(
       "dialog",
       { id: id, classList: "modal" },
@@ -25,7 +30,11 @@ function buildModals() {
         <form method="dialog">
           <header class="modal-header">
             <h2 class="modal-title">${title}</h2>
-            <button value="close" class="modal-close" aria-label="Close"></button>
+            <button
+              value="close"
+              class="modal-close"
+              aria-label="Close"
+            ></button>
           </header>
         </form>
         <form method="dialog">
@@ -34,60 +43,52 @@ function buildModals() {
       `,
     );
 
-  const renameModal = browser.appendChild(
-    modal(
+  const renameDialog = browser.appendChild(
+    makeDialog(
       "browser-rename",
       "Rename Line Set",
       html`
-<div>
-  <label>
-    New title:
-    <input autofocus id="browser-rename-input"></input>
-  </label>
-</div>
-<div>
-  <button value="save" id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-  <button value="cancel">Cancel</button>
-</div>
-`,
+      <div>
+        <label>
+          New title:
+          <input autofocus id="browser-rename-input"></input>
+        </label>
+      </div>
+      <div>
+        <button value="success" id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
+        <button value="cancel">Cancel</button>
+      </div>
+      `,
     ),
   );
 
-  renameModal.onclose = function(e) {
-    console.log("Rename:", renameModal.returnValue);
-    const newName = query("#browser-rename-input", HTMLInputElement).value;
-    fetch(`/feline/linesets/${selector}`)
-  }
-
-  browser.appendChild(
-    modal(
+  const createDialog = browser.appendChild(
+    makeDialog(
       "browser-new-lineset",
       "Create New Line Set",
       html`
-
-<div>
-  <label>
-    Title:
-    <input></input>
-  </label>
-</div>
-<div>
-  <button style="background-color: var(--color-active-1)">Save</button>
-  <button formmethod="dialog">Cancel</button>
-</div>
-
-`,
+      <div>
+        <label>
+          Title:
+          <input id="browser-create-title"></input>
+        </label>
+      </div>
+      <div>
+        <button value="success" style="background-color: var(--color-active-1)">Save</button>
+        <button formmethod="dialog">Cancel</button>
+      </div>`,
     ),
   );
 
-  browser.appendChild(
-    modal(
+  const deleteDialog = browser.appendChild(
+    makeDialog(
       "browser-delete-lineset",
       "Delete Line Set",
       html`
         <p id="delete-lineset-message"></p>
         <div>
           <button
+            value="success"
             style="background-color: red"
             id="browser-delete-lineset-button"
           >
@@ -98,6 +99,73 @@ function buildModals() {
       `,
     ),
   );
+
+  renameDialog.onclose = async (e) => {
+    console.log("browser-rename modal returnValue", renameDialog.returnValue);
+    if (renameDialog.returnValue != "success") return;
+
+    const newName = query("#browser-rename-input", HTMLInputElement).value;
+    {
+      const res = await fetch(`/feline/linesets/${getDeckId()}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title: newName,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error("Rename failed! " + (await res.text()));
+      }
+    }
+
+    await fetchLineSets();
+    selector.value = newName;
+  };
+
+  createDialog.onclose = async (e) => {
+    if (createDialog.returnValue != "success") return;
+    const title = query("#browser-create-title", HTMLInputElement).value;
+    {
+      const res = await fetch(`/feline/linesets`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: title,
+        })
+      });
+      if (!res.ok) {
+        throw new Error("Delete failed! " + await res.text())
+      }
+
+      await fetchLineSets();
+      selector.value = title;
+    }
+
+    await fetchLineSets();
+    load();
+  };
+
+  deleteDialog.onclose = async (e) => {
+    if (deleteDialog.returnValue != "success") return;
+    {
+      const res = await fetch(`/feline/linesets/${getDeckId()}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Delete failed! " + await res.text())
+      }
+    }
+
+    await fetchLineSets();
+    if (selector.options[0]) selector.value = selector.options[0].value;
+    load();
+  }
+
+  async function fetchLineSets() {
+    const res = await fetch("/feline/linesets", { method: "GET" });
+    if (!res.ok) {
+      throw new Error("Failed to fetch linesets " + (await res.text()));
+    }
+    UpdateLineSets(await res.json());
+  }
 }
 // buildModals()
 
@@ -121,29 +189,28 @@ function showModal(q: string) {
   }
   modal.showModal();
 }
-
-//----------------------------
+//--------------------------------------
 
 function makeDropdown(
   container: HTMLElement,
   onselect?: (option: Element) => void,
 ) {
   const isDropdownItem = (elem: Node | EventTarget | null) =>
-    elem instanceof HTMLElement && elem.classList.contains("dropdown-item");
+    elem != null &&
+    elem instanceof HTMLElement &&
+    elem.classList.contains("dropdown-item");
   const isDropdownButton = (elem: Node | EventTarget | null) =>
     elem instanceof HTMLElement && elem.classList.contains("dropdown-button");
 
   container.onclick = (e) => {
-    const elem = e.target;
-    if (!elem || !(elem instanceof Element)) return;
     const options = query(".dropdown-options", HTMLElement, container);
 
-    if (elem.classList.contains("dropdown-button")) {
+    if (isDropdownButton(e.target)) {
       options.hidden = !options.hidden;
       // Prevent event from reaching window listener
       e.stopPropagation();
-    } else if (elem.classList.contains("dropdown-item")) {
-      if (onselect) onselect(elem);
+    } else if (isDropdownItem(e.target)) {
+      if (onselect) onselect(e.target as HTMLElement);
     }
   };
 
@@ -175,7 +242,7 @@ function makeDropdown(
         // Focus first dropdown item
         (
           options.children[
-          e.key == "ArrowDown" ? 0 : options.children.length - 1
+            e.key == "ArrowDown" ? 0 : options.children.length - 1
           ] as HTMLElement
         ).focus();
       } else if (isDropdownItem(e.target)) {
@@ -208,8 +275,8 @@ const browser = query("#browser", HTMLDivElement);
 
 const selector = create("select", {
   id: "browser-line-select",
-  onchange: () => {
-    load(selector.value);
+  onchange: async () => {
+    await load();
   },
 });
 
@@ -283,45 +350,56 @@ document.body.appendChild(
 
 //-------------------------------------
 
-let lines: Card[];
-
 export function UpdateLineSets(sets: DeckInfo[]) {
   const save = selector.value;
   selector.replaceChildren();
   for (const { id, title } of sets) {
-    selector.add(create("option", {
-      value: title,
-      "$data-lineset-id": id,
-    }, title));
+    selector.add(
+      create(
+        "option",
+        {
+          value: title,
+          "$data-lineset-id": id,
+        },
+        title,
+      ),
+    );
   }
-  if (save) selector.value = save
+  if (save) {
+    console.log(`UpdateLineSets (keeping selection ${save})`);
+    selector.value = save;
+  }
 }
 
 export function SelectLineSet(lineSet: DeckInfo) {
-  selector.value = lineSet.title
-  console.log("SelectLineSet", selector.value)
+  selector.value = lineSet.title;
+  console.log("SelectLineSet", selector.value);
 }
 
 export function Init() {
-  const title = selector.value;
-  if (title == null || title == "") {
-    throw new Error("no lineset selected");
+  if (selector.value == "") {
+    console.log("[browser] No lineset selected");
+    selector.value = selector.options[0].value;
   }
-  load(title);
+  load();
 }
 
-function load(title: string) {
+async function load() {
+  const title = getDeckTitle();
+  const id = getDeckId();
   console.log("Loading line set title: " + title);
-  fetch("/feline/get-line-data", {
-    method: "POST",
-    body: new URLSearchParams({
-      title: title,
-    }),
-  })
-    .then((r) => r.json())
-    .then((lineData) => {
-      render(lineData);
+  try {
+    const resp = await fetch(`/feline/linesets/${id}/items`, {
+      method: "GET",
     });
+    if (!resp.ok) {
+      throw new Error("Failed to fetch line data: " + await resp.text());
+    }
+    const lines = await resp.json() ?? [];
+    render(lines);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 function sepLine(line: string): [string, string] {
@@ -329,8 +407,7 @@ function sepLine(line: string): [string, string] {
   return [line.slice(0, sepIndex), line.slice(sepIndex + 1, line.length)];
 }
 
-function render(lines_: Card[]) {
-  lines = lines_;
+function render(lines: Card[]) {
   container.replaceChildren();
   for (const item of lines) {
     const [linePre, linePost] = sepLine(item.line);
@@ -404,9 +481,9 @@ function render(lines_: Card[]) {
       const resp = await fetch(`/feline/items/${item.id}`, {
         method: "PUT",
         body: JSON.stringify(item),
-      })
-      console.log("PUT request: ", resp.statusText)
-    }
+      });
+      console.log("PUT request: ", resp.statusText);
+    };
     notes.addEventListener("input", onCardUpdate);
     cue.addEventListener("input", onCardUpdate);
     line.addEventListener("input", onCardUpdate);

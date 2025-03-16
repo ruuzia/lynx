@@ -141,7 +141,7 @@ func handleGetLineData(w http.ResponseWriter, r *http.Request) {
     title := r.Form.Get("title")
     debug.Println("handleGetLineData", title, r.Form)
 
-    lines, err := database.GetLineData(session.id, title)
+    lines, err := database.GetLineDataByTitle(session.id, title)
     if err != nil {
         debug.Println(err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
