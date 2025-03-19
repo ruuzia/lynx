@@ -503,7 +503,7 @@ function render(lines: Card[]) {
       <div class="menu-dropdown">
         <button class="dropdown-button card-menu-btn" aria-label="menu">︙ More</button>
         <div class="dropdown-options" hidden>
-          <button class="dropdown-item card-remove-option" tabindex="-1">Remove card></button>
+          <button class="dropdown-item card-remove-option" tabindex="-1">Remove card</button>
         </div>
       </div>
     </div>
