@@ -29,12 +29,12 @@ The project is made of three parts:
 ## TODO
 
 - [x] Web prototype
-- [ ] Support different settings and strategies for reviewing lines
+- [x] Support different settings and strategies for reviewing lines
 - [ ] Host on UVM silk servers
 - [x] MySQL database
 - [x] Support user sign-up and password storage
 - [ ] Public line scripts
-- [ ] Page to browse through script
+- [x] Page to browse through script
 - [ ] Annotate Lines
 - [ ] Support more line metadata
 - [ ] Implement more user-friendly line set creation
