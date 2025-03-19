@@ -74,7 +74,7 @@ function buildModals() {
       <div>
         <label>
           Title:
-          <input id="browser-create-title"></input>
+          <input autofocus id="browser-create-title"></input>
         </label>
       </div>
       <div>
