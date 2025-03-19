@@ -94,7 +94,7 @@
     position: relative;
     opacity: 1;
     transition: opacity 0.4s, visibility 0.4s;
-    :not(:hover) & {
+    :not(:hover, :focus-within) & {
       visibility: hidden;
       opacity: 0;
     }
