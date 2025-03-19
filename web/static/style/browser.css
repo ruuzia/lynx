@@ -206,15 +206,9 @@
     padding: unset;
     margin: unset;
     background: unset;
-    transition-property: max-height, opacity;
-    transition-duration: 0.5s;
     flex-shrink: 1;
     max-height: 50px;
     font-size: 25px;
-    .card-squished & {
-      max-height: 0;
-      opacity: 0;
-    }
   }
 
   .cue-container, .line-metadata {
