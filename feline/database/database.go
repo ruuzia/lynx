@@ -169,6 +169,12 @@ func GetLineSetId(user_id UserId, title string) (id int, err error) {
 
 func DeleteLineSet(userId UserId, lineSetId int) (err error) {
     _, err = db.Exec(`
+        DELETE FROM line_data WHERE user_id = ? AND line_set_id = ?
+    `, userId, lineSetId)
+	if err != nil {
+		return fmt.Errorf("Failed to delete all line data: %s", err.Error())
+	}
+    _, err = db.Exec(`
         DELETE FROM line_sets WHERE user_id = ? AND id = ?
     `, userId, lineSetId)
     return err
