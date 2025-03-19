@@ -214,6 +214,7 @@ function makeDropdown(
       // Prevent event from reaching window listener
       e.stopPropagation();
     } else if (isDropdownItem(e.target)) {
+      options.hidden = true;
       if (onselect) onselect(e.target as HTMLElement);
     }
   };
@@ -415,7 +416,7 @@ function sepLine(line: string): [string, string] {
 function render(lines: Card[]) {
   if (lines.length == 0) {
     // Start with one card
-    return addNewCard(0);
+    addNewCard(0);
   }
   container.replaceChildren();
   for (const item of lines) {
@@ -473,7 +474,10 @@ function render(lines: Card[]) {
         <path d="M104,60.0001a12,12,0,1,1-12-12A12,12,0,0,1,104,60.0001Zm60,12a12,12,0,1,0-12-12A12,12,0,0,0,164,72.0001Zm-72,44a12,12,0,1,0,12,12A12,12,0,0,0,92,116.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,116.0001Zm-72,68a12,12,0,1,0,12,12A12,12,0,0,0,92,184.0001Zm72,0a12,12,0,1,0,12,12A12,12,0,0,0,164,184.0001Z"/>
       </svg>
     </div>
+    <div class="spacer"></div>
+
   </div>
+
   <div class="card-content">
     <div class="cue-container">
       ${renderCue(item.cue)}
@@ -490,10 +494,20 @@ function render(lines: Card[]) {
     </div>
   </div>
 </div>
-<div class="card-add-position">
-  <div class="card-add">
+<div class="card-bottom-relative">
+  <div class="card-bottom">
     <hr />
-    <button class="card-add-btn">+ Add</button>
+    <div class="card-bottom-items">
+      <button class="card-add-btn">+ Add</button>
+
+      <div class="menu-dropdown">
+        <button class="dropdown-button card-menu-btn" aria-label="menu">︙ More</button>
+        <div class="dropdown-options" hidden>
+          <button class="dropdown-item card-remove-option" tabindex="-1">Remove card></button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 `,
@@ -544,6 +558,9 @@ function render(lines: Card[]) {
         addNewCard(item.index);
         event.preventDefault();
       }
+
+      if (event.target.classList.contains("card-menu-btn")) {
+      }
     });
 
     const notes = query(".linenotes", HTMLTextAreaElement, card);
@@ -565,7 +582,26 @@ function render(lines: Card[]) {
     line.addEventListener("input", onCardUpdate);
     starred.addEventListener("input", onCardUpdate);
 
+    makeDropdown(query(".menu-dropdown", HTMLDivElement, card), (selected) => {
+      if (selected.classList.contains("card-remove-option")) {
+        removeCard(item);
+      }
+    });
+
     return card;
+  }
+
+  async function removeCard(item: Card) {
+    console.log("Removing card!")
+    const resp = await fetch(`/feline/items/${item.id}`, {
+      method: "DELETE",
+    });
+    if (!resp.ok) {
+      throw new Error("Failed to remove card! " + await resp.text());
+    }
+    lines.splice(item.index, 1);
+    await postOrdering();
+    return render(lines);
   }
 
   function addNewCard(index: number): void {

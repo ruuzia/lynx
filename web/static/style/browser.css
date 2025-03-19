@@ -55,13 +55,14 @@
     &[hidden] { display: none; }
     flex-direction: column;
     background-color: var(--color-subtle);
-
+    border-radius: 5px;
+    z-index: 10;
     .dropdown-item {
       cursor: pointer;
       padding: 20px;
       border-radius: 5px;
       &:hover {
-        background-color: var(--color-active-2);
+        background-color: var(--color-active-1);
       }
     }
   }
@@ -90,7 +91,7 @@
     border-radius: 8px;
   }
 
-  .card-add-position {
+  .card-bottom-relative {
     position: relative;
     opacity: 1;
     transition: opacity 0.4s, visibility 0.4s;
@@ -99,7 +100,7 @@
       opacity: 0;
     }
   }
-  .card-add {
+  .card-bottom {
     position: absolute;
     width: 100%;
     top: 15px;
@@ -108,9 +109,20 @@
       height: 0;
       margin: 0;
     }
+  }
+
+  .card-bottom-items {
+    display: flex;
+    justify-content: center;
+    > * {
+      flex: 0 100px;
+      margin-right: 10px;
+      margin-left: 10px;
+    }
     button {
       margin: 0;
       padding: 0;
+      font-size: 20px;
       background-color: transparent;
       opacity: 0.8;
       &:hover {
@@ -168,6 +180,9 @@
     width: 35px;
     display: flex;
     flex-direction: column;
+    .spacer {
+      flex-grow: 1;
+    }
   }
 
   .card-mover {
@@ -184,6 +199,21 @@
     transition: transform 0.5s;
     .card-squished & {
       transform: translateX(10px) rotate(-90deg);
+    }
+  }
+
+  .card-menu-btn {
+    padding: unset;
+    margin: unset;
+    background: unset;
+    transition-property: max-height, opacity;
+    transition-duration: 0.5s;
+    flex-shrink: 1;
+    max-height: 50px;
+    font-size: 25px;
+    .card-squished & {
+      max-height: 0;
+      opacity: 0;
     }
   }
 

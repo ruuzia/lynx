@@ -108,7 +108,7 @@ func handleItem(userId database.UserId, r *http.Request) (any, error) {
 	case "PATCH":
 		return nil, fmt.Errorf("PATCH /feline/item not implemented")
 	case "DELETE":
-		return nil, fmt.Errorf("DELETE /feline/item not implemented")
+		return map[string]string{}, database.DeleteLine(userId, itemId)
 	default:
 		return nil, fmt.Errorf("%s not valid", r.Method)
 	}

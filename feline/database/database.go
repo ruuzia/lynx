@@ -195,6 +195,14 @@ func UpdateLine(userId UserId, item *LineData) (err error) {
     return err
 }
 
+func DeleteLine(userId UserId, itemId int) (err error) {
+	q := `
+	DELETE FROM line_data WHERE user_id = ? AND id = ?
+	`
+	_, err = db.Exec(q, userId, itemId);
+	return err;
+}
+
 func SetLineIndex(userId UserId, setId int, lineId int, index int) (err error) {
     q := `
     UPDATE line_data
