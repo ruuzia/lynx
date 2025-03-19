@@ -18,14 +18,6 @@ To run program: `go run feline.go`
 
 Then go to http://localhost:2323 for the demo website.
 
-## Architecture
-
-The project is made of three parts:
-
-- Lynx: the C++ backend
-- Feline: the Go web server
-- WebLynx: the front-end in HTML, CSS, and JavaScript
-
 ## TODO
 
 - [x] Web prototype
