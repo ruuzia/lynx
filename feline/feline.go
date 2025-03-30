@@ -41,15 +41,14 @@ func OpenServer(address string) {
 	http.HandleFunc("/login/google", handleGoogleLogin)
 	http.HandleFunc("/login/email", handleEmailLogin)
 	http.HandleFunc("/login/email/confirm", handleEmailLoginConfirm)
+    http.HandleFunc("/feline/logout", handleLogout)
+
     fs := http.FileServer(http.Dir("./web/static/"))
     http.Handle("/static/", http.StripPrefix("/static/", fs))
-    http.HandleFunc("/feline/logout", handleLogout)
-    http.HandleFunc("/feline/starline", handleStarLine)
-    http.HandleFunc("/feline/linenotes", handleLineNotes)
+
     http.HandleFunc("/feline/updatebuilder", handleUpdateBuilder)
     http.HandleFunc("/feline/finishbuilder", handleFinishBuilder)
-    http.HandleFunc("/feline/list-line-sets", handleListLineSets)
-    http.HandleFunc("/feline/get-line-data", handleGetLineData)
+
 	RegisterApiHandlers()
 
     fmt.Println("Listening to localhost:2323")
