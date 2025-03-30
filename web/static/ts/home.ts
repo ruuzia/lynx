@@ -1,5 +1,4 @@
-import * as Save from "./save.js"
-
+export {}
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
 
@@ -49,12 +48,12 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
       throw new Error("Did not find #lineset-page-list");
     }
     let s = ``;
-    for (const name of lineSets) {
+    for (const { title } of lineSets) {
       s += html`
 <a class="button-thick"
    href="/#settings"
-   onclick="linesetSelected('${name}')">
-${name}</a>
+   onclick="linesetSelected('${title}')">
+${title}</a>
 `
     }
     container.innerHTML = s;
@@ -69,17 +68,20 @@ function homePageUpdate() {
   if (content == null) {
     throw new Error("Did not find #home-message");
   }
-  if (Save.state.lineSet != "") {
-    const s = html`
-<p>You're in the middle of reviewing <b>${Save.state.lineSet}</b>.</p>
+  import("./pages/linereviewer.js").then(LineReviewer => {
+    const state = LineReviewer.GetReviewState();
+    if (state.lineSet != "") {
+      const s = html`
+<p>You're in the middle of reviewing <b>${state.lineSet}</b>.</p>
 <div class="center-content">
   <div class="button-wrap">
     <a href="#reviewer">Continue reviewing</a>
   </div>
 </div>
 `;
-    content.innerHTML = s;
-  }
+      content.innerHTML = s;
+    }
+  });
 
   fetch("/feline/linesets", {
     method: "GET",

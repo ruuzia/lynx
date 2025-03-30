@@ -52,8 +52,6 @@ declare global {
 }
 
 window.selectReviewType = (type: string) => {
-    Save.state.reviewMethod = type;
-    Save.PushState();
     SetReviewMethod(type);
 }
 

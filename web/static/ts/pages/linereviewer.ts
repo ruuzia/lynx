@@ -1,5 +1,15 @@
-import * as Save from "../save.js"
 import { query } from "../util/dom.js";
+import Persist from "../persist.js";
+
+const save = Persist("linereviewer", {
+  lineSet: "",
+  reviewMethod: "",
+  i: 0,
+});
+
+export function GetReviewState() {
+    return save;
+}
 
 const reviewer = query("#reviewer", HTMLDivElement);
 reviewer.innerHTML = `
@@ -37,13 +47,11 @@ reviewer.innerHTML = `
 `
 
 var lineData: Card[] | null;
-var reviewMethod: string | null;
 
 const default_front_fn = (item: Card) => item.cue;
 const default_back_fn = (item: Card) => item.line;
 const default_header_fn = (item: Card) => "Line " + (item.index + 1);
 
-let i = 0;
 let show_back = false;
 let is_starred = false;
 let header_fn = default_header_fn
@@ -55,16 +63,16 @@ declare global {
 }
 
 window.nextLine = () => {
-    if (lineData !== null && i < lineData.length) {
-        ++i;
+    if (lineData !== null && save.i < lineData.length) {
+        ++save.i;
         show_back = false;
         display()
     }
 }
 
 window.previousLine = () => {
-    if (i > 0) {
-        --i;
+    if (save.i > 0) {
+        --save.i;
         show_back = false;
         display()
     }
@@ -92,11 +100,11 @@ function display() {
     const frontInputs = document.getElementById("front_inputs")!;
     const backInputs = document.getElementById("back_inputs")!;
 
-    frontText.innerText = front_fn(lineData[i]);
-    revealText.innerText = back_fn(lineData[i]);
-    headerText.innerText = header_fn(lineData[i]);
-    notesText.value = lineData[i].notes
-    starredCheck.checked = lineData[i].starred;
+    frontText.innerText = front_fn(lineData[save.i]);
+    revealText.innerText = back_fn(lineData[save.i]);
+    headerText.innerText = header_fn(lineData[save.i]);
+    notesText.value = lineData[save.i].notes
+    starredCheck.checked = lineData[save.i].starred;
 
     revealText.hidden = !show_back;
     revealButton.hidden = show_back;
@@ -107,7 +115,7 @@ function display() {
     starredCheck.onchange = async () => {
         console.log("starred.onchange");
         const payload = {
-            "line": i,
+            "line": save.i,
             "starred": starredCheck.checked,
         };
         const result = await fetch("/feline/starline", {
@@ -123,7 +131,7 @@ function display() {
     notesText.oninput = async () => {
         console.log("notesText.oninput")
         const payload = {
-            "line": i,
+            "line": save.i,
             "text": notesText.value,
         }
         const result = await fetch("/feline/linenotes", {
@@ -146,7 +154,7 @@ function display() {
 let fetchTask: null|Promise<any> = null
 
 export function SetReviewMethod(_reviewMethod: string) {
-    reviewMethod = _reviewMethod;
+    save.reviewMethod = _reviewMethod;
     if (lineData == null) {
         if (fetchTask === null) {
             throw new Error("called SetReviewMethod without line data");
@@ -154,14 +162,12 @@ export function SetReviewMethod(_reviewMethod: string) {
         fetchTask.then(() => SetReviewMethod(_reviewMethod));
         return;
     }
-    Save.state.reviewMethod = reviewMethod;
-    Save.PushState();
 
-    console.log("init() " + reviewMethod);
+    console.log("init() " + save.reviewMethod);
     front_fn = default_front_fn;
     back_fn = default_back_fn;
     header_fn = default_header_fn;
-    switch (reviewMethod) {
+    switch (save.reviewMethod) {
     case "in_order":
         break;
     case "random":
@@ -193,8 +199,10 @@ export function SetLineSet(title: string) {
         });
         return;
     }
-    Save.state.lineSet = title;
-    Save.PushState();
+    if (title != save.lineSet) {
+        save.lineSet = title;
+        save.i = 0;
+    }
 
     fetchTask = fetch("/feline/get-line-data", {
         method: "POST",
@@ -208,10 +216,10 @@ export function SetLineSet(title: string) {
 }
 
 function onload() {
-    if (Save.state.lineSet != "") {
-        SetLineSet(Save.state.lineSet)
-        if (Save.state.reviewMethod != "") {
-            SetReviewMethod(Save.state.reviewMethod);
+    if (save.lineSet != "") {
+        SetLineSet(save.lineSet)
+        if (save.reviewMethod != "") {
+            SetReviewMethod(save.reviewMethod);
         }
     }
 }
