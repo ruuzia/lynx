@@ -1,23 +1,26 @@
-export default function Persist<T extends Object>(name: string, obj: T): T {
+export default function Persist<T extends Object, U extends T>(
+  name: string,
+  obj: T,
+): U {
   // Restore save
-  for (const [k, v] of Object.entries(JSON.parse(sessionStorage.getItem(name) ?? "{}"))) {
+  for (const [k, v] of Object.entries(
+    JSON.parse(sessionStorage.getItem(name) ?? "{}"),
+  )) {
     (obj as any)[k] = v;
   }
-  const wrapper = { _raw: obj };
+  const wrapper = {};
 
-  for (const [key, value] of Object.entries(wrapper._raw)) {
+  for (const key in obj) {
     Object.defineProperty(wrapper, key, {
       get() {
-        return this._raw[key];
+        return obj[key];
       },
       set(value) {
-        this._raw[key] = value;
-        sessionStorage.setItem(name, JSON.stringify(this._raw));
-      }
+        obj[key] = value;
+        sessionStorage.setItem(name, JSON.stringify(obj));
+      },
     });
   }
 
-  return wrapper as any as T;
+  return wrapper as any as U;
 }
-
-
