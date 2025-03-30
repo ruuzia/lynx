@@ -1,3 +1,10 @@
+/**********
+ * LEGACY *
+ **********
+ *
+ * use api.go instead!
+ */
+
 package feline
 
 import (
