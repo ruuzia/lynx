@@ -1,5 +1,4 @@
 import { SetReviewMethod } from "./linereviewer.js"
-import * as Save from "../save.js"
 
 export const settings = {
     reviewMethod: null,

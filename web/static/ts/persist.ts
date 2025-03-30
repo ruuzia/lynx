@@ -1,6 +1,6 @@
 export default function Persist<T extends Object>(name: string, obj: T): T {
   // Restore save
-  for (const [k, v] of Object.entries(JSON.parse(localStorage.getItem(name) ?? "{}"))) {
+  for (const [k, v] of Object.entries(JSON.parse(sessionStorage.getItem(name) ?? "{}"))) {
     (obj as any)[k] = v;
   }
   const wrapper = { _raw: obj };
@@ -12,7 +12,7 @@ export default function Persist<T extends Object>(name: string, obj: T): T {
       },
       set(value) {
         this._raw[key] = value;
-        localStorage.setItem(name, JSON.stringify(this._raw));
+        sessionStorage.setItem(name, JSON.stringify(this._raw));
       }
     });
   }

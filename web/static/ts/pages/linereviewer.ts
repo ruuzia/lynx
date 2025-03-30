@@ -63,7 +63,7 @@ declare global {
 }
 
 window.nextLine = () => {
-    if (lineData !== null && save.i < lineData.length) {
+    if (lineData !== null && save.i + 1 < lineData.length) {
         ++save.i;
         show_back = false;
         display()
