@@ -7,7 +7,8 @@ if (setting !== null) {
     document.body.classList.add("light");
 }
 
-function toggleTheme() {
+// eslint-disable-line
+(window as any).toggleTheme = () => {
     if (document.body.classList.contains("dark")) {
         document.body.classList.remove("dark");
         document.body.classList.add("light");

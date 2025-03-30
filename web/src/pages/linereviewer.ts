@@ -192,12 +192,12 @@ export function SetLineSet(id: number) {
         return;
     }
 
-    if (id != save.lineSet) {
+    if (lineData === null || id != save.lineSet) {
         save.lineSet = id;
         save.i = 0;
     }
 
-    loadLineData(id);
+    fetchTask = loadLineData(id);
 }
 
 async function loadLineData(id: number) {

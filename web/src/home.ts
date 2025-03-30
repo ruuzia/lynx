@@ -11,6 +11,7 @@ declare global {
 // Update line set selection menus on page load
 
 declare let lineSets: DeckInfo[]
+const lineSetName = (id: number) => lineSets.find(item => item.id == id)?.title;
 
 const loadLineSets = (_lineSets: DeckInfo[]) => {
   lineSets = _lineSets
@@ -48,11 +49,11 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
       throw new Error("Did not find #lineset-page-list");
     }
     let s = ``;
-    for (const { title } of lineSets) {
+    for (const { id, title } of lineSets) {
       s += html`
 <a class="button-thick"
    href="/#settings"
-   onclick="linesetSelected('${title}')">
+   onclick="linesetSelected('${id}')">
 ${title}</a>
 `
     }
@@ -72,7 +73,7 @@ function homePageUpdate() {
     const state = LineReviewer.GetReviewState();
     if (state.lineSet != -1) {
       const s = html`
-<p>You're in the middle of reviewing <b>${state.lineSet}</b>.</p>
+<p>You're in the middle of reviewing <b>${lineSetName(state.lineSet)}</b>.</p>
 <div class="center-content">
   <div class="button-wrap">
     <a href="#reviewer">Continue reviewing</a>
@@ -104,10 +105,6 @@ function homePageUpdate() {
 
 
 window.linesetSelected = (id: number) => {
-  const item = lineSets.find(item => item.id == id);
-  if (item == null) {
-    throw new Error("No lineset with id " + id);
-  }
   import("./pages/linereviewer.js").then(lineReviewer => {
     lineReviewer.SetLineSet(id);
   });
@@ -145,7 +142,14 @@ function subpageLoad() {
       });
       break;
     case "#reviewer":
-      import("./pages/linereviewer.js");
+      import("./pages/linereviewer.js").then(LineReviewer => {
+        console.log(LineReviewer.GetReviewState().lineSet, LineReviewer.GetReviewState().reviewMethod)
+        if (LineReviewer.GetReviewState().lineSet < 0) {
+          location.hash = "#lineset-select";
+        } else if (LineReviewer.GetReviewState().reviewMethod == "") {
+          location.hash = "#settings";
+        }
+      });
       break;
     case "#lineset-select":
       break;

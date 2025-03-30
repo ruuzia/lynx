@@ -114,6 +114,7 @@ func runTscWatch() {
     cmd := exec.Command("npm", "run", "watch");
     cmd.Dir = "./web/"
     // cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
     err := cmd.Start();
     if err != nil {
         log.Fatal(err)
