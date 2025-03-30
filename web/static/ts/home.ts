@@ -32,7 +32,7 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
 <div class="line-set-row">
     <span class="lineset-name">${title}</span>
     <a href="#settings"
-        onclick="linesetSelected('${title}')"
+        onclick="linesetSelected('${id}')"
         class="lineset-review">Review</a>
     <a href="#browser"
         onclick="browseLineset(${id})"
@@ -103,10 +103,13 @@ function homePageUpdate() {
 // lineset select page
 
 
-window.linesetSelected = (title: string) => {
-  console.log("linesetSelected() " + title);
+window.linesetSelected = (id: number) => {
+  const item = lineSets.find(item => item.id == id);
+  if (item == null) {
+    throw new Error("No lineset with id " + id);
+  }
   import("./pages/linereviewer.js").then(lineReviewer => {
-    lineReviewer.SetLineSet(title);
+    lineReviewer.SetLineSet(id);
   });
 
 }

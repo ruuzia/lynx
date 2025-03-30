@@ -2,7 +2,7 @@ import { query } from "../util/dom.js";
 import Persist from "../persist.js";
 
 const save = Persist("linereviewer", {
-  lineSet: "",
+  lineSet: -1,
   reviewMethod: "",
   i: 0,
 });
@@ -100,11 +100,12 @@ function display() {
     const frontInputs = document.getElementById("front_inputs")!;
     const backInputs = document.getElementById("back_inputs")!;
 
-    frontText.innerText = front_fn(lineData[save.i]);
-    revealText.innerText = back_fn(lineData[save.i]);
-    headerText.innerText = header_fn(lineData[save.i]);
-    notesText.value = lineData[save.i].notes
-    starredCheck.checked = lineData[save.i].starred;
+    const item = lineData[save.i];
+    frontText.innerText = front_fn(item);
+    revealText.innerText = back_fn(item);
+    headerText.innerText = header_fn(item);
+    notesText.value = item.notes
+    starredCheck.checked = item.starred;
 
     revealText.hidden = !show_back;
     revealButton.hidden = show_back;
@@ -112,36 +113,27 @@ function display() {
     backInputs.hidden = !show_back;
     frontText.style.setProperty("opacity", show_back ? "0.5" : "1.0");
 
+    const updateLine = async () => {
+        const result = await fetch(`/feline/items/${item.id}`, {
+            method: "PUT",
+            body: JSON.stringify(item),
+        });
+        if (!result.ok) {
+            const body = await result.text();
+            console.log("Failed updating line ", result.statusText, body)
+        }
+    };
+
     starredCheck.onchange = async () => {
         console.log("starred.onchange");
-        const payload = {
-            "line": save.i,
-            "starred": starredCheck.checked,
-        };
-        const result = await fetch("/feline/starline", {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-        if (result.status != 200) {
-            const body = await result.text();
-            console.log("Failed to setting note ", result.statusText, body)
-        }
+        item.starred = starredCheck.checked;
+        await updateLine();
     };
 
     notesText.oninput = async () => {
         console.log("notesText.oninput")
-        const payload = {
-            "line": save.i,
-            "text": notesText.value,
-        }
-        const result = await fetch("/feline/linenotes", {
-            method: "POST",
-            body: JSON.stringify(payload)
-        })
-        if (result.status != 200) {
-            const body = await result.text();
-            console.log("Failed to setting note ", result.statusText, body)
-        }
+        item.notes = notesText.value,
+        await updateLine();
     }
 
     revealButton.onclick = () => {
@@ -189,34 +181,41 @@ export function SetReviewMethod(_reviewMethod: string) {
     display();
 }
 
-export function SetLineSet(title: string) {
-    console.log("SetLineSet " + title)
+export function SetLineSet(id: number) {
+    console.log("SetLineSet " + id)
     if (fetchTask !== null) {
         // Wait for current fetch to complete
         fetchTask.then(() => {
             fetchTask = null;
-            SetLineSet(title);
+            SetLineSet(id);
         });
         return;
     }
-    if (title != save.lineSet) {
-        save.lineSet = title;
+
+    if (id != save.lineSet) {
+        save.lineSet = id;
         save.i = 0;
     }
 
-    fetchTask = fetch("/feline/get-line-data", {
-        method: "POST",
-        body: new URLSearchParams({
-            title: title,
-        }),
-    }).then(resp => resp.json()).then(_lineData => {
-        lineData = _lineData;
-        fetchTask = null;
-    });
+    loadLineData(id);
+}
+
+async function loadLineData(id: number) {
+    try {
+        const resp = await fetch(`/feline/linesets/${id}/items`, {
+            method: "GET",
+        });
+        if (!resp.ok) {
+            throw new Error("Failed to fetch line data: " + await resp.text());
+        }
+        lineData = await resp.json();
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function onload() {
-    if (save.lineSet != "") {
+    if (save.lineSet != -1) {
         SetLineSet(save.lineSet)
         if (save.reviewMethod != "") {
             SetReviewMethod(save.reviewMethod);
