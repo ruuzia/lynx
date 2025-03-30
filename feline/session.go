@@ -39,7 +39,6 @@ type BuilderPage struct {
 }
 
 type HomePage struct {
-    Name string
     LineSets []database.LineSetInfo
 }
 
@@ -267,30 +266,6 @@ func handleLineNotes(w http.ResponseWriter, r *http.Request) {
 
 /******************************
 ******************************/
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        redirectLogin(w, r)
-        return
-    }
-    lineSets, err  := database.GetLineSets(session.id)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    data := HomePage {
-        Name: session.username,
-        LineSets: lineSets,
-    }
-
-    t, err := template.ParseFiles("./web/templates/index.html")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    t.Execute(w, data)
-}
 
 func serveBuilder(w http.ResponseWriter, r *http.Request) {
     session, err := ActiveSession(w, r)

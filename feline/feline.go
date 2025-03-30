@@ -56,6 +56,29 @@ func OpenServer(address string) {
     log.Fatal(http.ListenAndServe(address, nil))
 }
 
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	userId, err := CheckAuth(w, r)
+    if err != nil {
+        redirectLogin(w, r)
+        return
+    }
+    lineSets, err  := database.GetLineSets(userId)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    data := HomePage {
+        LineSets: lineSets,
+    }
+
+    t, err := template.ParseFiles("./web/templates/index.html")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    t.Execute(w, data)
+}
+
 func serveLogin(w http.ResponseWriter, data LoginPage) {
     t, err := template.ParseFiles("./web/templates/login.html")
     if err != nil {
