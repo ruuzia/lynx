@@ -110,13 +110,21 @@ func execute(dir string, exe string, arg ...string) {
 }
 
 func runTscWatch() {
+    fmt.Printf("Starting esbuild development server...\n")
+    cmd := exec.Command("npm", "run", "watch");
+    cmd.Dir = "./web/"
+    // cmd.Stdout = os.Stdout
+    err := cmd.Start();
+    if err != nil {
+        log.Fatal(err)
+    }
+
     fmt.Printf("Starting TS development server...\n")
-    fmt.Printf("npx tsc --watch\n")
-    cmd := exec.Command("npx", "tsc", "--watch");
-    cmd.Dir = "./web/static/"
+    cmd = exec.Command("npx", "tsc", "--watch");
+    cmd.Dir = "./web/"
     cmd.Stdout = os.Stdout
     cmd.Stderr = os.Stderr
-    err := cmd.Start();
+    err = cmd.Start();
     if err != nil {
         log.Fatal(err)
     }

@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "static/index.js",
   "scripts": {
+    "watch": "npx esbuild 'src/**/*.ts' --watch=forever --outdir=static/build/js --format=esm --minify",
+    "build": "npx esbuild 'src/**/*.ts' --outdir=static/build/js --format=esm --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,11 +18,8 @@
     "seedrandom": "^3.0.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "esbuild": "^0.25.1",
     "eslint": "^9.22.0",
-    "globals": "^16.0.0",
-    "rollup": "^4.35.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.0"
   }

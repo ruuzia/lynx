@@ -70,7 +70,7 @@ function homePageUpdate() {
   }
   import("./pages/linereviewer.js").then(LineReviewer => {
     const state = LineReviewer.GetReviewState();
-    if (state.lineSet != "") {
+    if (state.lineSet != -1) {
       const s = html`
 <p>You're in the middle of reviewing <b>${state.lineSet}</b>.</p>
 <div class="center-content">
