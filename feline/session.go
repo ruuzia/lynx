@@ -20,15 +20,9 @@ var lynxSessions = map[database.UserId]*Session {}
 type Session struct {
     username string;
     id database.UserId;
-    save SessionData;
     builderPage BuilderPage;
 }
 type SessionToken string
-
-type SessionData struct {
-    LineFile string `json:"lineSet"`
-    ReviewMethod string `json:"reviewMethod"`
-}
 
 type BuilderPage struct {
     Title string `json:"title"`
@@ -39,7 +33,6 @@ type BuilderPage struct {
 
 type HomePage struct {
     Name string
-    State SessionData
     LineSets []database.LineSetInfo
 }
 
@@ -76,10 +69,6 @@ func getOrCreateSession(userId database.UserId) *Session {
 		lynxSessions[userId] = &Session{
 			username: username,
 			id: userId,
-			save: SessionData{
-				LineFile: "",
-				ReviewMethod: "",
-			},
 		}
 	}
 	return lynxSessions[userId]
@@ -148,48 +137,7 @@ func handleGetLineData(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if (r.Form.Get("setCurrent") == "true") {
-        session.save.LineFile = title;
-        debug.Println("Saving line set as current", session.save.LineFile);
-    }
-
     json.NewEncoder(w).Encode(&lines)
-}
-
-//-------------------
-// State load/save
-
-func handlePullSessionState(w http.ResponseWriter, r *http.Request) {
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-    err = json.NewEncoder(w).Encode(&session.save)
-    if err != nil {
-        debug.Println(err.Error())
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-}
-
-func handlePushSessionState(w http.ResponseWriter, r *http.Request) {
-    debug.Println("handlePushSessionState");
-    session, err := ActiveSession(w, r)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-    var data SessionData
-    err = json.NewDecoder(r.Body).Decode(&data)
-    debug.Println("PushSessionState", data)
-    if err != nil {
-        debug.Println(err.Error())
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-    session.save = data
-    w.WriteHeader(http.StatusOK)
 }
 
 //----------------------------------------------------------------
@@ -326,10 +274,8 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
     }
     data := HomePage {
         Name: session.username,
-        State: session.save,
         LineSets: lineSets,
     }
-    debug.Println("serveHome", data, session.save.LineFile);
 
     t, err := template.ParseFiles("./web/templates/index.html")
     if err != nil {

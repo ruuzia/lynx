@@ -50,8 +50,6 @@ func OpenServer(address string) {
     http.HandleFunc("/feline/finishbuilder", handleFinishBuilder)
     http.HandleFunc("/feline/list-line-sets", handleListLineSets)
     http.HandleFunc("/feline/get-line-data", handleGetLineData)
-    http.HandleFunc("/feline/pull-session-state", handlePullSessionState)
-    http.HandleFunc("/feline/push-session-state", handlePushSessionState)
 	RegisterApiHandlers()
 
     fmt.Println("Listening to localhost:2323")
