@@ -1,5 +1,6 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { create, query, html } from "../util/dom.js";
+import request from "../util/request.js"
 import RenameDialog from "../organisms/RenameDialog.js";
 import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
 import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
@@ -24,17 +25,6 @@ const getDeckId = () =>
   parseInt(selector.children[selector.selectedIndex].getAttribute("data-lineset-id") ?? "");
 
 //---------------------------------------------
-
-/**
- * Wrapper around fetch to always check result so I don't forget.
- */
-async function request(url: RequestInfo, opts?: RequestInit) {
-    const res = await fetch(url, opts);
-    if (!res.ok) {
-        throw new Error(`Failed fetch for '${url}'`);
-    }
-    return await res.json();
-}
 
 async function fetchLineSets() {
   const data = await request("/feline/linesets", { method: "GET" });
@@ -62,10 +52,11 @@ async function deleteCard(id: number) {
 }
 
 async function postCard(deckId: number, card: Card) {
-  return await request(`/feline/linesets/${deckId}/items/`, {
+  const result = await request(`/feline/linesets/${deckId}/items`, {
     method: "POST",
     body: JSON.stringify(card),
   })
+  return result;
 }
 
 async function updateOrdering(deckId: number, ordering: number[]) {

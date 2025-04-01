@@ -1,5 +1,6 @@
 import { displayDialog } from "../molecules/dialog.js";
 import { html } from "../util/dom.js";
+import { DeleteLineset } from "../util/LineSets.js";
 
 export default function (title: string, id: number, ondeleted=async () => {}) {
   const deleteDialog = displayDialog("Delete Line Set", html`
@@ -19,16 +20,8 @@ export default function (title: string, id: number, ondeleted=async () => {}) {
 
   deleteDialog.onclose = async () => {
     if (deleteDialog.returnValue != "success") return;
-    {
-      const res = await fetch(`/feline/linesets/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        throw new Error("Delete failed! " + await res.text())
-      }
-    }
-
-    ondeleted();
+    await DeleteLineset(id);
+    await ondeleted();
   }
 }
 

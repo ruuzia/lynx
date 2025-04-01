@@ -1,5 +1,6 @@
 import { displayDialog } from "../molecules/dialog.js";
 import { query, html } from "../util/dom.js";
+import { AddLineset } from "../util/LineSets.js";
 
 export default function(oncreate = async (title: string, id: number) => {}) {
   const dialog = displayDialog("Create New Line Set", html`
@@ -18,14 +19,7 @@ export default function(oncreate = async (title: string, id: number) => {}) {
     if (dialog.returnValue != "success") return;
     const title = query("#browser-create-title", HTMLInputElement).value;
 
-    const res = await fetch(`/feline/linesets`, {
-      method: "POST",
-      body: JSON.stringify({ title: title, })
-    });
-    if (!res.ok) {
-      throw new Error("Creating failed! " + await res.text());
-    }
-    const id = parseInt(await res.text());
+    const id = await AddLineset(title);
     if (oncreate) oncreate(title, id);
   };
 }

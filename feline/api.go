@@ -132,7 +132,14 @@ func handleLinesets(userId database.UserId, r *http.Request) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to create line set: %s", err.Error())
 		}
-		return database.LastInsertId()
+		id, err := database.LastInsertId()
+		if err != nil {
+			return nil, fmt.Errorf("Unable to add line set: %s", err.Error())
+		}
+		type ReturnPayload struct {
+			Id int `json:"id"`
+		}
+		return &ReturnPayload{ Id: id }, err
 	default:
 		return nil, fmt.Errorf("%s /feline/linesets not unimplimented", r.Method)
 	}

@@ -1,5 +1,6 @@
 import { displayDialog } from "../molecules/dialog.js";
 import { query, html } from "../util/dom.js";
+import { RenameLineset } from "../util/LineSets.js";
 
 export default function (currentTitle: string, id: number, onrename?: (newName: string) => void) {
   const renameDialog = displayDialog( "Rename Line Set", html`
@@ -20,18 +21,8 @@ export default function (currentTitle: string, id: number, onrename?: (newName: 
     if (renameDialog.returnValue != "success") return;
 
     const newName = query("#browser-rename-input", HTMLInputElement).value;
-    {
-      const res = await fetch(`/feline/linesets/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: newName,
-        }),
-      });
-      if (!res.ok) {
-        throw new Error("Rename failed! " + (await res.text()));
-      }
-    }
 
+    await RenameLineset(id, newName);
     if (onrename) onrename(newName);
   };
 }
