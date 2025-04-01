@@ -1,4 +1,5 @@
 import { query } from "./util/dom.js";
+import newlinesetdialog from "./util/newlinesetdialog.js";
 
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
@@ -85,20 +86,20 @@ function homePageUpdate() {
     }
   });
 
-  fetch("/feline/linesets", {
+  pullLineSets();
+}
+
+async function pullLineSets() {
+  const res = await fetch("/feline/linesets", {
     method: "GET",
-  })
-    .then(async res => {
-      if (!res.ok) {
-        throw new Error("Failed to load lineset info: " + await res.text());
-      }
-      return res.json()
-    })
-    .then(sets => {
-      if (sets != null) {
-        loadLineSets(sets);
-      }
-    })
+  });
+  if (!res.ok) {
+    throw new Error("Failed to load lineset info: " + await res.text());
+  }
+  const sets = await res.json();
+  if (sets != null) {
+    loadLineSets(sets);
+  }
 }
 
 //---------------------------------------------------------------
@@ -124,10 +125,12 @@ window.browseLineset = (id: number) => {
 }
 //--------------------------
 
-query("#home-new-lineset-btn", HTMLElement).onclick = () => {
-  import("./pages/browser.js").then(Browser => {
+query("#home-new-lineset-btn", HTMLElement).onclick = async () => {
+  const { default: NewLineSetDialog } = await import("./util/newlinesetdialog.js");
+  NewLineSetDialog(async (_title, id) => {
+    await pullLineSets();
+    window.browseLineset(id);
     location.href = "#browser";
-    Browser.ShowModal("#browser-new-lineset")
   });
 }
 

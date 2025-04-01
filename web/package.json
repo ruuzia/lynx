@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "static/index.js",
   "scripts": {
-    "watch": "npx esbuild 'src/**/*.ts' --watch=forever --outdir=static/build/js --format=esm --minify",
+    "watch": "npx esbuild 'src/**/*.ts' --watch=forever --outdir=static/build/js --format=esm",
     "build": "npx esbuild 'src/**/*.ts' --outdir=static/build/js --format=esm --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

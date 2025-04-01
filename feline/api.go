@@ -132,7 +132,7 @@ func handleLinesets(userId database.UserId, r *http.Request) (any, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to create line set: %s", err.Error())
 		}
-		return map[string]string{}, nil
+		return database.LastInsertId()
 	default:
 		return nil, fmt.Errorf("%s /feline/linesets not unimplimented", r.Method)
 	}

@@ -46,3 +46,5 @@ export function query<T extends Element>(
   }
   return elem;
 }
+
+export const html = String.raw; // Editor HTML highlighting in template strings

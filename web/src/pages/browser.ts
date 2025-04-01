@@ -1,14 +1,11 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
-import { create, query } from "../util/dom.js";
-
-const html = String.raw; // Editor HTML highlighting in template strings
-
-// TODO:
-// - [ ] Card deletion
-// - [ ] Deleting line set only works while empty
+import { create, query, html } from "../util/dom.js";
+import RenameDialog from "../util/renamedialog.js";
+import NewLinesetDialog from "../util/newlinesetdialog.js";
+import DeleteLinesetDialog from "../util/deletelinesetdialog.js";
 
 // Wait until stylesheet is loaded
-await new Promise((resolve, reject) => {
+await new Promise((resolve, _reject) => {
   const link = document.head.appendChild(
     create("link", {
       rel: "stylesheet",
@@ -22,177 +19,46 @@ await new Promise((resolve, reject) => {
 
 const getDeckTitle = () => selector.value;
 const getDeckId = () =>
-  selector.children[selector.selectedIndex].getAttribute("data-lineset-id");
+  parseInt(selector.children[selector.selectedIndex].getAttribute("data-lineset-id") ?? "");
 
 //---------------------------------------------
 
-function buildModals() {
-  const makeDialog = (id: string, title: string, content: string) =>
-    create(
-      "dialog",
-      { id: id, classList: "modal" },
-      html`
-        <form method="dialog">
-          <header class="modal-header">
-            <h2 class="modal-title">${title}</h2>
-            <button
-              value="close"
-              class="modal-close"
-              aria-label="Close"
-            ></button>
-          </header>
-        </form>
-        <form method="dialog">
-          <div class="modal-maincontent">${content}</div>
-        </form>
-      `,
-    );
 
-  const renameDialog = document.body.appendChild(
-    makeDialog(
-      "browser-rename",
-      "Rename Line Set",
-      html`
-      <div>
-        <label>
-          New title:
-          <input autofocus id="browser-rename-input"></input>
-        </label>
-      </div>
-      <div>
-        <button value="success" id="browser-rename-save-btn" style="background-color: var(--color-active-1)">Save</button>
-        <button value="cancel">Cancel</button>
-      </div>
-      `,
-    ),
-  );
-
-  const createDialog = document.body.appendChild(
-    makeDialog(
-      "browser-new-lineset",
-      "Create New Line Set",
-      html`
-      <div>
-        <label>
-          Title:
-          <input autofocus id="browser-create-title"></input>
-        </label>
-      </div>
-      <div>
-        <button value="success" style="background-color: var(--color-active-1)">Save</button>
-        <button formmethod="dialog">Cancel</button>
-      </div>`,
-    ),
-  );
-
-  const deleteDialog = document.body.appendChild(
-    makeDialog(
-      "browser-delete-lineset",
-      "Delete Line Set",
-      html`
-        <p id="delete-lineset-message"></p>
-        <div>
-          <button
-            value="success"
-            style="background-color: red"
-            id="browser-delete-lineset-button"
-          >
-            Delete
-          </button>
-          <button formmethod="dialog">Cancel</button>
-        </div>
-      `,
-    ),
-  );
-
-  renameDialog.onclose = async (e) => {
-    console.log("browser-rename modal returnValue", renameDialog.returnValue);
-    if (renameDialog.returnValue != "success") return;
-
-    const newName = query("#browser-rename-input", HTMLInputElement).value;
-    {
-      const res = await fetch(`/feline/linesets/${getDeckId()}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: newName,
-        }),
-      });
-      if (!res.ok) {
-        throw new Error("Rename failed! " + (await res.text()));
-      }
-    }
-
-    await fetchLineSets();
-    selector.value = newName;
-  };
-
-  createDialog.onclose = async (e) => {
-    if (createDialog.returnValue != "success") return;
-    const title = query("#browser-create-title", HTMLInputElement).value;
-    {
-      const res = await fetch(`/feline/linesets`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: title,
-        })
-      });
-      if (!res.ok) {
-        throw new Error("Delete failed! " + await res.text())
-      }
-
-      await fetchLineSets();
-      selector.value = title;
-    }
-
-    await fetchLineSets();
-    load();
-  };
-
-  deleteDialog.onclose = async (e) => {
-    if (deleteDialog.returnValue != "success") return;
-    {
-      const res = await fetch(`/feline/linesets/${getDeckId()}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        throw new Error("Delete failed! " + await res.text())
-      }
-    }
-
-    await fetchLineSets();
-    if (selector.options[0]) selector.value = selector.options[0].value;
-    load();
+async function fetchLineSets() {
+  const res = await fetch("/feline/linesets", { method: "GET" });
+  if (!res.ok) {
+    throw new Error("Failed to fetch linesets " + (await res.text()));
   }
-
-  async function fetchLineSets() {
-    const res = await fetch("/feline/linesets", { method: "GET" });
-    if (!res.ok) {
-      throw new Error("Failed to fetch linesets " + (await res.text()));
-    }
-    UpdateLineSets(await res.json());
-  }
+  UpdateLineSets(await res.json());
 }
-// buildModals()
 
 // Note: beforetoggle event not currently implemented on Safari for Modals as of March 2025
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/beforetoggle_event#browser_compatibility
 // So we activate modals with this function instead
 export function ShowModal(q: string) {
-  const modal = query(q, HTMLDialogElement);
-  switch (modal.id) {
-    case "browser-new-lineset":
-      break;
-    case "browser-rename":
-      const input = query("#browser-rename-input", HTMLInputElement);
-      input.value = selector.value;
-      break;
-    case "browser-delete-lineset":
-      const message = query("#delete-lineset-message", HTMLElement);
-      message.innerHTML = `Are you sure you want to permamently delete line set <b>${selector.value}</b>?`;
-      query("#browser-delete-lineset-button", HTMLElement).innerText =
-        `Delete ${selector.value}`;
+  if (q == "new-lineset") {
+    NewLinesetDialog(async (title, _id) => {
+      await fetchLineSets();
+      selector.value = title;
+      load();
+    });
+  } else if (q == "browser-rename") {
+    const id = getDeckId();
+    if (id != null) {
+      RenameDialog(selector.value, id, (newName: string) => {
+        fetchLineSets().then(() => (selector.value = newName));
+      });
+    }
+  } else if (q == "delete-lineset") {
+    const id = getDeckId();
+    if (id != null) DeleteLinesetDialog(selector.value, id, async () => {
+      await fetchLineSets();
+      if (selector.options[0]) selector.value = selector.options[0].value;
+      load();
+    });
+  } else {
+    console.error("Unknown dialog: " + q)
   }
-  modal.showModal();
 }
 //--------------------------------------
 
@@ -295,21 +161,21 @@ const dropdown = makeDropdown(
         <div
           tabindex="-1"
           class="dropdown-item rename"
-          data-show-modal="#browser-rename"
+          data-show-modal="browser-rename"
         >
           Rename
         </div>
         <div
           tabindex="-1"
           class="dropdown-item"
-          data-show-modal="#browser-new-lineset"
+          data-show-modal="new-lineset"
         >
           New Lineset
         </div>
         <div
           tabindex="-1"
           class="dropdown-item"
-          data-show-modal="#browser-delete-lineset"
+          data-show-modal="delete-lineset"
         >
           Delete Lineset
         </div>
@@ -337,8 +203,6 @@ browser.appendChild(
 const container = browser.appendChild(
   create("div", { id: "browser-container" }),
 );
-
-buildModals();
 
 document.body.appendChild(
   create(
@@ -434,7 +298,7 @@ function render(lines: Card[]) {
         e.target instanceof HTMLTextAreaElement ||
         e.target instanceof HTMLButtonElement
       ),
-    onUpdated: (oldIndex, newIndex, item) => {
+    onUpdated: (oldIndex, newIndex, _item) => {
       console.log(`DRAG old:${oldIndex} new:${newIndex}`);
       const element = lines[oldIndex];
       lines.splice(oldIndex, 1);
