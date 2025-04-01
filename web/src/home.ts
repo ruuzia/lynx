@@ -118,7 +118,6 @@ window.browseLineset = (id: number) => {
     if (item == null) {
       throw new Error("No lineset with id " + id);
     }
-    Browser.UpdateLineSets(lineSets)
     Browser.SelectLineSet(item);
   });
 }
@@ -147,7 +146,6 @@ function subpageLoad() {
       break;
     case "#browser":
       import('./pages/browser.js').then(BrowserPage => {
-        BrowserPage.UpdateLineSets(lineSets);
         BrowserPage.Init();
       });
       break;

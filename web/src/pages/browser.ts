@@ -25,6 +25,11 @@ const getDeckTitle = () => selector.value;
 const getDeckId = () =>
   parseInt(selector.children[selector.selectedIndex].getAttribute("data-lineset-id") ?? "");
 
+async function selectDeck (title: string){
+  await loadSelector();
+  selector.value = title;
+}
+
 //---------------------------------------------
 
 async function fetchLineData(id: number): Promise<Card[]> {
@@ -109,24 +114,21 @@ const dropdown = Dropdown(
     switch (selection.getAttribute("data-show-modal")) {
       case "new-lineset":
         NewLinesetDialog(async (title, _id) => {
-          UpdateLineSets(await GetLinesets())
-          selector.value = title;
-          load();
+          await selectDeck(title);
+          await load();
         });
         break;
       case "browser-rename":
         if (id != null) {
-          RenameDialog(selector.value, id, (newName: string) => {
-            selector.value = newName;
+          RenameDialog(selector.value, id, async (newName: string) => {
+            await selectDeck(newName);
           });
         }
         break;
       case "delete-lineset":
         if (id != null) {
           DeleteLinesetDialog(selector.value, id, async () => {
-            UpdateLineSets(await GetLinesets())
-            if (selector.options[0]) selector.value = selector.options[0].value;
-            load();
+            await load();
           });
         }
         break;
@@ -163,10 +165,10 @@ document.body.appendChild(
 
 //-------------------------------------
 
-export function UpdateLineSets(sets: DeckInfo[]) {
+async function loadSelector() {
   const save = selector.value || localStorage.getItem("browser-line-set");
   selector.replaceChildren();
-  for (const { id, title } of sets) {
+  for (const { id, title } of await GetLinesets()) {
     selector.add(
       create(
         "option",
@@ -179,28 +181,24 @@ export function UpdateLineSets(sets: DeckInfo[]) {
     );
   }
   if (save) {
-    console.log(`UpdateLineSets (keeping selection ${save})`);
     selector.value = save;
   }
 }
 
-export function SelectLineSet(lineSet: DeckInfo) {
-  selector.value = lineSet.title;
-  console.log("SelectLineSet", selector.value);
-}
+export const SelectLineSet = (lineSet: DeckInfo) => selectDeck(lineSet.title);
 
 export function Init() {
-  if (selector.value == "") {
-    console.log("[browser] No lineset selected");
-    selector.value = selector.options[0].value;
-  }
   load();
 }
 
 //------------------------------------
 
 async function load() {
-  UpdateLineSets(await GetLinesets());
+  await loadSelector();
+  if (selector.value == "") {
+    console.log("[browser] No lineset selected");
+    selector.value = selector.options[0].value;
+  }
   const title = getDeckTitle();
   const id = getDeckId();
   localStorage.setItem("browser-line-set", title);
