@@ -1,5 +1,5 @@
 import { displayDialog } from "../molecules/dialog.js";
-import { html } from "./dom.js";
+import { html } from "../util/dom.js";
 
 export default function (title: string, id: number, ondeleted=async () => {}) {
   const deleteDialog = displayDialog("Delete Line Set", html`

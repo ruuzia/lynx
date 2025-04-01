@@ -1,8 +1,8 @@
 import { MakeItemsDraggable } from "../util/draggablelist.js";
 import { create, query, html } from "../util/dom.js";
-import RenameDialog from "../util/renamedialog.js";
-import NewLinesetDialog from "../util/newlinesetdialog.js";
-import DeleteLinesetDialog from "../util/deletelinesetdialog.js";
+import RenameDialog from "../organisms/RenameDialog.js";
+import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
+import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
 
 // Wait until stylesheet is loaded
 await new Promise((resolve, _reject) => {

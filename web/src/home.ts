@@ -1,5 +1,4 @@
 import { query } from "./util/dom.js";
-import newlinesetdialog from "./util/newlinesetdialog.js";
 
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
@@ -126,7 +125,7 @@ window.browseLineset = (id: number) => {
 //--------------------------
 
 query("#home-new-lineset-btn", HTMLElement).onclick = async () => {
-  const { default: NewLineSetDialog } = await import("./util/newlinesetdialog.js");
+  const { default: NewLineSetDialog } = await import("./organisms/NewLinesetDialog.js");
   NewLineSetDialog(async (_title, id) => {
     await pullLineSets();
     window.browseLineset(id);

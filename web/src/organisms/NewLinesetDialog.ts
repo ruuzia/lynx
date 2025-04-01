@@ -1,5 +1,5 @@
 import { displayDialog } from "../molecules/dialog.js";
-import { query, html } from "./dom.js";
+import { query, html } from "../util/dom.js";
 
 export default function(oncreate = async (title: string, id: number) => {}) {
   const dialog = displayDialog("Create New Line Set", html`
