@@ -185,7 +185,9 @@ async function loadSelector() {
   }
 }
 
-export const SelectLineSet = (lineSet: DeckInfo) => selectDeck(lineSet.title);
+export const SelectLineSet = (id: number) => {
+  selectDeck(Decks().find(item => item.id == id)?.title!);
+}
 
 export function Init() {
   load();

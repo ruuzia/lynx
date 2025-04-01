@@ -4,17 +4,32 @@ import { Decks } from "./util/LineSets.js";
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
 
-/*** Callbacks for HTML ***/
-declare global {
-  interface Window { linesetSelected: Function, browseLineset: Function }
-}
-
 //-------------------------------------------
 // Update line set selection menus on page load
 
 const lineSetName = (id: number) => Decks().find(item => item.id == id)?.title;
 
-const loadLineSets = (_lineSets: DeckInfo[]) => {
+const loadLineSets = () => {
+  const onclick = async (e: Event) => {
+    if (!(e.target instanceof HTMLElement)) return;
+    {
+      const lineset = e.target.getAttribute("data-browse");
+      if (lineset) {
+        const id = parseInt(lineset);
+        const Browser = await import("./pages/browser.js");
+        Browser.SelectLineSet(id);
+        location.hash = "#browser";
+      }
+    }
+    {
+      const lineset = e.target.getAttribute("data-review");
+      if (lineset) {
+        const LineReviewer = await import("./pages/linereviewer.js");
+        LineReviewer.SetLineSet(parseInt(lineset));
+        location.hash = "#reviewer";
+      }
+    }
+  }
 
   { /*** Home page listing ****/
     const container = document.getElementById("line-set-listing-container");
@@ -33,14 +48,15 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
 <div class="line-set-row">
     <span class="lineset-name">${title}</span>
     <a href="#settings"
-        onclick="linesetSelected('${id}')"
+        data-review="${id}" onclick="event.preventDefault();"
         class="lineset-review">Review</a>
     <a href="#browser"
-        onclick="browseLineset(${id})"
+        data-browse="${id}" onclick="event.preventDefault();"
         class="lineset-edit">Browse</a>
 </div>`
     }
     lineSetListing.innerHTML = content;
+    lineSetListing.onclick = onclick;
   }
 
   { /*** Lineset selection ***/
@@ -53,15 +69,16 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
       s += html`
 <a class="button-thick"
    href="/#settings"
-   onclick="linesetSelected('${id}')">
+   data-review="${id}" onclick="event.preventDefault();">
 ${title}</a>
 `
     }
     container.innerHTML = s;
+    container.onclick = onclick;
 
   }
 }
-loadLineSets(Decks());
+loadLineSets();
 
 //---------------------------------------------------------------
 function homePageUpdate() {
@@ -83,50 +100,15 @@ function homePageUpdate() {
       content.innerHTML = s;
     }
   });
-
-  pullLineSets();
+  loadLineSets();
 }
 
-async function pullLineSets() {
-  const res = await fetch("/feline/linesets", {
-    method: "GET",
-  });
-  if (!res.ok) {
-    throw new Error("Failed to load lineset info: " + await res.text());
-  }
-  const sets = await res.json();
-  if (sets != null) {
-    loadLineSets(sets);
-  }
-}
-
-//---------------------------------------------------------------
-// lineset select page
-
-
-window.linesetSelected = (id: number) => {
-  import("./pages/linereviewer.js").then(lineReviewer => {
-    lineReviewer.SetLineSet(id);
-  });
-
-}
-
-window.browseLineset = (id: number) => {
-  import("./pages/browser.js").then(Browser => {
-    const item = Decks().find(item => item.id == id);
-    if (item == null) {
-      throw new Error("No lineset with id " + id);
-    }
-    Browser.SelectLineSet(item);
-  });
-}
 //--------------------------
 
 query("#home-new-lineset-btn", HTMLElement).onclick = async () => {
   const { default: NewLineSetDialog } = await import("./organisms/NewLinesetDialog.js");
   NewLineSetDialog(async (_title, id) => {
-    await pullLineSets();
-    window.browseLineset(id);
+    (await import("./pages/browser.js")).SelectLineSet(id);
     location.href = "#browser";
   });
 }
