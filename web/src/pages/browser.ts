@@ -3,6 +3,7 @@ import { create, query, html } from "../util/dom.js";
 import RenameDialog from "../organisms/RenameDialog.js";
 import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
 import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
+import Dropdown from "../atoms/Dropdown.js";
 
 // Wait until stylesheet is loaded
 await new Promise((resolve, _reject) => {
@@ -23,124 +24,57 @@ const getDeckId = () =>
 
 //---------------------------------------------
 
+/**
+ * Wrapper around fetch to always check result so I don't forget.
+ */
+async function request(url: RequestInfo, opts?: RequestInit) {
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+        throw new Error(`Failed fetch for '${url}'`);
+    }
+    return await res.json();
+}
 
 async function fetchLineSets() {
-  const res = await fetch("/feline/linesets", { method: "GET" });
-  if (!res.ok) {
-    throw new Error("Failed to fetch linesets " + (await res.text()));
-  }
-  UpdateLineSets(await res.json());
+  const data = await request("/feline/linesets", { method: "GET" });
+  UpdateLineSets(data);
 }
 
-// Note: beforetoggle event not currently implemented on Safari for Modals as of March 2025
-// https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/beforetoggle_event#browser_compatibility
-// So we activate modals with this function instead
-export function ShowModal(q: string) {
-  if (q == "new-lineset") {
-    NewLinesetDialog(async (title, _id) => {
-      await fetchLineSets();
-      selector.value = title;
-      load();
-    });
-  } else if (q == "browser-rename") {
-    const id = getDeckId();
-    if (id != null) {
-      RenameDialog(selector.value, id, (newName: string) => {
-        fetchLineSets().then(() => (selector.value = newName));
-      });
-    }
-  } else if (q == "delete-lineset") {
-    const id = getDeckId();
-    if (id != null) DeleteLinesetDialog(selector.value, id, async () => {
-      await fetchLineSets();
-      if (selector.options[0]) selector.value = selector.options[0].value;
-      load();
-    });
-  } else {
-    console.error("Unknown dialog: " + q)
-  }
-}
-//--------------------------------------
-
-function makeDropdown(
-  container: HTMLElement,
-  onselect?: (option: Element) => void,
-) {
-  const isDropdownItem = (elem: Node | EventTarget | null) =>
-    elem != null &&
-    elem instanceof HTMLElement &&
-    elem.classList.contains("dropdown-item");
-  const isDropdownButton = (elem: Node | EventTarget | null) =>
-    elem instanceof HTMLElement && elem.classList.contains("dropdown-button");
-
-  container.onclick = (e) => {
-    const options = query(".dropdown-options", HTMLElement, container);
-
-    if (isDropdownButton(e.target)) {
-      options.hidden = !options.hidden;
-      // Prevent event from reaching window listener
-      e.stopPropagation();
-    } else if (isDropdownItem(e.target)) {
-      options.hidden = true;
-      if (onselect) onselect(e.target as HTMLElement);
-    }
-  };
-
-  // Close on click outside
-  container.addEventListener("focusout", (e) => {
-    if (
-      !isDropdownItem(e.relatedTarget) &&
-      !isDropdownButton(e.relatedTarget)
-    ) {
-      query(".dropdown-options", HTMLElement, container).hidden = true;
-    }
+async function fetchLineData(id: number): Promise<Card[]> {
+  const lines = await request(`/feline/linesets/${id}/items`, {
+    method: "GET",
   });
+  return lines ?? [];
+}
 
-  container.onkeydown = (e) => {
-    if (!(e.target instanceof HTMLElement)) return;
-    const options = query(".dropdown-options", HTMLElement, container);
+async function updateCard(item: Card) {
+  return await request(`/feline/items/${item.id}`, {
+    method: "PUT",
+    body: JSON.stringify(item),
+  });
+}
 
-    if (isDropdownButton(e.target) && (e.key == " " || e.key == "Enter")) {
-      options.hidden = !options.hidden;
-      return false;
-    } else if (isDropdownItem(e.target) && (e.key == " " || e.key == "Enter")) {
-      e.target.click();
-      return false;
-    }
+async function deleteCard(id: number) {
+  return await request(`/feline/items/${id}`, {
+    method: "DELETE",
+  });
+}
 
-    if (e.key == "ArrowUp" || e.key == "ArrowDown") {
-      if (isDropdownButton(e.target)) {
-        // Focus first dropdown item
-        (
-          options.children[
-            e.key == "ArrowDown" ? 0 : options.children.length - 1
-          ] as HTMLElement
-        ).focus();
-      } else if (isDropdownItem(e.target)) {
-        if (e.key == "ArrowUp") {
-          (e.target == options.children[0]
-            ? (options.children[options.children.length - 1] as HTMLElement)
-            : (e.target.previousElementSibling as HTMLElement)
-          ).focus();
-        }
-        if (e.key == "ArrowDown") {
-          (e.target == options.children[options.children.length - 1]
-            ? (options.children[0] as HTMLElement)
-            : (e.target.nextElementSibling as HTMLElement)
-          ).focus();
-        }
-      }
-      return false;
-    }
+async function postCard(deckId: number, card: Card) {
+  return await request(`/feline/linesets/${deckId}/items/`, {
+    method: "POST",
+    body: JSON.stringify(card),
+  })
+}
 
-    if (e.key == "Escape") {
-      options.hidden = true;
-      return false;
-    }
-  };
-  return container;
-} //makeDropdown()
-//--------------------------------
+async function updateOrdering(deckId: number, ordering: number[]) {
+  return await request(`/feline/linesets/${deckId}/items/ordering`, {
+    method: "POST",
+    body: JSON.stringify(ordering),
+  })
+}
+
+//--------------------------------------
 
 const browser = query("#browser", HTMLDivElement);
 
@@ -151,7 +85,7 @@ const selector = create("select", {
   },
 });
 
-const dropdown = makeDropdown(
+const dropdown = Dropdown(
   create(
     "div",
     { classList: "actions-dropdown" },
@@ -184,8 +118,31 @@ const dropdown = makeDropdown(
   ),
   (selection) => {
     const modal = selection.getAttribute("data-show-modal");
-    if (modal) {
-      ShowModal(modal);
+    const id = getDeckId();
+    switch (modal) {
+      case "new-lineset":
+        NewLinesetDialog(async (title, _id) => {
+          await fetchLineSets();
+          selector.value = title;
+          load();
+        });
+        break;
+      case "browser-rename":
+        if (id != null) {
+          RenameDialog(selector.value, id, (newName: string) => {
+            fetchLineSets().then(() => (selector.value = newName));
+          });
+        }
+        break;
+      case "delete-lineset":
+        if (id != null) DeleteLinesetDialog(selector.value, id, async () => {
+          await fetchLineSets();
+          if (selector.options[0]) selector.value = selector.options[0].value;
+          load();
+        });
+        break;
+      default:
+        console.error("Unknown dialog: " + q)
     }
   },
 );
@@ -258,18 +215,7 @@ async function load() {
   const id = getDeckId();
   localStorage.setItem("browser-line-set", title);
   console.log("Loading line set title: " + title);
-  try {
-    const resp = await fetch(`/feline/linesets/${id}/items`, {
-      method: "GET",
-    });
-    if (!resp.ok) {
-      throw new Error("Failed to fetch line data: " + await resp.text());
-    }
-    const lines = await resp.json() ?? [];
-    render(lines);
-  } catch (err) {
-    console.error(err);
-  }
+  render(await fetchLineData(id));
 }
 
 function sepLine(line: string): [string, string] {
@@ -436,18 +382,14 @@ function render(lines: Card[]) {
     const onCardUpdate = async () => {
       item.notes = notes.value;
       item.starred = starred.checked;
-      const resp = await fetch(`/feline/items/${item.id}`, {
-        method: "PUT",
-        body: JSON.stringify(item),
-      });
-      console.log("PUT request: ", resp.statusText);
+      updateCard(item);
     };
     notes.addEventListener("input", onCardUpdate);
     cue.addEventListener("input", onCardUpdate);
     line.addEventListener("input", onCardUpdate);
     starred.addEventListener("input", onCardUpdate);
 
-    makeDropdown(query(".menu-dropdown", HTMLDivElement, card), (selected) => {
+    Dropdown(query(".menu-dropdown", HTMLDivElement, card), (selected) => {
       if (selected.classList.contains("card-remove-option")) {
         removeCard(item);
       }
@@ -458,12 +400,7 @@ function render(lines: Card[]) {
 
   async function removeCard(item: Card) {
     console.log("Removing card!")
-    const resp = await fetch(`/feline/items/${item.id}`, {
-      method: "DELETE",
-    });
-    if (!resp.ok) {
-      throw new Error("Failed to remove card! " + await resp.text());
-    }
+    await deleteCard(item.id);
     lines.splice(item.index, 1);
     await postOrdering();
     return render(lines);
@@ -482,21 +419,12 @@ function render(lines: Card[]) {
 
     // Update server in background without blocking client
     (async () => {
-      const resp = await fetch(`/feline/linesets/${getDeckId()}/items`, {
-        method: "POST",
-        body: JSON.stringify(item),
-      })
-      if (!resp.ok) {
-        throw new Error("Failed to add new card! " + await resp.text());
-      }
-      const data = await resp.json();
-      item.id = data.id;
-      console.log(data);
+      const { id } = await postCard(getDeckId(), item);
+      item.id = id;
       console.log(item.id);
 
       await postOrdering();
     })()
-
 
     render(lines);
     // Focus new card input
@@ -506,15 +434,6 @@ function render(lines: Card[]) {
   const postOrdering = async () => {
     // We also updatte our own .index values
     for (const [i, v] of lines.entries()) v.index = i;
-    const resp = await fetch(`/feline/linesets/${getDeckId()}/items/ordering`, {
-      method: "POST",
-      body: JSON.stringify(
-        lines.map(line => line.id)
-      ),
-    })
-    if (!resp.ok) {
-      throw new Error("Failed updating indices!!");
-    }
+    updateOrdering(getDeckId(), lines.map(line => line.id));
   }
-
 }
