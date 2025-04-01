@@ -10,3 +10,11 @@ if (sidebar !== null) {
         //sidebar.classList.remove("docked")
     }
 }
+
+for (const item of document.querySelectorAll(".sidebar-item a")) {
+  if (item instanceof HTMLElement) {
+    item.onclick = () => {
+      setTimeout(() => sidebar.classList.add("docked"), 150);
+    }
+  }
+}

@@ -95,20 +95,25 @@ query("#home-new-lineset-btn", HTMLElement).onclick = async () => {
 // Callbacks for when we switch to a sub-pages
 
 function subpageLoad() {
+  const current = query("#current-page", HTMLElement);
   console.log("subpageLoad()");
   switch (location.hash) {
     case "#home":
+      current.innerText = "Home";
       homePageUpdate();
       break;
     case "#builder":
+      current.innerText = "Builder";
       import("./builder.js")
       break;
     case "#browser":
+      current.innerText = "My lines";
       import('./browser.js').then(BrowserPage => {
         BrowserPage.Init();
       });
       break;
     case "#reviewer":
+      current.innerText = "Reviewer";
       import("./linereviewer.js").then(LineReviewer => {
         console.log(LineReviewer.GetReviewState().lineSet, LineReviewer.GetReviewState().reviewMethod)
         if (LineReviewer.GetReviewState().lineSet < 0) {
@@ -119,9 +124,11 @@ function subpageLoad() {
       });
       break;
     case "#lineset-select":
+      current.innerText = "Selector";
       import("./deckselect.js");
       break;
     case "#settings":
+      current.innerText = "Settings";
       import('./settings.js');
       break;
     default:
