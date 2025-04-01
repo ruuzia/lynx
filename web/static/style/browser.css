@@ -2,36 +2,36 @@
       background-color: hsla(0 0% 50% / 50%);
 }
 
-#browser {
-  .modal {
-    background-color: var(--bg);
-    color: var(--fg);
-    border: none;
-    max-width: 500px;
-    max-height: 400px;
-    padding: 20px;
-    border-radius: 10px;
+.modal {
+  background-color: var(--bg);
+  color: var(--fg);
+  border: none;
+  max-width: 500px;
+  max-height: 400px;
+  padding: 20px;
+  border-radius: 10px;
 
-    text-align: left;
-    .modal-close {
-      background: transparent;
-      border: 0;
-      &::before {
-        content: "✕";
-        color: var(--fg);
-      }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-around;
-    }
-
-    .model-title {
-      text-align: center;
+  text-align: left;
+  .modal-close {
+    background: transparent;
+    border: 0;
+    &::before {
+      content: "✕";
+      color: var(--fg);
     }
   }
 
+  .modal-header {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .model-title {
+    text-align: center;
+  }
+}
+
+#browser {
   .browser-heading {
     display: flex;
     justify-content: center;

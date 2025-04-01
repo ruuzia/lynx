@@ -1,4 +1,5 @@
-export {}
+import { query } from "./util/dom.js";
+
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
 
@@ -122,6 +123,13 @@ window.browseLineset = (id: number) => {
   });
 }
 //--------------------------
+
+query("#home-new-lineset-btn", HTMLElement).onclick = () => {
+  import("./pages/browser.js").then(Browser => {
+    location.href = "#browser";
+    Browser.ShowModal("#browser-new-lineset")
+  });
+}
 
 //-------------------------------------------
 // Callbacks for when we switch to a sub-pages

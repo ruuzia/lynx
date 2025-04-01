@@ -48,7 +48,7 @@ function buildModals() {
       `,
     );
 
-  const renameDialog = browser.appendChild(
+  const renameDialog = document.body.appendChild(
     makeDialog(
       "browser-rename",
       "Rename Line Set",
@@ -67,7 +67,7 @@ function buildModals() {
     ),
   );
 
-  const createDialog = browser.appendChild(
+  const createDialog = document.body.appendChild(
     makeDialog(
       "browser-new-lineset",
       "Create New Line Set",
@@ -85,7 +85,7 @@ function buildModals() {
     ),
   );
 
-  const deleteDialog = browser.appendChild(
+  const deleteDialog = document.body.appendChild(
     makeDialog(
       "browser-delete-lineset",
       "Delete Line Set",
@@ -177,7 +177,7 @@ function buildModals() {
 // Note: beforetoggle event not currently implemented on Safari for Modals as of March 2025
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/beforetoggle_event#browser_compatibility
 // So we activate modals with this function instead
-function showModal(q: string) {
+export function ShowModal(q: string) {
   const modal = query(q, HTMLDialogElement);
   switch (modal.id) {
     case "browser-new-lineset":
@@ -319,7 +319,7 @@ const dropdown = makeDropdown(
   (selection) => {
     const modal = selection.getAttribute("data-show-modal");
     if (modal) {
-      showModal(modal);
+      ShowModal(modal);
     }
   },
 );
