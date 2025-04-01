@@ -1,4 +1,4 @@
-import { MakeItemsDraggable } from "../util/draggablelist.js";
+import { MakeItemsDraggable } from "../molecules/draggablelist.js";
 import { create, query, html } from "../util/dom.js";
 import request from "../util/request.js"
 import RenameDialog from "../organisms/RenameDialog.js";
@@ -6,7 +6,7 @@ import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
 import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
 import Dropdown from "../atoms/Dropdown.js";
 import BrowserCard from "../organisms/BrowserCard.js";
-import { Decks } from "../util/LineSets.js";
+import { Decks } from "../util/linesets.js";
 
 // Wait until stylesheet is loaded
 await new Promise((resolve, _reject) => {

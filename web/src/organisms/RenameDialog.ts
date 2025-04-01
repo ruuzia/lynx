@@ -1,6 +1,6 @@
 import { displayDialog } from "../molecules/dialog.js";
 import { query, html } from "../util/dom.js";
-import { RenameLineset } from "../util/LineSets.js";
+import { RenameLineset } from "../util/linesets.js";
 
 export default function (currentTitle: string, id: number, onrename?: (newName: string) => void) {
   const renameDialog = displayDialog( "Rename Line Set", html`

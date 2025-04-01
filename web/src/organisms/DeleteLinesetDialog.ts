@@ -1,6 +1,6 @@
 import { displayDialog } from "../molecules/dialog.js";
 import { html } from "../util/dom.js";
-import { DeleteLineset } from "../util/LineSets.js";
+import { DeleteLineset } from "../util/linesets.js";
 
 export default function (title: string, id: number, ondeleted=async () => {}) {
   const deleteDialog = displayDialog("Delete Line Set", html`

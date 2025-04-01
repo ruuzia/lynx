@@ -1,5 +1,5 @@
 import { html } from "../util/dom.js";
-import { Decks } from "../util/LineSets.js";
+import { Decks } from "../util/linesets.js";
 {
     const container = document.getElementById("lineset-page-list");
     if (container === null) {

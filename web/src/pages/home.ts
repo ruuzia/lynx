@@ -1,5 +1,5 @@
-import { query } from "./util/dom.js";
-import { Decks } from "./util/LineSets.js";
+import { query } from "../util/dom.js";
+import { Decks } from "../util/linesets.js";
 
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
@@ -40,7 +40,7 @@ const loadLineSets = () => {
       const lineset = e.target.getAttribute("data-browse");
       if (lineset) {
         const id = parseInt(lineset);
-        const Browser = await import("./pages/browser.js");
+        const Browser = await import("./browser.js");
         Browser.SelectLineSet(id);
         location.hash = "#browser";
       }
@@ -48,7 +48,7 @@ const loadLineSets = () => {
     {
       const lineset = e.target.getAttribute("data-review");
       if (lineset) {
-        const LineReviewer = await import("./pages/linereviewer.js");
+        const LineReviewer = await import("./linereviewer.js");
         LineReviewer.SetLineSet(parseInt(lineset));
         location.hash = "#reviewer";
       }
@@ -64,7 +64,7 @@ function homePageUpdate() {
   if (content == null) {
     throw new Error("Did not find #home-message");
   }
-  import("./pages/linereviewer.js").then(LineReviewer => {
+  import("./linereviewer.js").then(LineReviewer => {
     const state = LineReviewer.GetReviewState();
     if (state.lineSet != -1) {
       const s = html`
@@ -84,9 +84,9 @@ function homePageUpdate() {
 //--------------------------
 
 query("#home-new-lineset-btn", HTMLElement).onclick = async () => {
-  const { default: NewLineSetDialog } = await import("./organisms/NewLinesetDialog.js");
+  const { default: NewLineSetDialog } = await import("../organisms/NewLinesetDialog.js");
   NewLineSetDialog(async (_title, id) => {
-    (await import("./pages/browser.js")).SelectLineSet(id);
+    (await import("./browser.js")).SelectLineSet(id);
     location.href = "#browser";
   });
 }
@@ -101,15 +101,15 @@ function subpageLoad() {
       homePageUpdate();
       break;
     case "#builder":
-      import("./pages/builder.js")
+      import("./builder.js")
       break;
     case "#browser":
-      import('./pages/browser.js').then(BrowserPage => {
+      import('./browser.js').then(BrowserPage => {
         BrowserPage.Init();
       });
       break;
     case "#reviewer":
-      import("./pages/linereviewer.js").then(LineReviewer => {
+      import("./linereviewer.js").then(LineReviewer => {
         console.log(LineReviewer.GetReviewState().lineSet, LineReviewer.GetReviewState().reviewMethod)
         if (LineReviewer.GetReviewState().lineSet < 0) {
           location.hash = "#lineset-select";
@@ -119,10 +119,10 @@ function subpageLoad() {
       });
       break;
     case "#lineset-select":
-      import("./pages/deckselect.js");
+      import("./deckselect.js");
       break;
     case "#settings":
-      import('./pages/settings.js');
+      import('./settings.js');
       break;
     default:
       console.log("Unknown subpage " + location.hash);
@@ -137,7 +137,7 @@ subpageLoad();
 //--------------------------------
 window.onload = () => {
   // After the home page is 100% loaded, asynchronously load other subpages
-  import("./pages/browser.js")
-  import("./pages/linereviewer.js")
-  import("./pages/settings.js")
+  import("./browser.js")
+  import("./linereviewer.js")
+  import("./settings.js")
 }

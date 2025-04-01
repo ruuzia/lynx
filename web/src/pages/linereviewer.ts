@@ -1,5 +1,5 @@
 import { query } from "../util/dom.js";
-import Persist from "../persist.js";
+import Persist from "../util/persist.js";
 
 const save = Persist("linereviewer", {
   lineSet: -1,
