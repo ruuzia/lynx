@@ -6,6 +6,7 @@ import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
 import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
 import Dropdown from "../atoms/Dropdown.js";
 import BrowserCard from "../organisms/BrowserCard.js";
+import { GetLinesets } from "../util/LineSets.js";
 
 // Wait until stylesheet is loaded
 await new Promise((resolve, _reject) => {
@@ -25,11 +26,6 @@ const getDeckId = () =>
   parseInt(selector.children[selector.selectedIndex].getAttribute("data-lineset-id") ?? "");
 
 //---------------------------------------------
-
-async function fetchLineSets() {
-  const data = await request("/feline/linesets", { method: "GET" });
-  UpdateLineSets(data);
-}
 
 async function fetchLineData(id: number): Promise<Card[]> {
   const lines = await request(`/feline/linesets/${id}/items`, {
@@ -113,7 +109,7 @@ const dropdown = Dropdown(
     switch (selection.getAttribute("data-show-modal")) {
       case "new-lineset":
         NewLinesetDialog(async (title, _id) => {
-          await fetchLineSets();
+          UpdateLineSets(await GetLinesets())
           selector.value = title;
           load();
         });
@@ -121,16 +117,18 @@ const dropdown = Dropdown(
       case "browser-rename":
         if (id != null) {
           RenameDialog(selector.value, id, (newName: string) => {
-            fetchLineSets().then(() => (selector.value = newName));
+            selector.value = newName;
           });
         }
         break;
       case "delete-lineset":
-        if (id != null) DeleteLinesetDialog(selector.value, id, async () => {
-          await fetchLineSets();
-          if (selector.options[0]) selector.value = selector.options[0].value;
-          load();
-        });
+        if (id != null) {
+          DeleteLinesetDialog(selector.value, id, async () => {
+            UpdateLineSets(await GetLinesets())
+            if (selector.options[0]) selector.value = selector.options[0].value;
+            load();
+          });
+        }
         break;
     }
   },
@@ -202,7 +200,7 @@ export function Init() {
 //------------------------------------
 
 async function load() {
-  await fetchLineSets();
+  UpdateLineSets(await GetLinesets());
   const title = getDeckTitle();
   const id = getDeckId();
   localStorage.setItem("browser-line-set", title);
