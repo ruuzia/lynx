@@ -1,4 +1,5 @@
 import { query } from "./util/dom.js";
+import { Decks } from "./util/LineSets.js";
 
 /*** For syntax highlighting ***/
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);
@@ -11,11 +12,9 @@ declare global {
 //-------------------------------------------
 // Update line set selection menus on page load
 
-declare let lineSets: DeckInfo[]
-const lineSetName = (id: number) => lineSets.find(item => item.id == id)?.title;
+const lineSetName = (id: number) => Decks().find(item => item.id == id)?.title;
 
 const loadLineSets = (_lineSets: DeckInfo[]) => {
-  lineSets = _lineSets
 
   { /*** Home page listing ****/
     const container = document.getElementById("line-set-listing-container");
@@ -29,7 +28,7 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
 
     container.hidden = false;
     let content = ``;
-    for (const { id, title } of lineSets) {
+    for (const { id, title } of Decks()) {
       content += html`
 <div class="line-set-row">
     <span class="lineset-name">${title}</span>
@@ -50,7 +49,7 @@ const loadLineSets = (_lineSets: DeckInfo[]) => {
       throw new Error("Did not find #lineset-page-list");
     }
     let s = ``;
-    for (const { id, title } of lineSets) {
+    for (const { id, title } of Decks()) {
       s += html`
 <a class="button-thick"
    href="/#settings"
@@ -62,7 +61,7 @@ ${title}</a>
 
   }
 }
-loadLineSets(lineSets);
+loadLineSets(Decks());
 
 //---------------------------------------------------------------
 function homePageUpdate() {
@@ -114,7 +113,7 @@ window.linesetSelected = (id: number) => {
 
 window.browseLineset = (id: number) => {
   import("./pages/browser.js").then(Browser => {
-    const item = lineSets.find(item => item.id == id);
+    const item = Decks().find(item => item.id == id);
     if (item == null) {
       throw new Error("No lineset with id " + id);
     }

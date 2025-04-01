@@ -36,6 +36,6 @@ export async function DeleteLineset(id: number) {
   await pull();
 }
 
-export async function GetLinesets() {
+export function Decks() {
   return _lineSets;
 }

@@ -6,7 +6,7 @@ import NewLinesetDialog from "../organisms/NewLinesetDialog.js";
 import DeleteLinesetDialog from "../organisms/DeleteLinesetDialog.js";
 import Dropdown from "../atoms/Dropdown.js";
 import BrowserCard from "../organisms/BrowserCard.js";
-import { GetLinesets } from "../util/LineSets.js";
+import { Decks } from "../util/LineSets.js";
 
 // Wait until stylesheet is loaded
 await new Promise((resolve, _reject) => {
@@ -168,7 +168,7 @@ document.body.appendChild(
 async function loadSelector() {
   const save = selector.value || localStorage.getItem("browser-line-set");
   selector.replaceChildren();
-  for (const { id, title } of await GetLinesets()) {
+  for (const { id, title } of Decks()) {
     selector.add(
       create(
         "option",
