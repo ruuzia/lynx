@@ -10,7 +10,31 @@ const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ r
 const lineSetName = (id: number) => Decks().find(item => item.id == id)?.title;
 
 const loadLineSets = () => {
-  const onclick = async (e: Event) => {
+  const container = document.getElementById("line-set-listing-container");
+  if (container === null) {
+    throw new Error("Could not find lineSetListing container");
+  }
+  const lineSetListing = document.getElementById("line-set-listing");
+  if (lineSetListing === null) {
+    throw new Error("Could not find lineSetListing");
+  }
+
+  container.hidden = false;
+  let content = ``;
+  for (const { id, title } of Decks()) {
+    content += html`
+    <div class="line-set-row">
+      <span class="lineset-name">${title}</span>
+      <a href="#settings"
+          data-review="${id}" onclick="event.preventDefault();"
+          class="lineset-review">Review</a>
+      <a href="#browser"
+          data-browse="${id}" onclick="event.preventDefault();"
+          class="lineset-edit">Browse</a>
+    </div>`
+  }
+  lineSetListing.innerHTML = content;
+  lineSetListing.onclick = async (e: Event) => {
     if (!(e.target instanceof HTMLElement)) return;
     {
       const lineset = e.target.getAttribute("data-browse");
@@ -30,53 +54,7 @@ const loadLineSets = () => {
       }
     }
   }
-
-  { /*** Home page listing ****/
-    const container = document.getElementById("line-set-listing-container");
-    if (container === null) {
-      throw new Error("Could not find lineSetListing container");
-    }
-    const lineSetListing = document.getElementById("line-set-listing");
-    if (lineSetListing === null) {
-      throw new Error("Could not find lineSetListing");
-    }
-
-    container.hidden = false;
-    let content = ``;
-    for (const { id, title } of Decks()) {
-      content += html`
-<div class="line-set-row">
-    <span class="lineset-name">${title}</span>
-    <a href="#settings"
-        data-review="${id}" onclick="event.preventDefault();"
-        class="lineset-review">Review</a>
-    <a href="#browser"
-        data-browse="${id}" onclick="event.preventDefault();"
-        class="lineset-edit">Browse</a>
-</div>`
-    }
-    lineSetListing.innerHTML = content;
-    lineSetListing.onclick = onclick;
-  }
-
-  { /*** Lineset selection ***/
-    const container = document.getElementById("lineset-page-list");
-    if (container === null) {
-      throw new Error("Did not find #lineset-page-list");
-    }
-    let s = ``;
-    for (const { id, title } of Decks()) {
-      s += html`
-<a class="button-thick"
-   href="/#settings"
-   data-review="${id}" onclick="event.preventDefault();">
-${title}</a>
-`
-    }
-    container.innerHTML = s;
-    container.onclick = onclick;
-
-  }
+;
 }
 loadLineSets();
 
@@ -90,13 +68,13 @@ function homePageUpdate() {
     const state = LineReviewer.GetReviewState();
     if (state.lineSet != -1) {
       const s = html`
-<p>You're in the middle of reviewing <b>${lineSetName(state.lineSet)}</b>.</p>
-<div class="center-content">
-  <div class="button-wrap">
-    <a href="#reviewer">Continue reviewing</a>
-  </div>
-</div>
-`;
+      <p>You're in the middle of reviewing <b>${lineSetName(state.lineSet)}</b>.</p>
+      <div class="center-content">
+        <div class="button-wrap">
+          <a href="#reviewer">Continue reviewing</a>
+        </div>
+      </div>
+      `;
       content.innerHTML = s;
     }
   });
@@ -141,6 +119,7 @@ function subpageLoad() {
       });
       break;
     case "#lineset-select":
+      import("./pages/deckselect.js");
       break;
     case "#settings":
       import('./pages/settings.js');
