@@ -42,12 +42,24 @@
 /* SPA minimal "page" set-up */
 
 .page {
+    z-index: -1;
     padding-top: var(--header-height);
     display: none;
     &:target {
         display: block;
+        animation: load cubic-bezier(0.075, 0.82, 0.165, 1) 2s;
     }
 }
+
+@keyframes load {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 
 /*---------------------------------------*/
 /* Component defaults */
@@ -229,6 +241,7 @@ select {
 
 body { --header-height: 60px; }
 .nav-container {
+  z-index: 1;
 	position: absolute;
 	display: flex;
 	top: 0px;
