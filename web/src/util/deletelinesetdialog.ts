@@ -1,4 +1,4 @@
-import { displayDialog } from "./dialog.js";
+import { displayDialog } from "../molecules/dialog.js";
 import { html } from "./dom.js";
 
 export default function (title: string, id: number, ondeleted=async () => {}) {

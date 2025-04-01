@@ -1,4 +1,4 @@
-import { displayDialog } from "./dialog.js";
+import { displayDialog } from "../molecules/dialog.js";
 import { query, html } from "./dom.js";
 
 export default function (currentTitle: string, id: number, onrename?: (newName: string) => void) {

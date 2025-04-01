@@ -1,4 +1,4 @@
-import { create } from "../util/dom.js";
+import { create } from "util/dom.js";
 const html = String.raw; // Editor HTML highlighting in template strings
 
 const container = document.body.appendChild(create("div"));
