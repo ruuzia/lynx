@@ -8,19 +8,16 @@ export default function Persist<T extends Object, U extends T>(
   )) {
     (obj as any)[k] = v;
   }
-  const wrapper = {};
+  const wrapper = new Proxy(obj, {
+    get(target, prop) {
+      return (target as any)[prop];
+    },
+    set(obj, prop, value) {
+      (obj as any)[prop] = value;
+      sessionStorage.setItem(name, JSON.stringify(obj));
+      return value;
+    }
+  });
 
-  for (const key in obj) {
-    Object.defineProperty(wrapper, key, {
-      get() {
-        return obj[key];
-      },
-      set(value) {
-        obj[key] = value;
-        sessionStorage.setItem(name, JSON.stringify(obj));
-      },
-    });
-  }
-
-  return wrapper as any as U;
+  return wrapper as U;
 }
